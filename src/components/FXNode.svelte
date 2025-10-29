@@ -2,7 +2,7 @@
   import type { ProccessingNode } from "../ProcessingNode";
   import type { FX } from "../FX";
   import { newFX } from "../FX";
-  import Input from "./Input.svelte";
+  import CustomInput from "./CustomInput.svelte";
 
   const { nodeIndex, node, onUpdateBehavior } = $props<{
     nodeIndex: number;
@@ -104,7 +104,7 @@
   <div class="py-4">
     {#if node.behavior.type === "dot"}
       <div class="flex flex-col gap-4">
-        <Input
+        <CustomInput
           value={node.behavior.horizontalCount}
           min={1}
           max={100}
@@ -112,7 +112,7 @@
             updateField("horizontalCount", newValue);
           }}
           label="Horizontal Count"
-        ></Input>
+        ></CustomInput>
         <label class="flex items-center gap-3">
           <span class="text-sm font-medium w-36 text-right"
             >HORIZONTAL COUNT</span
