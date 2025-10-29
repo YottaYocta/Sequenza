@@ -59,7 +59,6 @@
   style="position: absolute; left: 100px; top: 100px;"
   role="button"
   tabindex="0"
-  class="w-32 h-32 border border-neutral-900"
 >
   <button
     {@attach handle}
