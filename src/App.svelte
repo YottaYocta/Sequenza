@@ -4,6 +4,8 @@
   import type { FX } from "./FX";
   import { createDefaultAdjustment } from "./Adjustment";
   import { newFX } from "./FX";
+  import { untrack } from "svelte";
+  import { updateProcessingNode } from "./ProcessingNode";
   import AdjustmentNode from "./components/AdjustmentNode.svelte";
   import FXNode from "./components/FXNode.svelte";
   import DraggableContainer from "./components/DraggableContainer.svelte";
@@ -43,17 +45,85 @@
   ]);
 
   $effect(() => {
-    // start re-computing pipeline; if pipeline length is zero do nothing
-    /**
-     * for all pipeline, set progress to zero
-     * currentnode = pipeline 0
-     * while currentnode currentnode.progress !== 1 and currentnode is not last node:
-     *
-     * requestanimationframe to do one computation of the image processing or fx processing
-     *
-     * define a function in processingnode
-     *
-     */
+    // this effect runs whenever the source image changes
+    const source = sourceOutput;
+
+    // Only process if we have actual image data
+    if (source.type !== "image") return;
+    const sourceImageData = source.data;
+    if (sourceImageData.width <= 1) return;
+
+    // Reset all progress to zero
+    untrack(() => {
+      processingPipeline = processingPipeline.map((node) => ({
+        ...node,
+        progress: 0,
+        outputData:
+          node.outputData.type === "image"
+            ? { type: "image", data: new ImageData(sourceImageData.width, sourceImageData.height) }
+            : node.outputData,
+      }));
+    });
+
+    let currentNodeIndex = 0;
+    let animationFrameId: number | null = null;
+
+    function processFrame() {
+      // Use untrack to read pipeline state without creating dependencies
+      const pipeline = untrack(() => processingPipeline);
+      const currentNode = pipeline[currentNodeIndex];
+
+      if (!currentNode) {
+        // Done processing all nodes
+        return;
+      }
+
+      // Determine the source for this node (either original source or previous node's output)
+      let nodeSource: ImageData;
+      if (currentNodeIndex === 0) {
+        nodeSource = sourceImageData;
+      } else {
+        const prevOutput = pipeline[currentNodeIndex - 1].outputData;
+        if (prevOutput.type === "image") {
+          nodeSource = prevOutput.data;
+        } else {
+          // If previous node output is SVG, use original source
+          nodeSource = sourceImageData;
+        }
+      }
+
+      // Process one iteration
+      const updatedNode = updateProcessingNode(currentNode, nodeSource);
+
+      // Update the pipeline with the new node state
+      untrack(() => {
+        processingPipeline[currentNodeIndex] = updatedNode;
+      });
+
+      // Check if current node is complete
+      if (updatedNode.progress >= 1) {
+        // Move to next node
+        currentNodeIndex++;
+
+        // If there are more nodes, continue processing
+        if (currentNodeIndex < pipeline.length) {
+          animationFrameId = requestAnimationFrame(processFrame);
+        }
+      } else {
+        // Continue processing current node
+        animationFrameId = requestAnimationFrame(processFrame);
+      }
+    }
+
+    // Start processing
+    animationFrameId = requestAnimationFrame(processFrame);
+
+    // Cleanup function
+    return () => {
+      if (animationFrameId !== null) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
   });
 
   function handleUpdateAdjustment(nodeIndex: number, behavior: Adjustment) {
