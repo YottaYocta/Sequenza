@@ -8,11 +8,20 @@
   import FXNode from "./components/FXNode.svelte";
   import DraggableContainer from "./components/DraggableContainer.svelte";
   import ViewerNode from "./components/ViewerNode.svelte";
+  import SourceNode from "./components/SourceNode.svelte";
+  import DefaultImg from "./assets/headset.jpg";
 
-  let sourceNode = $state<Output>({
+  let sourceOutput = $state<Output>({
     type: "image",
     data: new ImageData(1, 1), // placeholder empty image
   });
+
+  function handleSourceImageLoad(imageData: ImageData) {
+    sourceOutput = {
+      type: "image",
+      data: imageData,
+    };
+  }
 
   let processingPipeline = $state<ProccessingNode<Adjustment | FX>[]>([
     {
@@ -61,6 +70,23 @@
 </header>
 <main class="w-full h-96 min-h-96 p-4 flex items-center justify-center">
   <div class="w-full h-96 max-w-4xl flex h-min-96 relative">
+    <!-- Source Node -->
+    <DraggableContainer startX={0} startY={0}>
+      {#snippet children()}
+        <SourceNode
+          onImageLoad={handleSourceImageLoad}
+          defaultImagePath={DefaultImg}
+        />
+      {/snippet}
+    </DraggableContainer>
+
+    <!-- Source Viewer -->
+    <DraggableContainer startX={400} startY={0}>
+      {#snippet children()}
+        <ViewerNode output={sourceOutput} />
+      {/snippet}
+    </DraggableContainer>
+
     {#each processingPipeline as node, index}
       {#if isAdjustmentNode(node)}
         <DraggableContainer startY={index * 400}>
