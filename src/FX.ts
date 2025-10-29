@@ -18,9 +18,21 @@ interface DotFX {
   };
 }
 
-export type FX = DotFX;
+interface BarFX {
+  type: "bar";
+  direction: "horizontal" | "vertical";
+  numberBars: number;
+  barSize: number;
+  borderRadius: number; // clamped 0 -1, with 0 being no corners and 1 being fully rounded
+  filter: MidPassFilter;
+  state: {
+    nextBar: number; // column or row, depending on direction
+  };
+}
 
-export const newFX = (type: "dot"): FX => {
+export type FX = DotFX | BarFX;
+
+export const newFX = (type: "dot" | "bar"): FX => {
   switch (type) {
     case "dot":
       return {
@@ -36,6 +48,21 @@ export const newFX = (type: "dot"): FX => {
         },
         state: {
           nextRow: 0,
+        },
+      };
+    case "bar":
+      return {
+        type: "bar",
+        direction: "horizontal",
+        numberBars: 10,
+        barSize: 5,
+        borderRadius: 0,
+        filter: {
+          low: 0,
+          high: 1,
+        },
+        state: {
+          nextBar: 0,
         },
       };
   }
@@ -184,6 +211,176 @@ export const processDot = (
     ...fxState,
     state: {
       nextRow: newNextRow,
+    },
+  };
+
+  return [updatedState, updatedSVG, progress];
+};
+
+/**
+ * Helper function to find the most frequently occurring color in a region
+ */
+function getMostFrequentColor(
+  data: Uint8ClampedArray,
+  indices: number[]
+): [number, number, number, number] {
+  const colorMap = new Map<string, { count: number; rgba: [number, number, number, number] }>();
+
+  for (const index of indices) {
+    const r = data[index];
+    const g = data[index + 1];
+    const b = data[index + 2];
+    const a = data[index + 3];
+
+    // Use rounded values to group similar colors
+    const key = `${Math.round(r / 10) * 10},${Math.round(g / 10) * 10},${Math.round(b / 10) * 10}`;
+
+    if (colorMap.has(key)) {
+      const entry = colorMap.get(key)!;
+      entry.count++;
+    } else {
+      colorMap.set(key, { count: 1, rgba: [r, g, b, a] });
+    }
+  }
+
+  // Find the most frequent color
+  let maxCount = 0;
+  let mostFrequent: [number, number, number, number] = [0, 0, 0, 255];
+
+  for (const entry of colorMap.values()) {
+    if (entry.count > maxCount) {
+      maxCount = entry.count;
+      mostFrequent = entry.rgba;
+    }
+  }
+
+  return mostFrequent;
+}
+
+/**
+ * Create a bar shape (rectangle with optional rounded corners)
+ */
+function createBarShape(
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  borderRadius: number
+): string {
+  const clampedRadius = Math.max(0, Math.min(1, borderRadius));
+  const actualRadius = Math.min(width, height) * clampedRadius * 0.5;
+
+  if (clampedRadius > 0) {
+    return `<rect x="${x}" y="${y}" width="${width}" height="${height}" rx="${actualRadius}" />`;
+  } else {
+    return `<rect x="${x}" y="${y}" width="${width}" height="${height}" />`;
+  }
+}
+
+/**
+ * Process one bar (column or row depending on direction)
+ * Returns updated FX state, SVG string output, and progress (0-1)
+ */
+export const processBar = (
+  fxState: FX & { type: "bar" },
+  source: ImageData,
+  currentSVG: string
+): [FX, string, number] => {
+  const { state, direction, numberBars, barSize, borderRadius, filter } = fxState;
+
+  const nextBar = state.nextBar;
+  const width = source.width;
+  const height = source.height;
+  const data = source.data;
+
+  let barSVG = "";
+
+  if (direction === "horizontal") {
+    // Horizontal bars - process one row of bars at a time
+    const barHeight = height / numberBars;
+    const startY = Math.floor(nextBar * barHeight);
+    const endY = Math.floor((nextBar + 1) * barHeight);
+
+    // Collect all pixel indices in this bar region
+    const indices: number[] = [];
+    for (let y = startY; y < endY && y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        indices.push((y * width + x) * 4);
+      }
+    }
+
+    // Get the most frequent color in this region
+    const [r, g, b, a] = getMostFrequentColor(data, indices);
+
+    // Calculate brightness for filtering
+    const brightness = (r + g + b) / (3 * 255);
+
+    // Apply midpass filter
+    const clampedLow = Math.max(0, Math.min(1, filter.low));
+    const clampedHigh = Math.max(0, Math.min(1, filter.high));
+
+    if (brightness >= clampedLow && brightness <= clampedHigh) {
+      // Draw horizontal bar centered in the region
+      const centerY = (startY + endY) / 2;
+      const barY = centerY - barSize / 2;
+
+      const barShape = createBarShape(0, barY, width, barSize, borderRadius);
+      barSVG = barShape.replace(
+        "<rect",
+        `<rect fill="rgba(${r}, ${g}, ${b}, ${a / 255})"`
+      );
+    }
+  } else {
+    // Vertical bars - process one column of bars at a time
+    const barWidth = width / numberBars;
+    const startX = Math.floor(nextBar * barWidth);
+    const endX = Math.floor((nextBar + 1) * barWidth);
+
+    // Collect all pixel indices in this bar region
+    const indices: number[] = [];
+    for (let y = 0; y < height; y++) {
+      for (let x = startX; x < endX && x < width; x++) {
+        indices.push((y * width + x) * 4);
+      }
+    }
+
+    // Get the most frequent color in this region
+    const [r, g, b, a] = getMostFrequentColor(data, indices);
+
+    // Calculate brightness for filtering
+    const brightness = (r + g + b) / (3 * 255);
+
+    // Apply midpass filter
+    const clampedLow = Math.max(0, Math.min(1, filter.low));
+    const clampedHigh = Math.max(0, Math.min(1, filter.high));
+
+    if (brightness >= clampedLow && brightness <= clampedHigh) {
+      // Draw vertical bar centered in the region
+      const centerX = (startX + endX) / 2;
+      const barX = centerX - barSize / 2;
+
+      const barShape = createBarShape(barX, 0, barSize, height, borderRadius);
+      barSVG = barShape.replace(
+        "<rect",
+        `<rect fill="rgba(${r}, ${g}, ${b}, ${a / 255})"`
+      );
+    }
+  }
+
+  // Append this bar to the current SVG
+  const updatedSVG = currentSVG + barSVG;
+
+  // Calculate next bar
+  const newNextBar = nextBar + 1;
+
+  // Calculate progress (0-1)
+  const progress = Math.min(1, newNextBar / numberBars);
+
+  // Create updated FX state
+  const updatedState: FX = {
+    ...fxState,
+    state: {
+      nextBar: newNextBar,
     },
   };
 

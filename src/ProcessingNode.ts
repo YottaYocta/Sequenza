@@ -1,7 +1,7 @@
 import type { Adjustment } from "./Adjustment";
 import { processRGB, processHSL } from "./Adjustment";
 import type { FX } from "./FX";
-import { processDot } from "./FX";
+import { processDot, processBar } from "./FX";
 
 export type Output =
   | { type: "image"; data: ImageData }
@@ -117,7 +117,7 @@ export const updateProcessingNode = <T extends FX | Adjustment>(
     }
 
     // Check if it's an FX type
-    if (behavior.type === "dot") {
+    if (behavior.type === "dot" || behavior.type === "bar") {
       const fx = behavior as FX;
 
       switch (fx.type) {
@@ -135,6 +135,36 @@ export const updateProcessingNode = <T extends FX | Adjustment>(
 
           const [updatedBehavior, updatedSVG, progress] = processDot(
             fx as FX & { type: "dot" },
+            source,
+            currentSVG
+          );
+
+          // Close SVG tag when complete
+          let finalSVG = updatedSVG;
+          if (progress >= 1 && !updatedSVG.includes("</svg>")) {
+            finalSVG = updatedSVG + "</svg>";
+          }
+
+          return {
+            progress,
+            behavior: updatedBehavior as T,
+            outputData: { type: "svg", data: finalSVG },
+          };
+        }
+        case "bar": {
+          // Get current SVG string or initialize
+          let currentSVG = "";
+          if (outputData.type === "svg" && outputData.data) {
+            currentSVG = outputData.data;
+          }
+
+          // Initialize SVG wrapper if empty (starting fresh)
+          if (!currentSVG || currentSVG === "") {
+            currentSVG = `<svg viewBox="0 0 ${source.width} ${source.height}" xmlns="http://www.w3.org/2000/svg">`;
+          }
+
+          const [updatedBehavior, updatedSVG, progress] = processBar(
+            fx as FX & { type: "bar" },
             source,
             currentSVG
           );
