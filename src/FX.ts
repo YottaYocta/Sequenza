@@ -13,7 +13,9 @@ interface DotFX {
   // controls the rotation of each Dot individually
   rotation: number;
   filter: MidPassFilter;
-  nextRow: number; // which row to process next (0 to verticalCount-1)
+  state: {
+    nextRow: number; // which row to process next (0 to verticalCount-1)
+  };
 }
 
 export type FX = DotFX;
@@ -32,7 +34,9 @@ export const newFX = (type: "dot"): FX => {
           low: 0,
           high: 1,
         },
-        nextRow: 0,
+        state: {
+          nextRow: 0,
+        },
       };
   }
 };
@@ -102,7 +106,7 @@ export const processDot = (
   currentSVG: string
 ): [FX, string, number] => {
   const {
-    nextRow,
+    state,
     horizontalCount,
     verticalCount,
     dotRadius,
@@ -111,6 +115,7 @@ export const processDot = (
     filter,
   } = fxState;
 
+  const nextRow = state.nextRow;
   const width = source.width;
   const height = source.height;
   const data = source.data;
@@ -177,7 +182,9 @@ export const processDot = (
   // Create updated FX state
   const updatedState: FX = {
     ...fxState,
-    nextRow: newNextRow,
+    state: {
+      nextRow: newNextRow,
+    },
   };
 
   return [updatedState, updatedSVG, progress];

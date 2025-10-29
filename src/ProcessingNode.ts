@@ -14,6 +14,50 @@ export interface ProccessingNode<T extends Adjustment | FX> {
 }
 
 /**
+ * Unified function to reset a node's state and progress
+ * Sets progress to 0 and resets state fields appropriately for each type
+ */
+export function resetNodeState<T extends Adjustment | FX>(
+  node: ProccessingNode<T>,
+  sourceImageData: ImageData
+): ProccessingNode<T> {
+  const behavior = node.behavior;
+
+  // Reset state for the behavior
+  let resetBehavior: T;
+  if ("state" in behavior) {
+    // All our types now have state
+    resetBehavior = {
+      ...behavior,
+      state: {
+        nextRow: 0,
+      },
+    } as T;
+  } else {
+    resetBehavior = behavior;
+  }
+
+  // Reinitialize output data based on type
+  let resetOutputData: Output;
+  if (node.outputData.type === "image") {
+    resetOutputData = {
+      type: "image",
+      data: new ImageData(sourceImageData.width, sourceImageData.height),
+    };
+  } else {
+    // For SVG, initialize with empty string
+    resetOutputData = { type: "svg", data: "" };
+  }
+
+  return {
+    ...node,
+    progress: 0,
+    behavior: resetBehavior,
+    outputData: resetOutputData,
+  };
+}
+
+/**
  *
  * @param node the node to step
  * @param source the image source the node should reference

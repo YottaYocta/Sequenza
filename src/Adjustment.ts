@@ -4,14 +4,18 @@ export type Adjustment =
       hue: number;
       saturation: number;
       lightness: number;
-      nextRow: number; // which row to process next (0 to height-1)
+      state: {
+        nextRow: number; // which row to process next (0 to height-1)
+      };
     }
   | {
       type: "RGB";
       r: number;
       green: number;
       blue: number;
-      nextRow: number; // which row to process next (0 to height-1)
+      state: {
+        nextRow: number; // which row to process next (0 to height-1)
+      };
     };
 
 // TODO: add gradient map
@@ -98,7 +102,8 @@ export const processRGB = (
   source: ImageData,
   currentData: ImageData
 ): [Adjustment, ImageData, number] => {
-  const { nextRow, r, green, blue } = adjustmentState;
+  const { state, r, green, blue } = adjustmentState;
+  const nextRow = state.nextRow;
   const width = source.width;
   const height = source.height;
 
@@ -129,7 +134,9 @@ export const processRGB = (
   // Create updated adjustment state
   const updatedState: Adjustment = {
     ...adjustmentState,
-    nextRow: newNextRow,
+    state: {
+      nextRow: newNextRow,
+    },
   };
 
   return [updatedState, currentData, progress];
@@ -144,7 +151,8 @@ export const processHSL = (
   source: ImageData,
   currentData: ImageData
 ): [Adjustment, ImageData, number] => {
-  const { nextRow, hue, saturation, lightness } = adjustmentState;
+  const { state, hue, saturation, lightness } = adjustmentState;
+  const nextRow = state.nextRow;
   const width = source.width;
   const height = source.height;
 
@@ -187,7 +195,9 @@ export const processHSL = (
   // Create updated adjustment state
   const updatedState: Adjustment = {
     ...adjustmentState,
-    nextRow: newNextRow,
+    state: {
+      nextRow: newNextRow,
+    },
   };
 
   return [updatedState, currentData, progress];
@@ -201,7 +211,9 @@ export const createDefaultAdjustment = (type: "HSL" | "RGB"): Adjustment => {
         hue: 0,
         saturation: 0,
         lightness: 0,
-        nextRow: 0,
+        state: {
+          nextRow: 0,
+        },
       };
     case "RGB":
       return {
@@ -209,7 +221,9 @@ export const createDefaultAdjustment = (type: "HSL" | "RGB"): Adjustment => {
         r: 0,
         green: 0,
         blue: 0,
-        nextRow: 0,
+        state: {
+          nextRow: 0,
+        },
       };
   }
 };
