@@ -13,10 +13,11 @@
         if (dragging !== null) {
           const offsetX = dragging.startX;
           const offsetY = dragging.startY;
-          console.log(e.offsetX);
+          const relativeX = e.clientX - element.clientLeft;
+          const relativeY = e.clientY - element.clientTop;
 
-          element.style.left = `${e.offsetX - offsetX}px`;
-          element.style.top = `${e.offsetY - offsetY}px`;
+          element.style.left = `${relativeX - offsetX}px`;
+          element.style.top = `${relativeY - offsetY}px`;
         }
       };
 
@@ -37,7 +38,6 @@
         startY: e.offsetY + dragHandle.offsetTop - dragHandle.offsetHeight / 2,
       };
 
-      console.log(dragging);
       window.addEventListener("mouseup", handleMouseUp);
     };
 
