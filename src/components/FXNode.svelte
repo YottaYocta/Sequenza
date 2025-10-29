@@ -29,23 +29,31 @@
   {#if node.behavior.type === "dot"}
     <div class="flex flex-col gap-1">
       <label class="flex gap-2 items-center">
-        <span class="text-sm w-32 text-nowrap">Offset X</span>
+        <span class="text-sm w-32 text-nowrap">Horizontal Count</span>
         <input
-          type="number"
-          value={node.behavior.offsetX}
-          oninput={(e) => updateField("offsetX", Number(e.currentTarget.value))}
-          class="w-full border px-2 py-1"
+          type="range"
+          min="1"
+          max="100"
+          value={node.behavior.horizontalCount}
+          oninput={(e) =>
+            updateField("horizontalCount", Number(e.currentTarget.value))}
+          class="w-full"
         />
+        <span class="text-xs">{node.behavior.horizontalCount}</span>
       </label>
 
       <label class="flex gap-2 items-center">
-        <span class="text-sm w-32 text-nowrap">Offset Y</span>
+        <span class="text-sm w-32 text-nowrap">Vertical Count</span>
         <input
-          type="number"
-          value={node.behavior.offsetY}
-          oninput={(e) => updateField("offsetY", Number(e.currentTarget.value))}
-          class="w-full border px-2 py-1"
+          type="range"
+          min="1"
+          max="100"
+          value={node.behavior.verticalCount}
+          oninput={(e) =>
+            updateField("verticalCount", Number(e.currentTarget.value))}
+          class="w-full"
         />
+        <span class="text-xs">{node.behavior.verticalCount}</span>
       </label>
 
       <label class="flex gap-2 items-center">
@@ -60,32 +68,6 @@
           class="w-full"
         />
         <span class="text-xs">{node.behavior.dotRadius}</span>
-      </label>
-
-      <label class="flex gap-2 items-center">
-        <span class="text-sm w-32 text-nowrap">Gap X</span>
-        <input
-          type="range"
-          min="0"
-          max="50"
-          value={node.behavior.gapX}
-          oninput={(e) => updateField("gapX", Number(e.currentTarget.value))}
-          class="w-full"
-        />
-        <span class="text-xs">{node.behavior.gapX}</span>
-      </label>
-
-      <label class="flex gap-2 items-center">
-        <span class="text-sm w-32 text-nowrap">Gap Y</span>
-        <input
-          type="range"
-          min="0"
-          max="50"
-          value={node.behavior.gapY}
-          oninput={(e) => updateField("gapY", Number(e.currentTarget.value))}
-          class="w-full"
-        />
-        <span class="text-xs">{node.behavior.gapY}</span>
       </label>
 
       <label class="flex gap-2 items-center">
