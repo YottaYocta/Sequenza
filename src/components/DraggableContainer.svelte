@@ -1,7 +1,16 @@
 <script lang="ts">
+  import type { Snippet } from "svelte";
   import type { Attachment } from "svelte/attachments";
 
-  const { children } = $props();
+  const {
+    children,
+    startX,
+    startY,
+  }: {
+    children: Snippet;
+    startX?: number;
+    startY?: number;
+  } = $props();
 
   type DragState = { startX: number; startY: number } | null;
 
@@ -62,6 +71,7 @@
   role="button"
   tabindex="0"
   class="absolute flex items-center justify-start"
+  style={`left: ${startX}px; top: ${startY}px`}
 >
   <button
     {@attach handle}

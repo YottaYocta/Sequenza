@@ -4,6 +4,8 @@
   import type { FX } from "./FX";
   import { createDefaultAdjustment } from "./Adjustment";
   import { newFX } from "./FX";
+  import AdjustmentNode from "./components/AdjustmentNode.svelte";
+  import FXNode from "./components/FXNode.svelte";
   import DraggableContainer from "./components/DraggableContainer.svelte";
 
   let sourceNode = $state<Output>({
@@ -29,12 +31,27 @@
       },
     },
   ]);
-</script>
 
-{#snippet children()}
-  <h1>Hello world</h1>
-  <p>from teh other side</p>
-{/snippet}
+  function handleUpdateAdjustment(nodeIndex: number, behavior: Adjustment) {
+    processingPipeline[nodeIndex] = {
+      ...processingPipeline[nodeIndex],
+      behavior,
+    };
+  }
+
+  function handleUpdateFX(nodeIndex: number, behavior: FX) {
+    processingPipeline[nodeIndex] = {
+      ...processingPipeline[nodeIndex],
+      behavior,
+    };
+  }
+
+  function isAdjustmentNode(
+    node: ProccessingNode<Adjustment | FX>
+  ): node is ProccessingNode<Adjustment> {
+    return node.behavior.type === "HSL" || node.behavior.type === "RGB";
+  }
+</script>
 
 <header class="w-full border-b p-4 flex items-center justify-center">
   <div class="w-full max-w-4xl">
@@ -42,7 +59,29 @@
   </div>
 </header>
 <main class="w-full h-96 min-h-96 p-4 flex items-center justify-center">
-  <div class="w-full h-96 max-w-4xl border flex h-min-96 relative">
-    <DraggableContainer {children}></DraggableContainer>
+  <div class="w-full h-96 max-w-4xl flex h-min-96 relative">
+    {#each processingPipeline as node, index}
+      {#if isAdjustmentNode(node)}
+        <DraggableContainer startX={index * 400}>
+          {#snippet children()}
+            <AdjustmentNode
+              nodeIndex={index}
+              {node}
+              onUpdateBehavior={handleUpdateAdjustment}
+            />
+          {/snippet}
+        </DraggableContainer>
+      {:else}
+        <DraggableContainer startX={index * 400}>
+          {#snippet children()}
+            <FXNode
+              nodeIndex={index}
+              node={node as ProccessingNode<FX>}
+              onUpdateBehavior={handleUpdateFX}
+            />
+          {/snippet}
+        </DraggableContainer>
+      {/if}
+    {/each}
   </div>
 </main>
