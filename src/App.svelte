@@ -69,53 +69,57 @@
   </div>
 </header>
 <main class="w-full h-96 min-h-96 p-4 flex items-center justify-center">
-  <div class="w-full h-96 max-w-4xl flex h-min-96 relative">
-    <!-- Source Node -->
-    <DraggableContainer startX={0} startY={0}>
-      {#snippet children()}
-        <SourceNode
-          onImageLoad={handleSourceImageLoad}
-          defaultImagePath={DefaultImg}
-        />
-      {/snippet}
-    </DraggableContainer>
-
-    <!-- Source Viewer -->
-    <DraggableContainer startX={400} startY={0}>
-      {#snippet children()}
-        <ViewerNode output={sourceOutput} />
-      {/snippet}
-    </DraggableContainer>
-
+  <div class="w-full h-96 max-w-4xl h-min-96 relative grid grid-cols-2 gap-8">
+    <div class="relative h-96">
+      <!-- Source Node -->
+      <DraggableContainer>
+        {#snippet children()}
+          <SourceNode
+            onImageLoad={handleSourceImageLoad}
+            defaultImagePath={DefaultImg}
+          />
+        {/snippet}
+      </DraggableContainer>
+    </div>
+    <div class="relative h-72"></div>
     {#each processingPipeline as node, index}
       {#if isAdjustmentNode(node)}
-        <DraggableContainer startY={index * 400}>
-          {#snippet children()}
-            <AdjustmentNode
-              nodeIndex={index}
-              {node}
-              onUpdateBehavior={handleUpdateAdjustment}
-            />
-          {/snippet}
-        </DraggableContainer>
-        <DraggableContainer startY={index * 400} startX={400}>
-          {#snippet children()}
-            <ViewerNode output={node.outputData}></ViewerNode>
-          {/snippet}
-        </DraggableContainer>
+        <div class="relative h-72">
+          <DraggableContainer>
+            {#snippet children()}
+              <AdjustmentNode
+                nodeIndex={index}
+                {node}
+                onUpdateBehavior={handleUpdateAdjustment}
+              />
+            {/snippet}
+          </DraggableContainer>
+        </div>
+
+        <div class="relative h-72">
+          <DraggableContainer>
+            {#snippet children()}
+              <ViewerNode output={node.outputData}></ViewerNode>
+            {/snippet}
+          </DraggableContainer>
+        </div>
       {:else}
-        <DraggableContainer startY={index * 400}>
-          {#snippet children()}
-            <FXNode
-              nodeIndex={index}
-              node={node as ProccessingNode<FX>}
-              onUpdateBehavior={handleUpdateFX}
-            />
-          {/snippet}
-        </DraggableContainer>
-        <DraggableContainer startY={index * 400} startX={400}>
-          <ViewerNode output={node.outputData}></ViewerNode>
-        </DraggableContainer>
+        <div class="relative h-72">
+          <DraggableContainer>
+            {#snippet children()}
+              <FXNode
+                nodeIndex={index}
+                node={node as ProccessingNode<FX>}
+                onUpdateBehavior={handleUpdateFX}
+              />
+            {/snippet}
+          </DraggableContainer>
+        </div>
+        <div class="relative h-72">
+          <DraggableContainer>
+            <ViewerNode output={node.outputData}></ViewerNode>
+          </DraggableContainer>
+        </div>
       {/if}
     {/each}
   </div>
