@@ -1,6 +1,7 @@
 import type { Adjustment } from "./Adjustment";
 import { processRGB, processHSL } from "./Adjustment";
 import type { FX } from "./FX";
+import { processDot } from "./FX";
 
 export type Output =
   | { type: "image"; data: ImageData }
@@ -77,8 +78,32 @@ export const updateProcessingNode = <T extends FX | Adjustment>(
 
       switch (fx.type) {
         case "dot": {
-          // TODO: Implement processDot when ready
-          throw Error("Dot FX not implemented yet");
+          // Get current SVG string or initialize
+          let currentSVG = "";
+          if (outputData.type === "svg") {
+            currentSVG = outputData.data;
+          } else {
+            // Initialize SVG wrapper if starting fresh
+            currentSVG = `<svg viewBox="0 0 ${source.width} ${source.height}" xmlns="http://www.w3.org/2000/svg">`;
+          }
+
+          const [updatedBehavior, updatedSVG, progress] = processDot(
+            fx as FX & { type: "dot" },
+            source,
+            currentSVG
+          );
+
+          // Close SVG tag when complete
+          let finalSVG = updatedSVG;
+          if (progress >= 1 && !updatedSVG.includes("</svg>")) {
+            finalSVG = updatedSVG + "</svg>";
+          }
+
+          return {
+            progress,
+            behavior: updatedBehavior as T,
+            outputData: { type: "svg", data: finalSVG },
+          };
         }
       }
     }

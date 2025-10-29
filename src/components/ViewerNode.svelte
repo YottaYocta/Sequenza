@@ -1,10 +1,11 @@
 <script lang="ts">
   import type { Output } from "../ProcessingNode";
-  import { onMount } from "svelte";
 
   const { output } = $props<{
     output?: Output;
   }>();
+
+  console.log(output);
 
   let canvasRef: HTMLCanvasElement | undefined = $state();
 
@@ -17,6 +18,8 @@
         canvasRef.height = output.data.height;
         ctx.putImageData(output.data, 0, 0);
       }
+    } else {
+      console.log(output);
     }
   });
 

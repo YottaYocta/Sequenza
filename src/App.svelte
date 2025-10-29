@@ -66,14 +66,23 @@
           resetBehavior = { ...resetBehavior, nextRow: 0 };
         }
 
+        // Reinitialize output data
+        let resetOutputData: Output;
+        if (node.outputData.type === "image") {
+          resetOutputData = {
+            type: "image",
+            data: new ImageData(sourceImageData.width, sourceImageData.height),
+          };
+        } else {
+          // For SVG, initialize with empty string (will be wrapped by processor)
+          resetOutputData = { type: "svg", data: "" };
+        }
+
         return {
           ...node,
           progress: 0,
           behavior: resetBehavior,
-          outputData:
-            node.outputData.type === "image"
-              ? { type: "image", data: new ImageData(sourceImageData.width, sourceImageData.height) }
-              : node.outputData,
+          outputData: resetOutputData,
         };
       });
     });
