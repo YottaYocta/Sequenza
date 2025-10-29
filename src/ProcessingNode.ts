@@ -1,4 +1,5 @@
 import type { Adjustment } from "./Adjustment";
+import { processRGB, processHSL } from "./Adjustment";
 import type { FX } from "./FX";
 
 export type Output =
@@ -23,11 +24,65 @@ export const updateProcessingNode = <T extends FX | Adjustment>(
   node: ProccessingNode<T>,
   source: ImageData
 ): ProccessingNode<T> => {
-  // TODO
-  /**
-   * should determine if FX or Adjustment, and then use switch to find fx/adjustment type
-   *
-   * then, should call a function specifically for that processing format. an example stub is provided in Adjustment.ts
-   */
-  throw Error("not implemented");
+  const { behavior, outputData } = node;
+
+  // Get current image data (or create if doesn't exist)
+  let currentData: ImageData;
+  if (outputData.type === "image") {
+    currentData = outputData.data;
+  } else {
+    // Initialize with source dimensions
+    currentData = new ImageData(source.width, source.height);
+  }
+
+  // Determine if FX or Adjustment and dispatch to appropriate handler
+  if ("type" in behavior) {
+    // Check if it's an Adjustment type
+    if (behavior.type === "RGB" || behavior.type === "HSL") {
+      const adjustment = behavior as Adjustment;
+
+      switch (adjustment.type) {
+        case "RGB": {
+          const [updatedBehavior, updatedImageData, progress] = processRGB(
+            adjustment as Adjustment & { type: "RGB" },
+            source,
+            currentData
+          );
+
+          return {
+            progress,
+            behavior: updatedBehavior as T,
+            outputData: { type: "image", data: updatedImageData },
+          };
+        }
+        case "HSL": {
+          const [updatedBehavior, updatedImageData, progress] = processHSL(
+            adjustment as Adjustment & { type: "HSL" },
+            source,
+            currentData
+          );
+
+          return {
+            progress,
+            behavior: updatedBehavior as T,
+            outputData: { type: "image", data: updatedImageData },
+          };
+        }
+      }
+    }
+
+    // Check if it's an FX type
+    if (behavior.type === "dot") {
+      const fx = behavior as FX;
+
+      switch (fx.type) {
+        case "dot": {
+          // TODO: Implement processDot when ready
+          throw Error("Dot FX not implemented yet");
+        }
+      }
+    }
+  }
+
+  throw Error("Unknown behavior type");
 };
