@@ -88,7 +88,7 @@
   />
 
   <div
-    class="relative w-48 min-w-36 h-3 border border-black cursor-pointer border-l-2 border-r-2"
+    class="relative w-48 min-w-36 h-3 border border-black cursor-pointer border-l-4 border-r-4 bg-white"
     onmousedown={handleTrackMouseDown}
   >
     <div
