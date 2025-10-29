@@ -76,10 +76,12 @@
   <button
     {@attach handle}
     aria-label="container drag handle"
-    class="flex group p-4 cursor-grab active:cursor-grabbing"
+    class="flex group p-4 px-8 cursor-grab active:cursor-grabbing"
   >
     <!-- apparently translate does not change offset position... -->
-    <span class=" w-3 h-32 transition bg-black"></span>
+    <span
+      class="group-active:scale-105 w-2 group-active:scale-x-150 h-24 transition bg-black"
+    ></span>
   </button>
   {@render children?.()}
 </div>
