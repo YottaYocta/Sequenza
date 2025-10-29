@@ -20,6 +20,21 @@ interface DotFX {
 export type FX = DotFX;
 
 export const newFX = (type: "dot"): FX => {
-  // TODO not implemented yet
-  throw Error("not implemented yet");
+  switch (type) {
+    case "dot":
+      return {
+        type: "dot",
+        offsetX: 0,
+        offsetY: 0,
+        dotRadius: 5,
+        gapX: 10,
+        gapY: 10,
+        borderRadius: 1,
+        rotation: 0,
+        filter: {
+          low: 0,
+          high: 1,
+        },
+      };
+  }
 };

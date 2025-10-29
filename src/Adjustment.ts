@@ -5,6 +5,20 @@ export type Adjustment =
 // TODO: add gradient map
 
 export const createDefaultAdjustment = (type: "HSL" | "RGB"): Adjustment => {
-  // TODO
-  throw Error("not implemented yet");
+  switch (type) {
+    case "HSL":
+      return {
+        type: "HSL",
+        hue: 0,
+        saturation: 0,
+        lightness: 0,
+      };
+    case "RGB":
+      return {
+        type: "RGB",
+        r: 0,
+        green: 0,
+        blue: 0,
+      };
+  }
 };
