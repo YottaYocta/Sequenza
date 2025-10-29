@@ -36,4 +36,17 @@
   <p>from teh other side</p>
 {/snippet}
 
+<header class="w-full border-b p-4 flex items-center justify-center">
+  <div class="w-full max-w-3xl">
+    <h1>BRUTALFX</h1>
+  </div>
+</header>
+<main class="w-full h-96 min-h-96 p-4 flex items-center justify-center">
+  <div
+    class="w-full h-96 max-w-3xl overflow-clip border flex h-min-96 relative"
+  >
+    <DraggableContainer {children}></DraggableContainer>
+  </div>
+</main>
+
 <DraggableContainer {children}></DraggableContainer>

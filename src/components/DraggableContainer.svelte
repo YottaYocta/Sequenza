@@ -13,8 +13,13 @@
       const offsetY = dragging.startY;
 
       const handleMouseMove = (e: MouseEvent) => {
-        const relativeX = e.clientX - element.clientLeft;
-        const relativeY = e.clientY - element.clientTop;
+        const parentRect = element.parentElement?.getBoundingClientRect() || {
+          left: 0,
+          top: 0,
+        };
+
+        const relativeX = e.clientX - parentRect.left;
+        const relativeY = e.clientY - parentRect.top;
 
         element.style.left = `${relativeX - offsetX}px`;
         element.style.top = `${relativeY - offsetY}px`;
@@ -36,8 +41,6 @@
         startX: e.offsetX + dragHandle.offsetLeft,
         startY: e.offsetY + dragHandle.offsetTop - dragHandle.offsetHeight / 2,
       };
-
-      console.log(dragging);
 
       window.addEventListener("mouseup", handleMouseUp);
     };
