@@ -69,52 +69,45 @@
   }
 </script>
 
-{#if !output}
-  <p class="text-neutral-500 text-sm">No input</p>
-{:else if output.type === "image"}
-  <div class="space-y-3">
-    <div class="border border-neutral-300 p-2 bg-neutral-50">
-      <canvas bind:this={canvasRef} class="max-w-full h-auto"></canvas>
-    </div>
-
-    <div class="flex gap-2">
+<div
+  class="w-72 h-72 flex flex-col gap-1 items-start justify-center rounded-tr-3xl p-2 border bg-neutral-50"
+>
+  {#if !output}
+    <p class="text-neutral-500 text-sm">No input</p>
+  {:else if output.type === "image"}
+    <div class="w-full justify-start items-center flex gap-2">
       <button
         onclick={copyToClipboard}
-        class="px-3 py-1 text-sm border border-neutral-900 hover:bg-neutral-100 transition"
+        class=" text-sm hover:bg-neutral-100 transition"
       >
         Copy Image
       </button>
       <button
         onclick={saveFile}
-        class="px-3 py-1 text-sm border border-neutral-900 hover:bg-neutral-100 transition"
+        class=" text-sm hover:bg-neutral-100 transition"
       >
         Save Image
       </button>
     </div>
-  </div>
-{:else if output.type === "svg"}
-  <div class="space-y-3">
-    <div
-      class="border border-neutral-300 p-2 bg-neutral-50 w-full max-w-full overflow-auto"
-    >
-      <div class="w-full max-w-full">
-        {@html output.data}
-      </div>
-    </div>
-
+    <canvas bind:this={canvasRef} class="max-w-full h-auto"></canvas>
+  {:else if output.type === "svg"}
     <div class="flex gap-2">
       <button
         onclick={copyToClipboard}
-        class="px-3 py-1 text-sm border border-neutral-900 hover:bg-neutral-100 transition"
+        class=" text-sm hover:bg-neutral-100 transition"
       >
         Copy SVG
       </button>
       <button
         onclick={saveFile}
-        class="px-3 py-1 text-sm border border-neutral-900 hover:bg-neutral-100 transition"
+        class=" text-sm hover:bg-neutral-100 transition"
       >
         Save SVG
       </button>
     </div>
-  </div>
-{/if}
+
+    <div class="w-full max-w-full p-2">
+      {@html output.data}
+    </div>
+  {/if}
+</div>
