@@ -1,7 +1,7 @@
 import type { Adjustment } from "./Adjustment";
 import { processRGB, processHSL } from "./Adjustment";
 import type { FX } from "./FX";
-import { processDot, processBar } from "./FX";
+import { processDot, processBar, processAscii } from "./FX";
 
 export type Output =
   | { type: "image"; data: ImageData }
@@ -117,7 +117,7 @@ export const updateProcessingNode = <T extends FX | Adjustment>(
     }
 
     // Check if it's an FX type
-    if (behavior.type === "dot" || behavior.type === "bar") {
+    if (behavior.type === "dot" || behavior.type === "bar" || behavior.type === "ascii") {
       const fx = behavior as FX;
 
       switch (fx.type) {
@@ -179,6 +179,19 @@ export const updateProcessingNode = <T extends FX | Adjustment>(
             progress,
             behavior: updatedBehavior as T,
             outputData: { type: "svg", data: finalSVG },
+          };
+        }
+        case "ascii": {
+          const [updatedBehavior, updatedImageData, progress] = processAscii(
+            fx as FX & { type: "ascii" },
+            source,
+            currentData
+          );
+
+          return {
+            progress,
+            behavior: updatedBehavior as T,
+            outputData: { type: "image", data: updatedImageData },
           };
         }
       }

@@ -30,7 +30,7 @@
     }
   }
 
-  function switchToType(type: "dot" | "bar") {
+  function switchToType(type: "dot" | "bar" | "ascii") {
     if (node.behavior.type !== type) {
       onUpdateBehavior(nodeIndex, newFX(type));
     }
@@ -93,8 +93,10 @@
       EDGEDETECT
     </button>
     <button
-      class=" text-sm font-medium bg-transparent text-neutral-400"
-      disabled
+      class=" text-sm font-medium {node.behavior.type === 'ascii'
+        ? 'bg-black text-white'
+        : 'bg-transparent text-black  '} cursor-pointer"
+      onclick={() => switchToType("ascii")}
     >
       ASCII
     </button>
@@ -241,6 +243,37 @@
             label="FILTER HIGH"
           />
         </div>
+      </div>
+    {:else if node.behavior.type === "ascii"}
+      <div class="flex flex-col">
+        <CustomInput
+          value={node.behavior.charSize}
+          min={4}
+          max={50}
+          defaultValue={10}
+          handleUpdate={(v) => updateField("charSize", v)}
+          label="CHAR SIZE"
+        />
+
+        <CustomInput
+          value={node.behavior.filter.low}
+          min={0}
+          max={1}
+          step={0.01}
+          defaultValue={0}
+          handleUpdate={(v) => updateFilterField("low", v)}
+          label="FILTER LOW"
+        />
+
+        <CustomInput
+          value={node.behavior.filter.high}
+          min={0}
+          max={1}
+          step={0.01}
+          defaultValue={1}
+          handleUpdate={(v) => updateFilterField("high", v)}
+          label="FILTER HIGH"
+        />
       </div>
     {/if}
   </div>

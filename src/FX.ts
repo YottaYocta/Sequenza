@@ -30,9 +30,18 @@ interface BarFX {
   };
 }
 
-export type FX = DotFX | BarFX;
+interface AsciiFX {
+  type: "ascii";
+  charSize: number; // size of each character cell in pixels
+  filter: MidPassFilter;
+  state: {
+    nextRow: number; // which row to process next
+  };
+}
 
-export const newFX = (type: "dot" | "bar"): FX => {
+export type FX = DotFX | BarFX | AsciiFX;
+
+export const newFX = (type: "dot" | "bar" | "ascii"): FX => {
   switch (type) {
     case "dot":
       return {
@@ -63,6 +72,18 @@ export const newFX = (type: "dot" | "bar"): FX => {
         },
         state: {
           nextBar: 0,
+        },
+      };
+    case "ascii":
+      return {
+        type: "ascii",
+        charSize: 10,
+        filter: {
+          low: 0,
+          high: 1,
+        },
+        state: {
+          nextRow: 0,
         },
       };
   }
@@ -391,4 +412,105 @@ export const processBar = (
   };
 
   return [updatedState, updatedSVG, progress];
+};
+
+// ASCII character set ordered by density (from darkest to lightest)
+const ASCII_CHARS = "@%#*+=-:. ";
+
+/**
+ * Map brightness (0-1) to an ASCII character
+ */
+function brightnessToChar(brightness: number): string {
+  const index = Math.floor(brightness * (ASCII_CHARS.length - 1));
+  return ASCII_CHARS[ASCII_CHARS.length - 1 - index]; // Reverse for correct mapping
+}
+
+/**
+ * Process one row of ASCII characters
+ * Returns updated FX state, ImageData output, and progress (0-1)
+ */
+export const processAscii = (
+  fxState: FX & { type: "ascii" },
+  source: ImageData,
+  currentImageData: ImageData
+): [FX, ImageData, number] => {
+  const { state, charSize, filter } = fxState;
+
+  const nextRow = state.nextRow;
+  const width = source.width;
+  const height = source.height;
+  const sourceData = source.data;
+
+  // Calculate number of rows and columns based on charSize
+  const cols = Math.floor(width / charSize);
+  const rows = Math.floor(height / charSize);
+
+  // Create a temporary canvas to render text
+  const tempCanvas = document.createElement("canvas");
+  tempCanvas.width = width;
+  tempCanvas.height = height;
+  const ctx = tempCanvas.getContext("2d")!;
+
+  // Copy current image data to canvas
+  ctx.putImageData(currentImageData, 0, 0);
+
+  // Set up text rendering
+  ctx.font = `${charSize}px monospace`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+
+  // Process current row of characters
+  for (let col = 0; col < cols; col++) {
+    // Calculate the center pixel of this character cell
+    const centerX = Math.floor(col * charSize + charSize / 2);
+    const centerY = Math.floor(nextRow * charSize + charSize / 2);
+
+    // Ensure we're within image bounds
+    if (centerX < 0 || centerX >= width || centerY < 0 || centerY >= height) {
+      continue;
+    }
+
+    // Sample the pixel at the center of the cell
+    const index = (centerY * width + centerX) * 4;
+    const r = sourceData[index];
+    const g = sourceData[index + 1];
+    const b = sourceData[index + 2];
+    const a = sourceData[index + 3] / 255;
+
+    // Calculate brightness for filtering and character selection
+    const brightness = (r + g + b) / (3 * 255);
+
+    // Apply midpass filter - skip characters outside the value range
+    const clampedLow = Math.max(0, Math.min(1, filter.low));
+    const clampedHigh = Math.max(0, Math.min(1, filter.high));
+    if (brightness < clampedLow || brightness > clampedHigh) {
+      continue;
+    }
+
+    // Select ASCII character based on brightness
+    const char = brightnessToChar(brightness);
+
+    // Draw the character with the sampled color
+    ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${a})`;
+    ctx.fillText(char, centerX, centerY);
+  }
+
+  // Get the updated image data from canvas
+  const updatedImageData = ctx.getImageData(0, 0, width, height);
+
+  // Calculate next row
+  const newNextRow = nextRow + 1;
+
+  // Calculate progress (0-1)
+  const progress = Math.min(1, newNextRow / rows);
+
+  // Create updated FX state
+  const updatedState: FX = {
+    ...fxState,
+    state: {
+      nextRow: newNextRow,
+    },
+  };
+
+  return [updatedState, updatedImageData, progress];
 };

@@ -196,13 +196,20 @@
   }
 
   function handleUpdateFX(nodeIndex: number, behavior: FX) {
-    // Reset state in the behavior (ensure state.nextRow = 0)
+    // Reset state in the behavior (ensure state.nextRow = 0 or nextBar = 0)
     let resetBehavior;
     if (behavior.type === "bar") {
       resetBehavior = {
         ...behavior,
         state: {
           nextBar: 0,
+        },
+      };
+    } else if (behavior.type === "ascii") {
+      resetBehavior = {
+        ...behavior,
+        state: {
+          nextRow: 0,
         },
       };
     } else {
