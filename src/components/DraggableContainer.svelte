@@ -79,7 +79,7 @@
     class="flex group p-4 cursor-grab active:cursor-grabbing"
   >
     <!-- apparently translate does not change offset position... -->
-    <span class=" w-4 h-32 transition bg-blue-600"></span>
+    <span class=" w-3 h-32 transition bg-black"></span>
   </button>
   {@render children?.()}
 </div>

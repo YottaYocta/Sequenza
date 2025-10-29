@@ -38,15 +38,20 @@
     inputValue = String(value);
   }
 
-  function startDrag(track: HTMLDivElement) {
-    const handleMouseMove = (e: MouseEvent) => {
+  function startDrag(track: HTMLDivElement, e: MouseEvent) {
+    const update = (clientX: number) => {
       const rect = track.getBoundingClientRect();
-      let ratio = (e.clientX - rect.left) / rect.width;
+      let ratio = (clientX - rect.left) / rect.width;
       ratio = Math.max(0, Math.min(1, ratio));
       const newVal = Math.round((min + ratio * (max - min)) / step) * step;
       handleUpdate(newVal);
       inputValue = String(newVal);
     };
+
+    // ✅ immediate update on mousedown
+    update(e.clientX);
+
+    const handleMouseMove = (e: MouseEvent) => update(e.clientX);
     const handleMouseUp = () => {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
@@ -59,7 +64,7 @@
     const track = thumb.parentElement as HTMLDivElement;
     const handleMouseDown = (e: MouseEvent) => {
       e.preventDefault();
-      startDrag(track);
+      startDrag(track, e); // ✅ pass event
     };
     thumb.addEventListener("mousedown", handleMouseDown);
     return () => thumb.removeEventListener("mousedown", handleMouseDown);
@@ -67,7 +72,7 @@
 
   function handleTrackMouseDown(e: MouseEvent) {
     const track = e.currentTarget as HTMLDivElement;
-    startDrag(track);
+    startDrag(track, e);
   }
 
   function resetValue() {

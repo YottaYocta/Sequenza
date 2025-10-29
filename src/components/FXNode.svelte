@@ -37,63 +37,63 @@
   }
 </script>
 
-<div class="flex flex-col w-96">
+<div class="flex flex-col w-96 text-sm">
   <!-- Tab Header -->
-  <div class="flex flex-wrap border-b border-black">
+  <div class="flex flex-wrap border-b border-black gap-1 pb-8">
     <button
-      class="px-4 py-2 text-sm font-medium {node.behavior.type === 'dot'
+      class=" text-sm font-medium {node.behavior.type === 'dot'
         ? 'bg-black text-white'
-        : 'bg-transparent text-black underline hover:no-underline'}"
+        : 'bg-transparent text-black  '}"
       onclick={() => switchToType("dot")}
     >
       DOTS
     </button>
     <button
-      class="px-4 py-2 text-sm font-medium {node.behavior.type === 'bar'
+      class=" text-sm font-medium {node.behavior.type === 'bar'
         ? 'bg-black text-white'
-        : 'bg-transparent text-black underline hover:no-underline'}"
+        : 'bg-transparent text-black  '}"
       onclick={() => switchToType("bar")}
     >
       BARS
     </button>
     <button
-      class="px-4 py-2 text-sm font-medium bg-transparent text-black underline hover:no-underline"
+      class=" text-sm font-medium bg-transparent text-neutral-400"
       disabled
     >
       MIX
     </button>
     <button
-      class="px-4 py-2 text-sm font-medium bg-transparent text-black underline hover:no-underline"
+      class=" text-sm font-medium bg-transparent text-neutral-400"
       disabled
     >
       DITHER
     </button>
     <button
-      class="px-4 py-2 text-sm font-medium bg-transparent text-black underline hover:no-underline"
+      class=" text-sm font-medium bg-transparent text-neutral-400"
       disabled
     >
       ERODE
     </button>
     <button
-      class="px-4 py-2 text-sm font-medium bg-transparent text-black underline hover:no-underline"
+      class=" text-sm font-medium bg-transparent text-neutral-400"
       disabled
     >
       HALFTONE
     </button>
     <button
-      class="px-4 py-2 text-sm font-medium bg-transparent text-black underline hover:no-underline"
+      class=" text-sm font-medium bg-transparent text-neutral-400"
       disabled
     >
       MITOSIS
     </button>
     <button
-      class="px-4 py-2 text-sm font-medium bg-transparent text-black underline hover:no-underline"
+      class=" text-sm font-medium bg-transparent text-neutral-400"
       disabled
     >
       EDGEDETECT
     </button>
     <button
-      class="px-4 py-2 text-sm font-medium bg-transparent text-black underline hover:no-underline"
+      class=" text-sm font-medium bg-transparent text-neutral-400"
       disabled
     >
       ASCII
@@ -101,7 +101,7 @@
   </div>
 
   <!-- Content Area -->
-  <div class="py-4">
+  <div class="py-2">
     {#if node.behavior.type === "dot"}
       <div class="flex flex-col">
         <CustomInput
@@ -175,19 +175,19 @@
         <!-- Direction Toggle -->
         <div class="flex gap-2">
           <button
-            class="px-4 py-2 text-sm font-medium flex-1 {node.behavior
-              .direction === 'horizontal'
+            class="p-0 text-sm font-medium flex-1 {node.behavior.direction ===
+            'horizontal'
               ? 'bg-black text-white'
-              : 'bg-transparent text-black underline hover:no-underline'}"
+              : 'bg-transparent text-black  '}"
             onclick={() => updateDirection("horizontal")}
           >
             HORIZONTAL
           </button>
           <button
-            class="px-4 py-2 text-sm font-medium flex-1 {node.behavior
-              .direction === 'vertical'
+            class="p-0 text-sm font-medium flex-1 {node.behavior.direction ===
+            'vertical'
               ? 'bg-black text-white'
-              : 'bg-transparent text-black underline hover:no-underline'}"
+              : 'bg-transparent text-black  '}"
             onclick={() => updateDirection("vertical")}
           >
             VERTICAL

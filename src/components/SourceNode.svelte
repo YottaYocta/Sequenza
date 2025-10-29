@@ -81,7 +81,7 @@
   />
 
   <div class="border border-neutral-300 p-2 bg-neutral-50">
-    <canvas {@attach canvasAttachment} class="max-w-full h-auto"></canvas>
+    <canvas {@attach canvasAttachment} class="w-24 h-auto"></canvas>
   </div>
 
   {#if currentImageData}

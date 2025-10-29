@@ -87,7 +87,10 @@
     // Reset the first incomplete node's state using unified reset function
     untrack(() => {
       const node = processingPipeline[currentNodeIndex];
-      processingPipeline[currentNodeIndex] = resetNodeState(node, sourceImageData);
+      processingPipeline[currentNodeIndex] = resetNodeState(
+        node,
+        sourceImageData
+      );
     });
 
     let animationFrameId: number | null = null;
@@ -194,12 +197,22 @@
 
   function handleUpdateFX(nodeIndex: number, behavior: FX) {
     // Reset state in the behavior (ensure state.nextRow = 0)
-    const resetBehavior = {
-      ...behavior,
-      state: {
-        nextRow: 0,
-      },
-    };
+    let resetBehavior;
+    if (behavior.type === "bar") {
+      resetBehavior = {
+        ...behavior,
+        state: {
+          nextBar: 0,
+        },
+      };
+    } else {
+      resetBehavior = {
+        ...behavior,
+        state: {
+          nextRow: 0,
+        },
+      };
+    }
 
     // Update the specific node with new behavior and reset progress
     processingPipeline[nodeIndex] = {
@@ -234,7 +247,7 @@
 </header>
 <main class="w-full h-96 min-h-96 p-4 flex items-center justify-center">
   <div class="w-full h-96 max-w-4xl h-min-96 relative grid grid-cols-2 gap-8">
-    <div class="relative h-96">
+    <div class="relative h-24">
       <!-- Source Node -->
       <DraggableContainer>
         {#snippet children()}

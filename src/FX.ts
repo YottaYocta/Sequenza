@@ -314,7 +314,6 @@ export const processBar = (
         indices.push((y * width + x) * 4);
       }
     }
-    console.log(indices);
 
     // Get the most frequent color in this region
     const [r, g, b, a] = getMostFrequentColor(data, indices);
