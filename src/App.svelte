@@ -255,8 +255,8 @@
 </header>
 <main class="w-full h-96 min-h-96 p-4 flex items-center justify-center">
   <div class="w-full h-96 max-w-4xl h-min-96 relative grid grid-cols-2 gap-8">
-    <div class="relative h-24">
-      <!-- Source Node -->
+    <!-- Source Node - position 1 (top-left, row 1) -->
+    <div class="relative h-24" style="grid-column: 1; grid-row: 1;">
       <DraggableContainer>
         {#snippet children()}
           <SourceNode
@@ -266,10 +266,18 @@
         {/snippet}
       </DraggableContainer>
     </div>
-    <div class="relative h-72"></div>
+
     {#each processingPipeline as node, index}
+      {@const isEvenIndex = index % 2 === 0}
+      {@const nodeRow = Math.floor(index / 2 + 1) * 2}
+      {@const viewerRow = isEvenIndex ? nodeRow - 1 : nodeRow + 1}
+
       {#if isAdjustmentNode(node)}
-        <div class="relative h-72">
+        <!-- Node: even indices on left, odd indices on right -->
+        <div
+          class="relative h-72"
+          style="grid-column: {isEvenIndex ? 1 : 2}; grid-row: {nodeRow};"
+        >
           <DraggableContainer>
             {#snippet children()}
               <AdjustmentNode
@@ -281,7 +289,11 @@
           </DraggableContainer>
         </div>
 
-        <div class="relative h-72">
+        <!-- Viewer: even indices on right, odd indices on left (opposite of node) -->
+        <div
+          class="relative h-72"
+          style="grid-column: {isEvenIndex ? 2 : 1}; grid-row: {viewerRow};"
+        >
           <DraggableContainer>
             {#snippet children()}
               <ViewerNode output={node.outputData}></ViewerNode>
@@ -289,7 +301,11 @@
           </DraggableContainer>
         </div>
       {:else}
-        <div class="relative h-72">
+        <!-- Node: even indices on left, odd indices on right -->
+        <div
+          class="relative h-72"
+          style="grid-column: {isEvenIndex ? 1 : 2}; grid-row: {nodeRow};"
+        >
           <DraggableContainer>
             {#snippet children()}
               <FXNode
@@ -300,7 +316,12 @@
             {/snippet}
           </DraggableContainer>
         </div>
-        <div class="relative h-72">
+
+        <!-- Viewer: even indices on right, odd indices on left (opposite of node) -->
+        <div
+          class="relative h-72"
+          style="grid-column: {isEvenIndex ? 2 : 1}; grid-row: {viewerRow};"
+        >
           <DraggableContainer>
             <ViewerNode output={node.outputData}></ViewerNode>
           </DraggableContainer>
