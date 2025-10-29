@@ -6,10 +6,12 @@
     children,
     startX,
     startY,
+    mergedMode = false,
   }: {
     children: Snippet;
     startX?: number;
     startY?: number;
+    mergedMode?: boolean;
   } = $props();
 
   type DragState = { startX: number; startY: number } | null;
@@ -70,17 +72,16 @@
   {@attach draggable}
   role="button"
   tabindex="0"
-  class="absolute flex items-center justify-start"
+  class={`absolute flex items-stretch justify-start ${mergedMode ? "" : "items-center"}`}
   style={`left: ${startX}px; top: ${startY}px`}
 >
   <button
     {@attach handle}
     aria-label="container drag handle"
-    class="flex group p-4 px-8 cursor-grab active:cursor-grabbing"
+    class={`flex self-stretch group ${mergedMode ? "p-0" : "p-4 px-8"} pl-6 cursor-grab active:cursor-grabbing`}
   >
-    <!-- apparently translate does not change offset position... -->
     <span
-      class="group-active:scale-105 w-2 group-active:scale-x-150 h-24 transition bg-black"
+      class={`group-active:scale-105 w-2 ${mergedMode ? "h-full" : "h-24"} transition bg-black`}
     ></span>
   </button>
   {@render children?.()}
