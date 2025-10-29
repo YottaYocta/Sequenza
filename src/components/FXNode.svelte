@@ -103,136 +103,72 @@
   <!-- Content Area -->
   <div class="py-4">
     {#if node.behavior.type === "dot"}
-      <div class="flex flex-col gap-4">
+      <div class="flex flex-col">
         <CustomInput
           value={node.behavior.horizontalCount}
           min={1}
           max={100}
-          handleUpdate={(newValue) => {
-            updateField("horizontalCount", newValue);
-          }}
-          label="Horizontal Count"
-        ></CustomInput>
-        <label class="flex items-center gap-3">
-          <span class="text-sm font-medium w-36 text-right"
-            >HORIZONTAL COUNT</span
-          >
+          defaultValue={10}
+          handleUpdate={(v) => updateField("horizontalCount", v)}
+          label="HORI COUNT"
+        />
 
-          <input
-            type="range"
-            min="1"
-            max="100"
-            value={node.behavior.horizontalCount}
-            oninput={(e) =>
-              updateField("horizontalCount", Number(e.currentTarget.value))}
-            class="flex-1"
-          />
-          <span class="text-sm font-medium w-12 text-center"
-            >{node.behavior.horizontalCount}</span
-          >
-        </label>
+        <CustomInput
+          value={node.behavior.verticalCount}
+          min={1}
+          max={100}
+          defaultValue={10}
+          handleUpdate={(v) => updateField("verticalCount", v)}
+          label="VERT COUNT"
+        />
 
-        <label class="flex items-center gap-3">
-          <span class="text-sm font-medium w-36 text-right">VERTICAL COUNT</span
-          >
-          <input
-            type="range"
-            min="1"
-            max="100"
-            value={node.behavior.verticalCount}
-            oninput={(e) =>
-              updateField("verticalCount", Number(e.currentTarget.value))}
-            class="flex-1"
-          />
-          <span class="text-sm font-medium w-12 text-center"
-            >{node.behavior.verticalCount}</span
-          >
-        </label>
+        <CustomInput
+          value={node.behavior.dotRadius}
+          min={1}
+          max={50}
+          defaultValue={5}
+          handleUpdate={(v) => updateField("dotRadius", v)}
+          label="DOT SIZE"
+        />
 
-        <label class="flex items-center gap-3">
-          <span class="text-sm font-medium w-36 text-right">DOT RADIUS</span>
-          <input
-            type="range"
-            min="1"
-            max="50"
-            value={node.behavior.dotRadius}
-            oninput={(e) =>
-              updateField("dotRadius", Number(e.currentTarget.value))}
-            class="flex-1"
-          />
-          <span class="text-sm font-medium w-12 text-center"
-            >{node.behavior.dotRadius}</span
-          >
-        </label>
+        <CustomInput
+          value={node.behavior.borderRadius}
+          min={-1}
+          max={1}
+          step={0.1}
+          defaultValue={1}
+          handleUpdate={(v) => updateField("borderRadius", v)}
+          label="ROUND"
+        />
 
-        <label class="flex items-center gap-3">
-          <span class="text-sm font-medium w-36 text-right">BORDER RADIUS</span>
-          <input
-            type="range"
-            min="-1"
-            max="1"
-            step="0.1"
-            value={node.behavior.borderRadius}
-            oninput={(e) =>
-              updateField("borderRadius", Number(e.currentTarget.value))}
-            class="flex-1"
-          />
-          <span class="text-sm font-medium w-12 text-center"
-            >{node.behavior.borderRadius.toFixed(1)}</span
-          >
-        </label>
+        <CustomInput
+          value={node.behavior.rotation}
+          min={0}
+          max={360}
+          defaultValue={0}
+          handleUpdate={(v) => updateField("rotation", v)}
+          label="ROT"
+        />
 
-        <label class="flex items-center gap-3">
-          <span class="text-sm font-medium w-36 text-right">ROTATION</span>
-          <input
-            type="range"
-            min="0"
-            max="360"
-            value={node.behavior.rotation}
-            oninput={(e) =>
-              updateField("rotation", Number(e.currentTarget.value))}
-            class="flex-1"
-          />
-          <span class="text-sm font-medium w-12 text-center"
-            >{node.behavior.rotation}°</span
-          >
-        </label>
+        <CustomInput
+          value={node.behavior.filter.low}
+          min={0}
+          max={1}
+          step={0.01}
+          defaultValue={0}
+          handleUpdate={(v) => updateFilterField("low", v)}
+          label="FILTER LOW"
+        />
 
-        <div class="border-t border-black pt-4 mt-4">
-          <label class="flex items-center gap-3">
-            <span class="text-sm font-medium w-36 text-right">FILTER LOW</span>
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.01"
-              value={node.behavior.filter.low}
-              oninput={(e) =>
-                updateFilterField("low", Number(e.currentTarget.value))}
-              class="flex-1"
-            />
-            <span class="text-sm font-medium w-12 text-center"
-              >{node.behavior.filter.low.toFixed(2)}</span
-            >
-          </label>
-
-          <label class="flex items-center gap-3 mt-4">
-            <span class="text-sm font-medium w-36 text-right">FILTER HIGH</span>
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.01"
-              value={node.behavior.filter.high}
-              oninput={(e) =>
-                updateFilterField("high", Number(e.currentTarget.value))}
-              class="flex-1"
-            />
-            <span class="text-sm font-medium w-12 text-center"
-              >{node.behavior.filter.high.toFixed(2)}</span
-            >
-          </label>
-        </div>
+        <CustomInput
+          value={node.behavior.filter.high}
+          min={0}
+          max={1}
+          step={0.01}
+          defaultValue={1}
+          handleUpdate={(v) => updateFilterField("high", v)}
+          label="FILTER HIGH"
+        />
       </div>
     {:else if node.behavior.type === "bar"}
       <div class="flex flex-col gap-4">

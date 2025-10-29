@@ -77,7 +77,7 @@
 </script>
 
 <div class="flex items-center gap-2">
-  <label class="w-36 text-right">{label}</label>
+  <label class="w-36 text-right text-nowrap">{label}</label>
 
   <input
     class="w-8 custom-number-input outline-none focus:bg-black focus:text-white text-end"
@@ -86,7 +86,7 @@
   />
 
   <div
-    class="relative w-48 h-4 border border-black bg-gray-100 cursor-pointer border-l-2 border-r-2"
+    class="relative w-48 h-4 border border-black cursor-pointer border-l-2 border-r-2"
     onmousedown={handleTrackMouseDown}
   >
     <div
@@ -98,7 +98,7 @@
 
   {#if value !== defaultValue}
     <button
-      class="w-8 h-8 flex items-center"
+      class="w-8flex items-center"
       onclick={resetValue}
       aria-label="Reset"
     >
@@ -113,5 +113,7 @@
         /></svg
       ></button
     >
+  {:else}
+    <span class="w-8 h-1"></span>
   {/if}
 </div>
