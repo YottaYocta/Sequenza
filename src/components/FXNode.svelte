@@ -37,7 +37,7 @@
   }
 </script>
 
-<div class="flex flex-col w-96 text-sm">
+<div class="flex flex-col min-w-64 w-min text-sm">
   <!-- Tab Header -->
   <div class="flex flex-wrap border-b border-black gap-1 pb-8">
     <button

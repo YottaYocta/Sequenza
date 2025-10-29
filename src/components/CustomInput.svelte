@@ -48,7 +48,6 @@
       inputValue = String(newVal);
     };
 
-    // ✅ immediate update on mousedown
     update(e.clientX);
 
     const handleMouseMove = (e: MouseEvent) => update(e.clientX);
@@ -82,16 +81,17 @@
 </script>
 
 <div class="flex items-center gap-2">
-  <label class="w-36 text-right text-nowrap">{label}</label>
+  <label class="w-full text-right text-nowrap" for={label}>{label}</label>
 
   <input
+    name={label}
     class="w-8 custom-number-input outline-none focus:bg-black focus:text-white text-end"
     bind:value={inputValue}
     onkeydown={(e) => e.key === "Enter" && updateFromInput()}
   />
 
   <div
-    class="relative w-48 h-4 border border-black cursor-pointer border-l-2 border-r-2"
+    class="relative w-48 min-w-36 h-4 border border-black cursor-pointer border-l-2 border-r-2"
     onmousedown={handleTrackMouseDown}
   >
     <div
@@ -103,7 +103,7 @@
 
   {#if value !== defaultValue}
     <button
-      class="w-8flex items-center"
+      class="min-w-8 flex items-center"
       onclick={resetValue}
       aria-label="Reset"
     >
@@ -119,6 +119,6 @@
       ></button
     >
   {:else}
-    <span class="w-8 h-1"></span>
+    <span class="min-w-8 h-1"></span>
   {/if}
 </div>

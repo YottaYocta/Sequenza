@@ -47,6 +47,14 @@
     },
     {
       progress: 0,
+      behavior: createDefaultAdjustment("HSL"),
+      outputData: {
+        type: "image",
+        data: new ImageData(1, 1),
+      },
+    },
+    {
+      progress: 0,
       behavior: newFX("dot"),
       outputData: {
         type: "svg",
