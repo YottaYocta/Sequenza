@@ -39,7 +39,7 @@
 
 <div class="flex flex-col min-w-64 w-min text-sm">
   <!-- Tab Header -->
-  <div class="flex flex-wrap border-b border-black gap-1 pb-8">
+  <div class="flex flex-wrap gap-1 pb-8 relative">
     <button
       class=" text-sm font-medium {node.behavior.type === 'dot'
         ? 'bg-black text-white'
@@ -101,7 +101,13 @@
   </div>
 
   <!-- Content Area -->
-  <div class="py-2">
+  <div class="border-b border-t py-4 relative">
+    <span
+      class="absolute top-0 left-0 -translate-1/2 rounded-full w-2 h-2 bg-black"
+    ></span>
+    <span
+      class="absolute bottom-0 right-0 translate-1/2 rounded-full w-2 h-2 bg-black"
+    ></span>
     {#if node.behavior.type === "dot"}
       <div class="flex flex-col">
         <CustomInput

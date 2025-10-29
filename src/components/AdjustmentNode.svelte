@@ -37,7 +37,7 @@
 
 <div class="flex flex-col">
   <!-- Tab Header -->
-  <div class="flex border-b border-black gap-1 pb-8">
+  <div class="flex gap-1 pb-8">
     <button
       class=" text-sm font-medium {node.behavior.type === 'HSL'
         ? 'bg-black text-white'
@@ -63,7 +63,13 @@
   </div>
 
   <!-- Content Area -->
-  <div class="py-4 flex flex-col">
+  <div class="py-4 flex flex-col border-b border-t relative">
+    <span
+      class="absolute top-0 left-0 -translate-1/2 rounded-full w-2 h-2 bg-black"
+    ></span>
+    <span
+      class="absolute bottom-0 right-0 translate-1/2 rounded-full w-2 h-2 bg-black"
+    ></span>
     {#if node.behavior.type === "HSL"}
       <CustomInput
         label="HUE"
