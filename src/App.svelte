@@ -23,6 +23,17 @@
       type: "image",
       data: imageData,
     };
+
+    // Reset all nodes' progress when source image changes
+    for (let i = 0; i < processingPipeline.length; i++) {
+      processingPipeline[i] = {
+        ...processingPipeline[i],
+        progress: 0,
+      };
+    }
+
+    // Toggle render trigger to restart processing from the beginning
+    renderTrigger = !renderTrigger;
   }
 
   let processingPipeline = $state<ProccessingNode<Adjustment | FX>[]>([
@@ -57,37 +68,51 @@
     const sourceImageData = source.data;
     if (sourceImageData.width <= 1) return;
 
-    // Reset all progress to zero and reset state-related variables (nextRow)
-    untrack(() => {
-      processingPipeline = processingPipeline.map((node) => {
-        // Reset state-related variables in behavior
-        let resetBehavior = { ...node.behavior };
-        if ("nextRow" in resetBehavior) {
-          resetBehavior = { ...resetBehavior, nextRow: 0 };
+    // Find the first node with progress < 1 (incomplete node)
+    let currentNodeIndex = untrack(() => {
+      const pipeline = processingPipeline;
+      for (let i = 0; i < pipeline.length; i++) {
+        if (pipeline[i].progress < 1) {
+          return i;
         }
-
-        // Reinitialize output data
-        let resetOutputData: Output;
-        if (node.outputData.type === "image") {
-          resetOutputData = {
-            type: "image",
-            data: new ImageData(sourceImageData.width, sourceImageData.height),
-          };
-        } else {
-          // For SVG, initialize with empty string (will be wrapped by processor)
-          resetOutputData = { type: "svg", data: "" };
-        }
-
-        return {
-          ...node,
-          progress: 0,
-          behavior: resetBehavior,
-          outputData: resetOutputData,
-        };
-      });
+      }
+      return pipeline.length; // All nodes complete
     });
 
-    let currentNodeIndex = 0;
+    // If all nodes are complete, nothing to do
+    if (currentNodeIndex >= processingPipeline.length) {
+      return;
+    }
+
+    // Reset the first incomplete node's state
+    untrack(() => {
+      const node = processingPipeline[currentNodeIndex];
+
+      // Reset state-related variables in behavior
+      let resetBehavior = { ...node.behavior };
+      if ("nextRow" in resetBehavior) {
+        resetBehavior = { ...resetBehavior, nextRow: 0 };
+      }
+
+      // Reinitialize output data
+      let resetOutputData: Output;
+      if (node.outputData.type === "image") {
+        resetOutputData = {
+          type: "image",
+          data: new ImageData(sourceImageData.width, sourceImageData.height),
+        };
+      } else {
+        // For SVG, initialize with empty string (will be wrapped by processor)
+        resetOutputData = { type: "svg", data: "" };
+      }
+
+      processingPipeline[currentNodeIndex] = {
+        ...node,
+        behavior: resetBehavior,
+        outputData: resetOutputData,
+      };
+    });
+
     let animationFrameId: number | null = null;
 
     function processFrame() {
@@ -125,10 +150,42 @@
       // Check if current node is complete
       if (updatedNode.progress >= 1) {
         // Move to next node
+        console.log("finished:");
+        console.log(currentNode.behavior);
         currentNodeIndex++;
 
-        // If there are more nodes, continue processing
+        // If there are more nodes, reset the next node if needed and continue processing
         if (currentNodeIndex < pipeline.length) {
+          untrack(() => {
+            const nextNode = processingPipeline[currentNodeIndex];
+
+            // If next node needs processing (progress < 1), reset its state
+            if (nextNode.progress < 1) {
+              let resetBehavior = { ...nextNode.behavior };
+              if ("nextRow" in resetBehavior) {
+                resetBehavior = { ...resetBehavior, nextRow: 0 };
+              }
+
+              // Reinitialize output data
+              let resetOutputData: Output;
+              if (nextNode.outputData.type === "image") {
+                resetOutputData = {
+                  type: "image",
+                  data: new ImageData(sourceImageData.width, sourceImageData.height),
+                };
+              } else {
+                // For SVG, initialize with empty string
+                resetOutputData = { type: "svg", data: "" };
+              }
+
+              processingPipeline[currentNodeIndex] = {
+                ...nextNode,
+                behavior: resetBehavior,
+                outputData: resetOutputData,
+              };
+            }
+          });
+
           animationFrameId = requestAnimationFrame(processFrame);
         }
       } else {
@@ -152,12 +209,23 @@
     // Reset state-related variables in the behavior
     const resetBehavior = { ...behavior, nextRow: 0 };
 
-    // Update the behavior in the pipeline
-    processingPipeline[nodeIndex] = {
-      ...processingPipeline[nodeIndex],
-      behavior: resetBehavior,
-      progress: 0, // Reset progress
-    };
+    // Update the behavior and reset progress for this node and all downstream nodes
+    for (let i = nodeIndex; i < processingPipeline.length; i++) {
+      if (i === nodeIndex) {
+        // Update the specific node with new behavior
+        processingPipeline[i] = {
+          ...processingPipeline[i],
+          behavior: resetBehavior,
+          progress: 0,
+        };
+      } else {
+        // Reset downstream nodes' progress
+        processingPipeline[i] = {
+          ...processingPipeline[i],
+          progress: 0,
+        };
+      }
+    }
 
     // Toggle render trigger to restart processing
     renderTrigger = !renderTrigger;
@@ -167,12 +235,23 @@
     // Reset state-related variables in the behavior
     const resetBehavior = { ...behavior, nextRow: 0 };
 
-    // Update the behavior in the pipeline
-    processingPipeline[nodeIndex] = {
-      ...processingPipeline[nodeIndex],
-      behavior: resetBehavior,
-      progress: 0, // Reset progress
-    };
+    // Update the behavior and reset progress for this node and all downstream nodes
+    for (let i = nodeIndex; i < processingPipeline.length; i++) {
+      if (i === nodeIndex) {
+        // Update the specific node with new behavior
+        processingPipeline[i] = {
+          ...processingPipeline[i],
+          behavior: resetBehavior,
+          progress: 0,
+        };
+      } else {
+        // Reset downstream nodes' progress
+        processingPipeline[i] = {
+          ...processingPipeline[i],
+          progress: 0,
+        };
+      }
+    }
 
     // Toggle render trigger to restart processing
     renderTrigger = !renderTrigger;

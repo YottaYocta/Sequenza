@@ -16,10 +16,6 @@
         canvasRef.height = output.data.height;
         ctx.putImageData(output.data, 0, 0);
       }
-    } else if (output && output.type === "svg") {
-      console.log("SVG output:", output.data.substring(0, 200) + "...");
-      console.log("SVG length:", output.data.length);
-      console.log("Is closed:", output.data.includes("</svg>"));
     }
   });
 
@@ -33,7 +29,6 @@
             await navigator.clipboard.write([
               new ClipboardItem({ "image/png": blob }),
             ]);
-            console.log("Image copied to clipboard");
           }
         });
       } catch (err) {
@@ -42,7 +37,6 @@
     } else if (output.type === "svg") {
       try {
         await navigator.clipboard.writeText(output.data);
-        console.log("SVG copied to clipboard");
       } catch (err) {
         console.error("Failed to copy SVG:", err);
       }
