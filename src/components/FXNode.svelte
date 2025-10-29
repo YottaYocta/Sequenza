@@ -194,90 +194,49 @@
           </button>
         </div>
 
-        <label class="flex items-center gap-3">
-          <span class="text-sm font-medium w-36 text-right">NUMBER OF BARS</span
-          >
-          <input
-            type="range"
-            min="1"
-            max="100"
+        <div class="flex flex-col">
+          <CustomInput
             value={node.behavior.numberBars}
-            oninput={(e) =>
-              updateField("numberBars", Number(e.currentTarget.value))}
-            class="flex-1"
+            min={1}
+            max={100}
+            handleUpdate={(v) => updateField("numberBars", v)}
+            label="NUMBER OF BARS"
           />
-          <span class="text-sm font-medium w-12 text-center"
-            >{node.behavior.numberBars}</span
-          >
-        </label>
 
-        <label class="flex items-center gap-3">
-          <span class="text-sm font-medium w-36 text-right">BAR SIZE</span>
-          <input
-            type="range"
-            min="1"
-            max="100"
+          <CustomInput
             value={node.behavior.barSize}
-            oninput={(e) =>
-              updateField("barSize", Number(e.currentTarget.value))}
-            class="flex-1"
+            min={1}
+            max={100}
+            handleUpdate={(v) => updateField("barSize", v)}
+            label="BAR SIZE"
           />
-          <span class="text-sm font-medium w-12 text-center"
-            >{node.behavior.barSize}</span
-          >
-        </label>
 
-        <label class="flex items-center gap-3">
-          <span class="text-sm font-medium w-36 text-right">BORDER RADIUS</span>
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.1"
+          <CustomInput
             value={node.behavior.borderRadius}
-            oninput={(e) =>
-              updateField("borderRadius", Number(e.currentTarget.value))}
-            class="flex-1"
+            min={0}
+            max={1}
+            step={0.1}
+            handleUpdate={(v) => updateField("borderRadius", v)}
+            label="BORDER RADIUS"
           />
-          <span class="text-sm font-medium w-12 text-center"
-            >{node.behavior.borderRadius.toFixed(1)}</span
-          >
-        </label>
 
-        <div class="border-t border-black pt-4 mt-4">
-          <label class="flex items-center gap-3">
-            <span class="text-sm font-medium w-36 text-right">FILTER LOW</span>
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.01"
-              value={node.behavior.filter.low}
-              oninput={(e) =>
-                updateFilterField("low", Number(e.currentTarget.value))}
-              class="flex-1"
-            />
-            <span class="text-sm font-medium w-12 text-center"
-              >{node.behavior.filter.low.toFixed(2)}</span
-            >
-          </label>
+          <CustomInput
+            value={node.behavior.filter.low}
+            min={0}
+            max={1}
+            step={0.01}
+            handleUpdate={(v) => updateFilterField("low", v)}
+            label="FILTER LOW"
+          />
 
-          <label class="flex items-center gap-3 mt-4">
-            <span class="text-sm font-medium w-36 text-right">FILTER HIGH</span>
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.01"
-              value={node.behavior.filter.high}
-              oninput={(e) =>
-                updateFilterField("high", Number(e.currentTarget.value))}
-              class="flex-1"
-            />
-            <span class="text-sm font-medium w-12 text-center"
-              >{node.behavior.filter.high.toFixed(2)}</span
-            >
-          </label>
+          <CustomInput
+            value={node.behavior.filter.high}
+            min={0}
+            max={1}
+            step={0.01}
+            handleUpdate={(v) => updateFilterField("high", v)}
+            label="FILTER HIGH"
+          />
         </div>
       </div>
     {/if}
