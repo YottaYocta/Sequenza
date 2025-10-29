@@ -27,7 +27,7 @@
     } else {
       onUpdateBehavior(nodeIndex, {
         type: "RGB",
-        r: 0,
+        red: 0,
         green: 0,
         blue: 0,
       } as Adjustment);
@@ -37,28 +37,28 @@
 
 <div class="flex flex-col">
   <!-- Tab Header -->
-  <div class="flex border-b border-black">
+  <div class="flex border-b border-black gap-1 pb-8">
     <button
-      class="px-4 py-2 text-sm font-medium {node.behavior.type === 'HSL'
+      class=" text-sm font-medium {node.behavior.type === 'HSL'
         ? 'bg-black text-white'
-        : 'bg-transparent text-black underline hover:no-underline'}"
+        : 'bg-transparent text-black  '}"
       onclick={() => switchType("HSL")}
     >
       HSL
     </button>
     <button
-      class="px-4 py-2 text-sm font-medium {node.behavior.type === 'RGB'
+      class=" text-sm font-medium {node.behavior.type === 'RGB'
         ? 'bg-black text-white'
-        : 'bg-transparent text-black underline hover:no-underline'}"
+        : 'bg-transparent text-black  '}"
       onclick={() => switchType("RGB")}
     >
       RGB
     </button>
     <button
-      class="px-4 py-2 text-sm font-medium bg-transparent text-black underline hover:no-underline"
+      class=" text-sm font-medium bg-transparent text-neutral-400"
       disabled
     >
-      GRADIENT MAP
+      GRADIENTMAP
     </button>
   </div>
 

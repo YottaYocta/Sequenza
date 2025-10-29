@@ -10,7 +10,7 @@ export type Adjustment =
     }
   | {
       type: "RGB";
-      r: number;
+      red: number;
       green: number;
       blue: number;
       state: {
@@ -102,7 +102,7 @@ export const processRGB = (
   source: ImageData,
   currentData: ImageData
 ): [Adjustment, ImageData, number] => {
-  const { state, r, green, blue } = adjustmentState;
+  const { state, red, green, blue } = adjustmentState;
   const nextRow = state.nextRow;
   const width = source.width;
   const height = source.height;
@@ -119,7 +119,7 @@ export const processRGB = (
     const sourceA = source.data[index + 3];
 
     // Apply RGB adjustments (clamped to 0-255)
-    currentData.data[index] = Math.max(0, Math.min(255, sourceR + r));
+    currentData.data[index] = Math.max(0, Math.min(255, sourceR + red));
     currentData.data[index + 1] = Math.max(0, Math.min(255, sourceG + green));
     currentData.data[index + 2] = Math.max(0, Math.min(255, sourceB + blue));
     currentData.data[index + 3] = sourceA; // Keep alpha unchanged
@@ -218,7 +218,7 @@ export const createDefaultAdjustment = (type: "HSL" | "RGB"): Adjustment => {
     case "RGB":
       return {
         type: "RGB",
-        r: 0,
+        red: 0,
         green: 0,
         blue: 0,
         state: {
