@@ -224,7 +224,10 @@ function getMostFrequentColor(
   data: Uint8ClampedArray,
   indices: number[]
 ): [number, number, number, number] {
-  const colorMap = new Map<string, { count: number; rgba: [number, number, number, number] }>();
+  const colorMap = new Map<
+    string,
+    { count: number; rgba: [number, number, number, number] }
+  >();
 
   for (const index of indices) {
     const r = data[index];
@@ -233,7 +236,9 @@ function getMostFrequentColor(
     const a = data[index + 3];
 
     // Use rounded values to group similar colors
-    const key = `${Math.round(r / 10) * 10},${Math.round(g / 10) * 10},${Math.round(b / 10) * 10}`;
+    const key = `${Math.round(r / 10) * 10},${Math.round(g / 10) * 10},${
+      Math.round(b / 10) * 10
+    }`;
 
     if (colorMap.has(key)) {
       const entry = colorMap.get(key)!;
@@ -286,7 +291,8 @@ export const processBar = (
   source: ImageData,
   currentSVG: string
 ): [FX, string, number] => {
-  const { state, direction, numberBars, barSize, borderRadius, filter } = fxState;
+  const { state, direction, numberBars, barSize, borderRadius, filter } =
+    fxState;
 
   const nextBar = state.nextBar;
   const width = source.width;
@@ -308,6 +314,7 @@ export const processBar = (
         indices.push((y * width + x) * 4);
       }
     }
+    console.log(indices);
 
     // Get the most frequent color in this region
     const [r, g, b, a] = getMostFrequentColor(data, indices);
