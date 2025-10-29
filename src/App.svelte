@@ -44,25 +44,38 @@
     },
   ]);
 
+  // Boolean trigger for re-rendering - toggles whenever behavior changes
+  let renderTrigger = $state(false);
+
   $effect(() => {
-    // this effect runs whenever the source image changes
+    // this effect runs whenever the source image changes or renderTrigger toggles
     const source = sourceOutput;
+    renderTrigger; // create dependency on renderTrigger
 
     // Only process if we have actual image data
     if (source.type !== "image") return;
     const sourceImageData = source.data;
     if (sourceImageData.width <= 1) return;
 
-    // Reset all progress to zero
+    // Reset all progress to zero and reset state-related variables (nextRow)
     untrack(() => {
-      processingPipeline = processingPipeline.map((node) => ({
-        ...node,
-        progress: 0,
-        outputData:
-          node.outputData.type === "image"
-            ? { type: "image", data: new ImageData(sourceImageData.width, sourceImageData.height) }
-            : node.outputData,
-      }));
+      processingPipeline = processingPipeline.map((node) => {
+        // Reset state-related variables in behavior
+        let resetBehavior = { ...node.behavior };
+        if ("nextRow" in resetBehavior) {
+          resetBehavior = { ...resetBehavior, nextRow: 0 };
+        }
+
+        return {
+          ...node,
+          progress: 0,
+          behavior: resetBehavior,
+          outputData:
+            node.outputData.type === "image"
+              ? { type: "image", data: new ImageData(sourceImageData.width, sourceImageData.height) }
+              : node.outputData,
+        };
+      });
     });
 
     let currentNodeIndex = 0;
@@ -127,17 +140,33 @@
   });
 
   function handleUpdateAdjustment(nodeIndex: number, behavior: Adjustment) {
+    // Reset state-related variables in the behavior
+    const resetBehavior = { ...behavior, nextRow: 0 };
+
+    // Update the behavior in the pipeline
     processingPipeline[nodeIndex] = {
       ...processingPipeline[nodeIndex],
-      behavior,
+      behavior: resetBehavior,
+      progress: 0, // Reset progress
     };
+
+    // Toggle render trigger to restart processing
+    renderTrigger = !renderTrigger;
   }
 
   function handleUpdateFX(nodeIndex: number, behavior: FX) {
+    // Reset state-related variables in the behavior
+    const resetBehavior = { ...behavior, nextRow: 0 };
+
+    // Update the behavior in the pipeline
     processingPipeline[nodeIndex] = {
       ...processingPipeline[nodeIndex],
-      behavior,
+      behavior: resetBehavior,
+      progress: 0, // Reset progress
     };
+
+    // Toggle render trigger to restart processing
+    renderTrigger = !renderTrigger;
   }
 
   function isAdjustmentNode(
