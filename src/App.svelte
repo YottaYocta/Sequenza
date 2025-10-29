@@ -1,5 +1,11 @@
-<script>
-  import Old from "./Old.svelte";
+<script lang="ts">
+  import DraggableContainer from "./components/DraggableContainer.svelte";
 
+  type Node = string;
+
+  let nodes: Node[] = $state(["FirstNode", "SecondNode"]);
 </script>
-<Old></Old>
+
+{#each nodes as node}
+  <DraggableContainer children={node}></DraggableContainer>
+{/each}
