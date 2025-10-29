@@ -9,16 +9,15 @@
 
   const draggable: Attachment<HTMLDivElement> = (element: HTMLDivElement) => {
     if (dragging !== null) {
-      const handleMouseMove = (e: MouseEvent) => {
-        if (dragging !== null) {
-          const offsetX = dragging.startX;
-          const offsetY = dragging.startY;
-          const relativeX = e.clientX - element.clientLeft;
-          const relativeY = e.clientY - element.clientTop;
+      const offsetX = dragging.startX;
+      const offsetY = dragging.startY;
 
-          element.style.left = `${relativeX - offsetX}px`;
-          element.style.top = `${relativeY - offsetY}px`;
-        }
+      const handleMouseMove = (e: MouseEvent) => {
+        const relativeX = e.clientX - element.clientLeft;
+        const relativeY = e.clientY - element.clientTop;
+
+        element.style.left = `${relativeX - offsetX}px`;
+        element.style.top = `${relativeY - offsetY}px`;
       };
 
       window.addEventListener("mousemove", handleMouseMove);
@@ -37,6 +36,8 @@
         startX: e.offsetX + dragHandle.offsetLeft,
         startY: e.offsetY + dragHandle.offsetTop - dragHandle.offsetHeight / 2,
       };
+
+      console.log(dragging);
 
       window.addEventListener("mouseup", handleMouseUp);
     };
@@ -66,7 +67,7 @@
     class="absolute flex group p-4 cursor-grab active:cursor-grabbing -left-12 top-1/2 -translate-y-1/2"
   >
     <!-- apparently translate does not change offset position... -->
-    <span class=" w-3 h-32 transition bg-blue-600"></span>
+    <span class=" w-4 h-32 transition bg-blue-600"></span>
   </button>
   {@render children?.()}
 </div>
