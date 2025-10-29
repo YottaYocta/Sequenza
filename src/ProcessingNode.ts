@@ -80,10 +80,12 @@ export const updateProcessingNode = <T extends FX | Adjustment>(
         case "dot": {
           // Get current SVG string or initialize
           let currentSVG = "";
-          if (outputData.type === "svg") {
+          if (outputData.type === "svg" && outputData.data) {
             currentSVG = outputData.data;
-          } else {
-            // Initialize SVG wrapper if starting fresh
+          }
+
+          // Initialize SVG wrapper if empty (starting fresh)
+          if (!currentSVG || currentSVG === "") {
             currentSVG = `<svg viewBox="0 0 ${source.width} ${source.height}" xmlns="http://www.w3.org/2000/svg">`;
           }
 

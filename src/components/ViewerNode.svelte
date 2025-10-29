@@ -5,8 +5,6 @@
     output?: Output;
   }>();
 
-  console.log(output);
-
   let canvasRef: HTMLCanvasElement | undefined = $state();
 
   // Draw image data to canvas when output changes
@@ -18,8 +16,10 @@
         canvasRef.height = output.data.height;
         ctx.putImageData(output.data, 0, 0);
       }
-    } else {
-      console.log(output);
+    } else if (output && output.type === "svg") {
+      console.log("SVG output:", output.data.substring(0, 200) + "...");
+      console.log("SVG length:", output.data.length);
+      console.log("Is closed:", output.data.includes("</svg>"));
     }
   });
 
@@ -100,8 +100,12 @@
   </div>
 {:else if output.type === "svg"}
   <div class="space-y-3">
-    <div class="border border-neutral-300 p-2 bg-neutral-50">
-      {@html output.data}
+    <div
+      class="border border-neutral-300 p-2 bg-neutral-50 w-full max-w-full overflow-auto"
+    >
+      <div class="w-full max-w-full">
+        {@html output.data}
+      </div>
     </div>
 
     <div class="flex gap-2">
