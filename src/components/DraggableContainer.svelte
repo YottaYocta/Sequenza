@@ -39,7 +39,7 @@
     const handleMouseDown = (e: MouseEvent) => {
       dragging = {
         startX: e.offsetX + dragHandle.offsetLeft,
-        startY: e.offsetY + dragHandle.offsetTop - dragHandle.offsetHeight / 2,
+        startY: e.offsetY + dragHandle.offsetTop,
       };
 
       window.addEventListener("mouseup", handleMouseUp);
@@ -59,14 +59,14 @@
 
 <div
   {@attach draggable}
-  style="position: absolute; left: 100px; top: 100px;"
   role="button"
   tabindex="0"
+  class="absolute flex items-center justify-start"
 >
   <button
     {@attach handle}
     aria-label="container drag handle"
-    class="absolute flex group p-4 cursor-grab active:cursor-grabbing -left-12 top-1/2 -translate-y-1/2"
+    class="flex group p-4 cursor-grab active:cursor-grabbing"
   >
     <!-- apparently translate does not change offset position... -->
     <span class=" w-4 h-32 transition bg-blue-600"></span>
