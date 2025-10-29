@@ -19,7 +19,7 @@
     label: string;
   } = $props();
 
-  let inputValue = $state(String(value));
+  let inputValue = $derived(String(value.toFixed(1)));
 
   type DragState = { startX: number } | null;
 
@@ -33,9 +33,6 @@
         return;
       }
     }
-
-    // Fallback if invalid
-    inputValue = String(value);
   }
 
   function startDrag(track: HTMLDivElement, e: MouseEvent) {
@@ -85,13 +82,13 @@
 
   <input
     name={label}
-    class="w-8 custom-number-input outline-none focus:bg-black focus:text-white text-end"
+    class="w-10 custom-number-input outline-none focus:bg-black focus:text-white text-end"
     bind:value={inputValue}
     onkeydown={(e) => e.key === "Enter" && updateFromInput()}
   />
 
   <div
-    class="relative w-48 min-w-36 h-4 border border-black cursor-pointer border-l-2 border-r-2"
+    class="relative w-48 min-w-36 h-3 border border-black cursor-pointer border-l-2 border-r-2"
     onmousedown={handleTrackMouseDown}
   >
     <div
