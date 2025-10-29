@@ -4,16 +4,14 @@ export type Adjustment =
       hue: number;
       saturation: number;
       lightness: number;
-      nextX: number;
-      nextY: number;
+      nextRow: number; // which row to process next (0 to height-1)
     }
   | {
       type: "RGB";
       r: number;
       green: number;
       blue: number;
-      nextX: number;
-      nextY: number;
+      nextRow: number; // which row to process next (0 to height-1)
     };
 
 // TODO: add gradient map
@@ -92,119 +90,104 @@ const hslToRgb = (
 };
 
 /**
- *
- * given the adjustment state + source image data, should process the next pixel at nextx and next y using the color space manipulation of rgb
- *  returns updated adjustment state (in this case, going to the next pixel or wrapping to the next row), updated image data (reference), and number between 0-1 representing progress
+ * given the adjustment state + source image data, should process the next row using RGB color space manipulation
+ * returns updated adjustment state (advancing to the next row), updated image data (reference), and number between 0-1 representing progress
  */
 export const processRGB = (
   adjustmentState: Adjustment & { type: "RGB" },
   source: ImageData,
   currentData: ImageData
 ): [Adjustment, ImageData, number] => {
-  const { nextX, nextY, r, green, blue } = adjustmentState;
+  const { nextRow, r, green, blue } = adjustmentState;
   const width = source.width;
   const height = source.height;
 
-  // Calculate pixel index (RGBA format: 4 bytes per pixel)
-  const index = (nextY * width + nextX) * 4;
+  // Process entire row
+  for (let x = 0; x < width; x++) {
+    // Calculate pixel index (RGBA format: 4 bytes per pixel)
+    const index = (nextRow * width + x) * 4;
 
-  // Get source pixel values
-  const sourceR = source.data[index];
-  const sourceG = source.data[index + 1];
-  const sourceB = source.data[index + 2];
-  const sourceA = source.data[index + 3];
+    // Get source pixel values
+    const sourceR = source.data[index];
+    const sourceG = source.data[index + 1];
+    const sourceB = source.data[index + 2];
+    const sourceA = source.data[index + 3];
 
-  // Apply RGB adjustments (clamped to 0-255)
-  currentData.data[index] = Math.max(0, Math.min(255, sourceR + r));
-  currentData.data[index + 1] = Math.max(0, Math.min(255, sourceG + green));
-  currentData.data[index + 2] = Math.max(0, Math.min(255, sourceB + blue));
-  currentData.data[index + 3] = sourceA; // Keep alpha unchanged
-
-  // Calculate next position
-  let newNextX = nextX + 1;
-  let newNextY = nextY;
-
-  // Wrap to next row if needed
-  if (newNextX >= width) {
-    newNextX = 0;
-    newNextY += 1;
+    // Apply RGB adjustments (clamped to 0-255)
+    currentData.data[index] = Math.max(0, Math.min(255, sourceR + r));
+    currentData.data[index + 1] = Math.max(0, Math.min(255, sourceG + green));
+    currentData.data[index + 2] = Math.max(0, Math.min(255, sourceB + blue));
+    currentData.data[index + 3] = sourceA; // Keep alpha unchanged
   }
 
+  // Calculate next row
+  const newNextRow = nextRow + 1;
+
   // Calculate progress (0-1)
-  const totalPixels = width * height;
-  const processedPixels = nextY * width + nextX + 1;
-  const progress = Math.min(1, processedPixels / totalPixels);
+  const progress = Math.min(1, newNextRow / height);
 
   // Create updated adjustment state
   const updatedState: Adjustment = {
     ...adjustmentState,
-    nextX: newNextX,
-    nextY: newNextY,
+    nextRow: newNextRow,
   };
 
   return [updatedState, currentData, progress];
 };
 
 /**
- * given the adjustment state + source image data, should process the next pixel at nextx and next y using the color space manipulation of hsl
- * returns updated adjustment state (in this case, going to the next pixel or wrapping to the next row), updated image data (reference), and number between 0-1 representing progress
+ * given the adjustment state + source image data, should process the next row using HSL color space manipulation
+ * returns updated adjustment state (advancing to the next row), updated image data (reference), and number between 0-1 representing progress
  */
 export const processHSL = (
   adjustmentState: Adjustment & { type: "HSL" },
   source: ImageData,
   currentData: ImageData
 ): [Adjustment, ImageData, number] => {
-  const { nextX, nextY, hue, saturation, lightness } = adjustmentState;
+  const { nextRow, hue, saturation, lightness } = adjustmentState;
   const width = source.width;
   const height = source.height;
 
-  // Calculate pixel index (RGBA format: 4 bytes per pixel)
-  const index = (nextY * width + nextX) * 4;
+  // Process entire row
+  for (let x = 0; x < width; x++) {
+    // Calculate pixel index (RGBA format: 4 bytes per pixel)
+    const index = (nextRow * width + x) * 4;
 
-  // Get source pixel values
-  const sourceR = source.data[index];
-  const sourceG = source.data[index + 1];
-  const sourceB = source.data[index + 2];
-  const sourceA = source.data[index + 3];
+    // Get source pixel values
+    const sourceR = source.data[index];
+    const sourceG = source.data[index + 1];
+    const sourceB = source.data[index + 2];
+    const sourceA = source.data[index + 3];
 
-  // Convert RGB to HSL
-  let [h, s, l] = rgbToHsl(sourceR, sourceG, sourceB);
+    // Convert RGB to HSL
+    let [h, s, l] = rgbToHsl(sourceR, sourceG, sourceB);
 
-  // Apply HSL adjustments
-  h = (h + hue) % 360; // Hue wraps around
-  if (h < 0) h += 360;
-  s = Math.max(0, Math.min(1, s + saturation)); // Saturation clamped to 0-1
-  l = Math.max(0, Math.min(1, l + lightness)); // Lightness clamped to 0-1
+    // Apply HSL adjustments
+    h = (h + hue) % 360; // Hue wraps around
+    if (h < 0) h += 360;
+    s = Math.max(0, Math.min(1, s + saturation)); // Saturation clamped to 0-1
+    l = Math.max(0, Math.min(1, l + lightness)); // Lightness clamped to 0-1
 
-  // Convert back to RGB
-  const [newR, newG, newB] = hslToRgb(h, s, l);
+    // Convert back to RGB
+    const [newR, newG, newB] = hslToRgb(h, s, l);
 
-  // Write adjusted values
-  currentData.data[index] = newR;
-  currentData.data[index + 1] = newG;
-  currentData.data[index + 2] = newB;
-  currentData.data[index + 3] = sourceA; // Keep alpha unchanged
-
-  // Calculate next position
-  let newNextX = nextX + 1;
-  let newNextY = nextY;
-
-  // Wrap to next row if needed
-  if (newNextX >= width) {
-    newNextX = 0;
-    newNextY += 1;
+    // Write adjusted values
+    currentData.data[index] = newR;
+    currentData.data[index + 1] = newG;
+    currentData.data[index + 2] = newB;
+    currentData.data[index + 3] = sourceA; // Keep alpha unchanged
   }
 
+  // Calculate next row
+  const newNextRow = nextRow + 1;
+
   // Calculate progress (0-1)
-  const totalPixels = width * height;
-  const processedPixels = nextY * width + nextX + 1;
-  const progress = Math.min(1, processedPixels / totalPixels);
+  const progress = Math.min(1, newNextRow / height);
 
   // Create updated adjustment state
   const updatedState: Adjustment = {
     ...adjustmentState,
-    nextX: newNextX,
-    nextY: newNextY,
+    nextRow: newNextRow,
   };
 
   return [updatedState, currentData, progress];
@@ -218,8 +201,7 @@ export const createDefaultAdjustment = (type: "HSL" | "RGB"): Adjustment => {
         hue: 0,
         saturation: 0,
         lightness: 0,
-        nextX: 0,
-        nextY: 0,
+        nextRow: 0,
       };
     case "RGB":
       return {
@@ -227,8 +209,7 @@ export const createDefaultAdjustment = (type: "HSL" | "RGB"): Adjustment => {
         r: 0,
         green: 0,
         blue: 0,
-        nextX: 0,
-        nextY: 0,
+        nextRow: 0,
       };
   }
 };

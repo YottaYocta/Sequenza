@@ -13,8 +13,7 @@ interface DotFX {
   // controls the rotation of each Dot individually
   rotation: number;
   filter: MidPassFilter;
-  nextX: number;
-  nextY: number;
+  nextRow: number; // which row to process next (0 to verticalCount-1)
 }
 
 export type FX = DotFX;
@@ -33,8 +32,7 @@ export const newFX = (type: "dot"): FX => {
           low: 0,
           high: 1,
         },
-        nextX: 0,
-        nextY: 0,
+        nextRow: 0,
       };
   }
 };
