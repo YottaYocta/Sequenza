@@ -3,45 +3,70 @@
 
   const { children } = $props();
 
+  type DragState = { startX: number; startY: number } | null;
+
+  let dragging = $state<DragState>(null);
+
   const draggable: Attachment<HTMLDivElement> = (element: HTMLDivElement) => {
-    const handleMouseMove = (e: MouseEvent) => {
-      element.style.left = `${e.clientX}px`;
-      element.style.top = `${e.clientY}px`;
-    };
+    if (dragging !== null) {
+      const handleMouseMove = (e: MouseEvent) => {
+        if (dragging !== null) {
+          const offsetX = dragging.startX;
+          const offsetY = dragging.startY;
+          console.log(e.offsetX);
 
-    const handleMouseUp = () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
-    };
+          element.style.left = `${e.offsetX - offsetX}px`;
+          element.style.top = `${e.offsetY - offsetY}px`;
+        }
+      };
 
-    const handleMouseDown = () => {
       window.addEventListener("mousemove", handleMouseMove);
+      return () => {
+        // Cleanup on unmount
+        window.removeEventListener("mousemove", handleMouseMove);
+      };
+    }
+  };
+
+  const handle: Attachment<HTMLButtonElement> = (
+    dragHandle: HTMLButtonElement
+  ) => {
+    const handleMouseDown = (e: MouseEvent) => {
+      dragging = {
+        startX: e.offsetX + dragHandle.offsetLeft,
+        startY: e.offsetY + dragHandle.offsetTop - dragHandle.offsetHeight / 2,
+      };
+
+      console.log(dragging);
       window.addEventListener("mouseup", handleMouseUp);
     };
 
-    element.addEventListener("mousedown", handleMouseDown);
-
-    return () => {
-      // Cleanup on unmount
-      element.removeEventListener("mousedown", handleMouseDown);
-      window.removeEventListener("mousemove", handleMouseMove);
+    const handleMouseUp = () => {
+      dragging = null;
       window.removeEventListener("mouseup", handleMouseUp);
+    };
+
+    dragHandle.addEventListener("mousedown", handleMouseDown);
+    return () => {
+      dragHandle.removeEventListener("mousedown", handleMouseDown);
     };
   };
 </script>
 
 <div
   {@attach draggable}
-  style="position: absolute; left: 0px; top: 0px; transform: translateX(-50%) translateY(-50%);"
+  style="position: absolute; left: 100px; top: 100px;"
   role="button"
   tabindex="0"
   class="w-32 h-32 border border-neutral-900"
 >
   <button
+    {@attach handle}
     aria-label="container drag handle"
     class="absolute flex group p-4 cursor-grab active:cursor-grabbing -left-12 top-1/2 -translate-y-1/2"
   >
-    <span class="group-hover:scale-105 w-3 h-32 transition bg-blue-600"></span>
+    <!-- apparently translate does not change offset position... -->
+    <span class=" w-3 h-32 transition bg-blue-600"></span>
   </button>
   {@render children?.()}
 </div>
