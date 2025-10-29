@@ -41,7 +41,7 @@
     <button
       class=" text-sm font-medium {node.behavior.type === 'HSL'
         ? 'bg-black text-white'
-        : 'bg-transparent text-black  '}"
+        : 'bg-transparent text-black  '} cursor-pointer"
       onclick={() => switchType("HSL")}
     >
       HSL
@@ -49,7 +49,7 @@
     <button
       class=" text-sm font-medium {node.behavior.type === 'RGB'
         ? 'bg-black text-white'
-        : 'bg-transparent text-black  '}"
+        : 'bg-transparent text-black  '} cursor-pointer"
       onclick={() => switchType("RGB")}
     >
       RGB

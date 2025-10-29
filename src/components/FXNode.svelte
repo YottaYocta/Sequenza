@@ -43,7 +43,7 @@
     <button
       class=" text-sm font-medium {node.behavior.type === 'dot'
         ? 'bg-black text-white'
-        : 'bg-transparent text-black  '}"
+        : 'bg-transparent text-black  '} cursor-pointer"
       onclick={() => switchToType("dot")}
     >
       DOTS
@@ -51,7 +51,7 @@
     <button
       class=" text-sm font-medium {node.behavior.type === 'bar'
         ? 'bg-black text-white'
-        : 'bg-transparent text-black  '}"
+        : 'bg-transparent text-black  '} cursor-pointer"
       onclick={() => switchToType("bar")}
     >
       BARS
