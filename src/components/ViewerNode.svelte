@@ -72,6 +72,7 @@
 <div
   class="w-72 h-72 flex flex-col gap-1 items-start justify-center rounded-tr-3xl p-2 border bg-neutral-50"
 >
+  <span class="absolute bottom-0 right-0 translate-1/2 w-2 h-2 bg-black"></span>
   {#if !output}
     <p class="text-neutral-500 text-sm">No input</p>
   {:else if output.type === "image"}

@@ -64,11 +64,8 @@
 
   <!-- Content Area -->
   <div class="py-4 flex flex-col border-b border-t relative">
-    <span
-      class="absolute top-0 left-0 -translate-1/2 rounded-full w-2 h-2 bg-black"
-    ></span>
-    <span
-      class="absolute bottom-0 right-0 translate-1/2 rounded-full w-2 h-2 bg-black"
+    <span class="absolute top-0 left-0 -translate-1/2 w-2 h-2 bg-black"></span>
+    <span class="absolute bottom-0 right-0 translate-1/2 w-2 h-2 bg-black"
     ></span>
     {#if node.behavior.type === "HSL"}
       <CustomInput
