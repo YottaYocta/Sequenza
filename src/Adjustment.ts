@@ -18,6 +18,19 @@ export type Adjustment =
 
 // TODO: add gradient map
 
+/**
+ *
+ * given the adjustment state + source image data, should process the next pixel at nextx and next y using the color space manipulation of rgb
+ *  returns updated adjustment state (in this case, going to the next pixel or wrapping to the next row), updated image data (reference), and number between 0-1 representing progress
+ */
+export const processRGB = (
+  adjustmentState: Adjustment & { type: "RGB" },
+  source: ImageData,
+  currentData: ImageData
+): [Adjustment, ImageData, number] => {
+  throw Error("not implemented");
+};
+
 export const createDefaultAdjustment = (type: "HSL" | "RGB"): Adjustment => {
   switch (type) {
     case "HSL":

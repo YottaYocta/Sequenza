@@ -49,7 +49,9 @@
      * currentnode = pipeline 0
      * while currentnode currentnode.progress !== 1 and currentnode is not last node:
      *
+     * requestanimationframe to do one computation of the image processing or fx processing
      *
+     * define a function in processingnode
      *
      */
   });
