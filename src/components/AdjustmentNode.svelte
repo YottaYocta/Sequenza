@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { ProccessingNode } from "../ProcessingNode";
   import type { Adjustment } from "../Adjustment";
+  import CustomInput from "./CustomInput.svelte";
 
   const { nodeIndex, node, onUpdateBehavior } = $props<{
     nodeIndex: number;
@@ -62,106 +63,67 @@
   </div>
 
   <!-- Content Area -->
-  <div class="py-4">
+  <div class="py-4 flex flex-col">
     {#if node.behavior.type === "HSL"}
-      <div class="flex flex-col gap-4">
-        <label class="flex items-center gap-3">
-          <span class="text-sm font-medium w-28 text-right">HUE</span>
-          <input
-            type="range"
-            min="-180"
-            max="180"
-            step="0.01"
-            value={node.behavior.hue}
-            oninput={(e) => updateField("hue", Number(e.currentTarget.value))}
-            class="flex-1"
-          />
-          <span class="text-sm font-medium w-12 text-center"
-            >{node.behavior.hue}</span
-          >
-        </label>
+      <CustomInput
+        label="HUE"
+        min={-180}
+        max={180}
+        step={0.01}
+        value={node.behavior.hue}
+        defaultValue={0}
+        handleUpdate={(v) => updateField("hue", v)}
+      />
 
-        <label class="flex items-center gap-3">
-          <span class="text-sm font-medium w-28 text-right">SATURATION</span>
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.01"
-            value={node.behavior.saturation}
-            oninput={(e) =>
-              updateField("saturation", Number(e.currentTarget.value))}
-            class="flex-1"
-          />
-          <span class="text-sm font-medium w-12 text-center"
-            >{node.behavior.saturation}</span
-          >
-        </label>
+      <CustomInput
+        label="SATURATION"
+        min={0}
+        max={1}
+        step={0.01}
+        value={node.behavior.saturation}
+        defaultValue={0}
+        handleUpdate={(v) => updateField("saturation", v)}
+      />
 
-        <label class="flex items-center gap-3">
-          <span class="text-sm font-medium w-28 text-right">VALUE</span>
-          <input
-            type="range"
-            min="-1"
-            max="1"
-            step="0.01"
-            value={node.behavior.lightness}
-            oninput={(e) =>
-              updateField("lightness", Number(e.currentTarget.value))}
-            class="flex-1"
-          />
-          <span class="text-sm font-medium w-12 text-center"
-            >{node.behavior.lightness}</span
-          >
-        </label>
-      </div>
+      <CustomInput
+        label="LIGHTNESS"
+        min={-1}
+        max={1}
+        step={0.01}
+        value={node.behavior.lightness}
+        defaultValue={0}
+        handleUpdate={(v) => updateField("lightness", v)}
+      />
     {:else if node.behavior.type === "RGB"}
-      <div class="flex flex-col gap-4">
-        <label class="flex items-center gap-3">
-          <span class="text-sm font-medium w-28 text-right">RED</span>
-          <input
-            type="range"
-            min="0"
-            max="255"
-            value={node.behavior.r}
-            oninput={(e) => updateField("r", Number(e.currentTarget.value))}
-            class="flex-1"
-          />
-          <span class="text-sm font-medium w-12 text-center"
-            >{node.behavior.r}</span
-          >
-        </label>
+      <CustomInput
+        label="RED"
+        min={0}
+        max={255}
+        step={1}
+        value={node.behavior.red}
+        defaultValue={0}
+        handleUpdate={(v) => updateField("red", v)}
+      />
 
-        <label class="flex items-center gap-3">
-          <span class="text-sm font-medium w-28 text-right">GREEN</span>
-          <input
-            type="range"
-            min="0"
-            max="255"
-            value={node.behavior.green}
-            oninput={(e) => updateField("green", Number(e.currentTarget.value))}
-            class="flex-1"
-          />
-          <span class="text-sm font-medium w-12 text-center"
-            >{node.behavior.green}</span
-          >
-        </label>
+      <CustomInput
+        label="GREEN"
+        min={0}
+        max={255}
+        step={1}
+        value={node.behavior.green}
+        defaultValue={0}
+        handleUpdate={(v) => updateField("green", v)}
+      />
 
-        <label class="flex items-center gap-3">
-          <span class="text-sm font-medium w-28 text-right">BLUE</span>
-          <input
-            type="range"
-            min="0"
-            max="255"
-            value={node.behavior.blue}
-            oninput={(e) => updateField("blue", Number(e.currentTarget.value))}
-            class="flex-1"
-          />
-          <span class="text-sm font-medium w-12 text-center"
-            >{node.behavior.blue}</span
-          >
-        </label>
-      </div>
+      <CustomInput
+        label="BLUE"
+        min={0}
+        max={255}
+        step={1}
+        value={node.behavior.blue}
+        defaultValue={0}
+        handleUpdate={(v) => updateField("blue", v)}
+      />
     {/if}
   </div>
 </div>
