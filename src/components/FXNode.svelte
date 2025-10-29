@@ -20,118 +20,190 @@
   }
 </script>
 
-<div class="flex flex-col gap-4 w-56">
-  <h3 class="font-bold text-nowrap">FX - {node.behavior.type}</h3>
+<div class="flex flex-col w-72">
+  <!-- Tab Header -->
+  <div class="flex flex-wrap border-b border-black">
+    <button
+      class="px-4 py-2 text-sm font-medium {node.behavior.type === 'dot'
+        ? 'bg-black text-white'
+        : 'bg-transparent text-black underline hover:no-underline'}"
+    >
+      DOTS
+    </button>
+    <button
+      class="px-4 py-2 text-sm font-medium bg-transparent text-black underline hover:no-underline"
+      disabled
+    >
+      BARS
+    </button>
+    <button
+      class="px-4 py-2 text-sm font-medium bg-transparent text-black underline hover:no-underline"
+      disabled
+    >
+      MIX
+    </button>
+    <button
+      class="px-4 py-2 text-sm font-medium bg-transparent text-black underline hover:no-underline"
+      disabled
+    >
+      DITHER
+    </button>
+    <button
+      class="px-4 py-2 text-sm font-medium bg-transparent text-black underline hover:no-underline"
+      disabled
+    >
+      ERODE
+    </button>
+    <button
+      class="px-4 py-2 text-sm font-medium bg-transparent text-black underline hover:no-underline"
+      disabled
+    >
+      HALFTONE
+    </button>
+    <button
+      class="px-4 py-2 text-sm font-medium bg-transparent text-black underline hover:no-underline"
+      disabled
+    >
+      MITOSIS
+    </button>
+    <button
+      class="px-4 py-2 text-sm font-medium bg-transparent text-black underline hover:no-underline"
+      disabled
+    >
+      EDGEDETECT
+    </button>
+    <button
+      class="px-4 py-2 text-sm font-medium bg-transparent text-black underline hover:no-underline"
+      disabled
+    >
+      ASCII
+    </button>
+  </div>
 
-  <p>
-    Progress: {Math.round(node.progress * 100)}%
-  </p>
-  {#if node.behavior.type === "dot"}
-    <div class="flex flex-col gap-1">
-      <label class="flex gap-2 items-center">
-        <span class="text-sm w-32 text-nowrap">Horizontal Count</span>
-        <input
-          type="range"
-          min="1"
-          max="100"
-          value={node.behavior.horizontalCount}
-          oninput={(e) =>
-            updateField("horizontalCount", Number(e.currentTarget.value))}
-          class="w-full"
-        />
-        <span class="text-xs">{node.behavior.horizontalCount}</span>
-      </label>
+  <!-- Content Area -->
+  <div class="py-4">
+    {#if node.behavior.type === "dot"}
+      <div class="flex flex-col gap-4">
+        <label class="flex items-center gap-3">
+          <span class="text-sm font-medium w-36 text-right"
+            >HORIZONTAL COUNT</span
+          >
+          <input
+            type="range"
+            min="1"
+            max="100"
+            value={node.behavior.horizontalCount}
+            oninput={(e) =>
+              updateField("horizontalCount", Number(e.currentTarget.value))}
+            class="flex-1"
+          />
+          <span class="text-sm font-medium w-12 text-center"
+            >{node.behavior.horizontalCount}</span
+          >
+        </label>
 
-      <label class="flex gap-2 items-center">
-        <span class="text-sm w-32 text-nowrap">Vertical Count</span>
-        <input
-          type="range"
-          min="1"
-          max="100"
-          value={node.behavior.verticalCount}
-          oninput={(e) =>
-            updateField("verticalCount", Number(e.currentTarget.value))}
-          class="w-full"
-        />
-        <span class="text-xs">{node.behavior.verticalCount}</span>
-      </label>
+        <label class="flex items-center gap-3">
+          <span class="text-sm font-medium w-36 text-right">VERTICAL COUNT</span
+          >
+          <input
+            type="range"
+            min="1"
+            max="100"
+            value={node.behavior.verticalCount}
+            oninput={(e) =>
+              updateField("verticalCount", Number(e.currentTarget.value))}
+            class="flex-1"
+          />
+          <span class="text-sm font-medium w-12 text-center"
+            >{node.behavior.verticalCount}</span
+          >
+        </label>
 
-      <label class="flex gap-2 items-center">
-        <span class="text-sm w-32 text-nowrap">Dot Radius</span>
-        <input
-          type="range"
-          min="1"
-          max="50"
-          value={node.behavior.dotRadius}
-          oninput={(e) =>
-            updateField("dotRadius", Number(e.currentTarget.value))}
-          class="w-full"
-        />
-        <span class="text-xs">{node.behavior.dotRadius}</span>
-      </label>
+        <label class="flex items-center gap-3">
+          <span class="text-sm font-medium w-36 text-right">DOT RADIUS</span>
+          <input
+            type="range"
+            min="1"
+            max="50"
+            value={node.behavior.dotRadius}
+            oninput={(e) =>
+              updateField("dotRadius", Number(e.currentTarget.value))}
+            class="flex-1"
+          />
+          <span class="text-sm font-medium w-12 text-center"
+            >{node.behavior.dotRadius}</span
+          >
+        </label>
 
-      <label class="flex gap-2 items-center">
-        <span class="text-sm w-32 text-nowrap">Border Radius</span>
-        <input
-          type="range"
-          min="-1"
-          max="1"
-          step="0.1"
-          value={node.behavior.borderRadius}
-          oninput={(e) =>
-            updateField("borderRadius", Number(e.currentTarget.value))}
-          class="w-full"
-        />
-        <span class="text-xs">{node.behavior.borderRadius.toFixed(1)}</span>
-      </label>
+        <label class="flex items-center gap-3">
+          <span class="text-sm font-medium w-36 text-right">BORDER RADIUS</span>
+          <input
+            type="range"
+            min="-1"
+            max="1"
+            step="0.1"
+            value={node.behavior.borderRadius}
+            oninput={(e) =>
+              updateField("borderRadius", Number(e.currentTarget.value))}
+            class="flex-1"
+          />
+          <span class="text-sm font-medium w-12 text-center"
+            >{node.behavior.borderRadius.toFixed(1)}</span
+          >
+        </label>
 
-      <label class="flex gap-2 items-center">
-        <span class="text-sm w-32 text-nowrap">Rotation</span>
-        <input
-          type="range"
-          min="0"
-          max="360"
-          value={node.behavior.rotation}
-          oninput={(e) =>
-            updateField("rotation", Number(e.currentTarget.value))}
-          class="w-full"
-        />
-        <span class="text-xs">{node.behavior.rotation}°</span>
-      </label>
-
-      <div class="border-t pt-3 mt-3">
-        <h4 class="text-sm text-nowrap font-semibold mb-2">Filter</h4>
-
-        <label class="flex gap-2 items-center">
-          <span class="text-sm w-32 text-nowrap">Low</span>
+        <label class="flex items-center gap-3">
+          <span class="text-sm font-medium w-36 text-right">ROTATION</span>
           <input
             type="range"
             min="0"
-            max="1"
-            step="0.01"
-            value={node.behavior.filter.low}
+            max="360"
+            value={node.behavior.rotation}
             oninput={(e) =>
-              updateFilterField("low", Number(e.currentTarget.value))}
-            class="w-full"
+              updateField("rotation", Number(e.currentTarget.value))}
+            class="flex-1"
           />
-          <span class="text-xs">{node.behavior.filter.low.toFixed(2)}</span>
+          <span class="text-sm font-medium w-12 text-center"
+            >{node.behavior.rotation}°</span
+          >
         </label>
 
-        <label class="flex gap-2 items-center">
-          <span class="text-sm w-32 text-nowrap">High</span>
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.01"
-            value={node.behavior.filter.high}
-            oninput={(e) =>
-              updateFilterField("high", Number(e.currentTarget.value))}
-            class="w-full"
-          />
-          <span class="text-xs">{node.behavior.filter.high.toFixed(2)}</span>
-        </label>
+        <div class="border-t border-black pt-4 mt-4">
+          <label class="flex items-center gap-3">
+            <span class="text-sm font-medium w-36 text-right">FILTER LOW</span>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              value={node.behavior.filter.low}
+              oninput={(e) =>
+                updateFilterField("low", Number(e.currentTarget.value))}
+              class="flex-1"
+            />
+            <span class="text-sm font-medium w-12 text-center"
+              >{node.behavior.filter.low.toFixed(2)}</span
+            >
+          </label>
+
+          <label class="flex items-center gap-3 mt-4">
+            <span class="text-sm font-medium w-36 text-right">FILTER HIGH</span>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              value={node.behavior.filter.high}
+              oninput={(e) =>
+                updateFilterField("high", Number(e.currentTarget.value))}
+              class="flex-1"
+            />
+            <span class="text-sm font-medium w-12 text-center"
+              >{node.behavior.filter.high.toFixed(2)}</span
+            >
+          </label>
+        </div>
       </div>
-    </div>
-  {/if}
+    {/if}
+  </div>
 </div>
