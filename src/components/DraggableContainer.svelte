@@ -81,7 +81,7 @@
     class={`flex self-stretch group ${mergedMode ? "p-0" : "p-4 px-8"} pl-6 cursor-grab active:cursor-grabbing`}
   >
     <span
-      class={`group-active:scale-105 w-2 ${mergedMode ? "h-full" : "h-24"} transition bg-black`}
+      class={`group-active:scale-x-200 w-2 ${mergedMode ? "h-full" : "h-24"} transition bg-black`}
     ></span>
   </button>
   {@render children?.()}

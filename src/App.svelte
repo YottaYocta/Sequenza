@@ -241,84 +241,50 @@
 </script>
 
 <header class="w-full border-b p-4 flex items-center justify-center">
-  <div class="w-full max-w-4xl">
+  <div class="w-full max-w-4xl px-6">
     <h1>BRUTALFX</h1>
   </div>
 </header>
-<main class="w-full h-96 min-h-96 p-4 flex items-center justify-center">
-  <div class="w-full h-96 max-w-4xl h-min-96 relative grid grid-cols-2 gap-8">
-    <!-- Source Node - position 1 (top-left, row 1) -->
-    <div class="relative h-24" style="grid-column: 1; grid-row: 1;">
-      <DraggableContainer>
-        {#snippet children()}
-          <SourceNode
-            onImageLoad={handleSourceImageLoad}
-            defaultImagePath={DefaultImg}
-          />
-        {/snippet}
-      </DraggableContainer>
-    </div>
+<main class="w-full min-h-96 p-4 py-8 flex flexcitems-center justify-center">
+  <div class="w-full h-10 max-w-4xl relative">
+    <DraggableContainer>
+      {#snippet children()}
+        <SourceNode
+          onImageLoad={handleSourceImageLoad}
+          defaultImagePath={DefaultImg}
+        />
+      {/snippet}
+    </DraggableContainer>
 
-    {#each processingPipeline as node, index}
-      {@const isEvenIndex = index % 2 === 0}
-      {@const nodeRow = Math.floor(index / 2 + 1) * 2}
-      {@const viewerRow = isEvenIndex ? nodeRow - 1 : nodeRow + 1}
+    <DraggableContainer startY={200}>
+      {#snippet children()}
+        <AdjustmentNode
+          nodeIndex={0}
+          node={processingPipeline[0] as ProccessingNode<Adjustment>}
+          onUpdateBehavior={handleUpdateAdjustment}
+        />
+      {/snippet}
+    </DraggableContainer>
 
-      {#if isAdjustmentNode(node)}
-        <!-- Node: even indices on left, odd indices on right -->
-        <div
-          class="relative h-72"
-          style="grid-column: {isEvenIndex ? 1 : 2}; grid-row: {nodeRow};"
-        >
-          <DraggableContainer>
-            {#snippet children()}
-              <AdjustmentNode
-                nodeIndex={index}
-                {node}
-                onUpdateBehavior={handleUpdateAdjustment}
-              />
-            {/snippet}
-          </DraggableContainer>
-        </div>
+    <!-- Viewer: even indices on right, odd indices on left (opposite of node) -->
+    <DraggableContainer mergedMode={true} startX={500}>
+      {#snippet children()}
+        <ViewerNode output={processingPipeline[0].outputData}></ViewerNode>
+      {/snippet}
+    </DraggableContainer>
 
-        <!-- Viewer: even indices on right, odd indices on left (opposite of node) -->
-        <div
-          class="relative h-72"
-          style="grid-column: {isEvenIndex ? 2 : 1}; grid-row: {viewerRow};"
-        >
-          <DraggableContainer mergedMode={true}>
-            {#snippet children()}
-              <ViewerNode output={node.outputData}></ViewerNode>
-            {/snippet}
-          </DraggableContainer>
-        </div>
-      {:else}
-        <!-- Node: even indices on left, odd indices on right -->
-        <div
-          class="relative h-72"
-          style="grid-column: {isEvenIndex ? 1 : 2}; grid-row: {nodeRow};"
-        >
-          <DraggableContainer>
-            {#snippet children()}
-              <FXNode
-                nodeIndex={index}
-                node={node as ProccessingNode<FX>}
-                onUpdateBehavior={handleUpdateFX}
-              />
-            {/snippet}
-          </DraggableContainer>
-        </div>
+    <DraggableContainer startY={450}>
+      {#snippet children()}
+        <FXNode
+          nodeIndex={1}
+          node={processingPipeline[1] as ProccessingNode<FX>}
+          onUpdateBehavior={handleUpdateFX}
+        />
+      {/snippet}
+    </DraggableContainer>
 
-        <!-- Viewer: even indices on right, odd indices on left (opposite of node) -->
-        <div
-          class="relative h-72"
-          style="grid-column: {isEvenIndex ? 2 : 1}; grid-row: {viewerRow};"
-        >
-          <DraggableContainer mergedMode={true}>
-            <ViewerNode output={node.outputData}></ViewerNode>
-          </DraggableContainer>
-        </div>
-      {/if}
-    {/each}
+    <DraggableContainer mergedMode={true} startX={500} startY={400}>
+      <ViewerNode output={processingPipeline[1].outputData}></ViewerNode>
+    </DraggableContainer>
   </div>
 </main>
