@@ -1,31 +1,38 @@
 <script lang="ts">
-  let x = $state(0);
-  let y = $state(0);
-  let tracking = $state(true);
+  import type { Attachment } from "svelte/attachments";
 
   const { children } = $props();
 
-  const handleMouseDown = () => {
-    tracking = true;
-  };
+  const draggable: Attachment<HTMLDivElement> = (element: HTMLDivElement) => {
+    const handleMouseMove = (e: MouseEvent) => {
+      element.style.left = `${e.clientX}px`;
+      element.style.top = `${e.clientY}px`;
+    };
 
-  const handleMouseMove = (e: MouseEvent) => {
-    if (tracking) {
-      x = e.clientX;
-      y = e.clientY;
-    }
-  };
+    const handleMouseUp = () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
 
-  const handleMouseUp = () => {
-    tracking = false;
+    const handleMouseDown = () => {
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mouseup", handleMouseUp);
+    };
+
+    element.addEventListener("mousedown", handleMouseDown);
+
+    return () => {
+      // Cleanup on unmount
+      element.removeEventListener("mousedown", handleMouseDown);
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
   };
 </script>
 
 <div
-  style={`position: absolute; left: ${x}px; top: ${y}px; transform: translateX(-50%) translateY(-50%);`}
-  onmousedown={handleMouseDown}
-  onmousemove={handleMouseMove}
-  onmouseup={handleMouseUp}
+  {@attach draggable}
+  style="position: absolute; left: 0px; top: 0px; transform: translateX(-50%) translateY(-50%);"
   role="button"
   tabindex="0"
   class="w-32 h-32 border border-neutral-900"
