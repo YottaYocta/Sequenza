@@ -47,14 +47,6 @@
     },
     {
       progress: 0,
-      behavior: createDefaultAdjustment("HSL"),
-      outputData: {
-        type: "image",
-        data: new ImageData(1, 1),
-      },
-    },
-    {
-      progress: 0,
       behavior: newFX("dot"),
       outputData: {
         type: "svg",
@@ -294,7 +286,7 @@
           class="relative h-72"
           style="grid-column: {isEvenIndex ? 2 : 1}; grid-row: {viewerRow};"
         >
-          <DraggableContainer mergedMode={true}>
+          <DraggableContainer>
             {#snippet children()}
               <ViewerNode output={node.outputData}></ViewerNode>
             {/snippet}
