@@ -286,7 +286,7 @@
           class="relative h-72"
           style="grid-column: {isEvenIndex ? 2 : 1}; grid-row: {viewerRow};"
         >
-          <DraggableContainer>
+          <DraggableContainer mergedMode={true}>
             {#snippet children()}
               <ViewerNode output={node.outputData}></ViewerNode>
             {/snippet}
@@ -314,7 +314,7 @@
           class="relative h-72"
           style="grid-column: {isEvenIndex ? 2 : 1}; grid-row: {viewerRow};"
         >
-          <DraggableContainer>
+          <DraggableContainer mergedMode={true}>
             <ViewerNode output={node.outputData}></ViewerNode>
           </DraggableContainer>
         </div>
