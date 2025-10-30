@@ -269,7 +269,7 @@
     <DraggableContainer startY={200}>
       {#snippet children()}
         <AdjustmentNode
-          nodeIndex={0}
+          nodeIndex={1}
           node={processingPipeline[0] as ProccessingNode<Adjustment>}
           onUpdateBehavior={handleUpdateAdjustment}
         />
@@ -279,7 +279,7 @@
     <!-- Viewer: even indices on right, odd indices on left (opposite of node) -->
     <DraggableContainer mergedMode={true} startX={500}>
       {#snippet children()}
-        <ViewerNode nodeIndex={1} output={processingPipeline[0].outputData}
+        <ViewerNode nodeIndex={2} output={processingPipeline[0].outputData}
         ></ViewerNode>
       {/snippet}
     </DraggableContainer>
@@ -287,7 +287,7 @@
     <DraggableContainer startY={450}>
       {#snippet children()}
         <FXNode
-          nodeIndex={2}
+          nodeIndex={3}
           node={processingPipeline[1] as ProccessingNode<FX>}
           onUpdateBehavior={handleUpdateFX}
         />
@@ -295,7 +295,7 @@
     </DraggableContainer>
 
     <DraggableContainer mergedMode={true} startX={500} startY={400}>
-      <ViewerNode nodeIndex={3} output={processingPipeline[1].outputData}
+      <ViewerNode nodeIndex={5} output={processingPipeline[1].outputData}
       ></ViewerNode>
     </DraggableContainer>
 

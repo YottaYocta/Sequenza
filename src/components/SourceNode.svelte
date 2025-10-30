@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Attachment } from "svelte/attachments";
+  import Endpoint from "./Endpoint.svelte";
 
   const { onImageLoad, defaultImagePath } = $props<{
     onImageLoad: (imageData: ImageData) => void;
@@ -96,8 +97,11 @@
 
   <button
     onclick={triggerFileInput}
-    class="w-min h-min text-nowrap text-sm border border-neutral-900 hover:bg-neutral-200 active:bg-black active:text-white"
+    class="w-min h-min text-nowrap text-sm border border-neutral-900 hover:bg-neutral-200 active:bg-black active:text-white relative"
   >
     {currentImageData ? "Change Image" : "Upload Image"}
+    <div class="absolute right-0 bottom-0">
+      <Endpoint nodeIdx="0" type="end"></Endpoint>
+    </div>
   </button>
 </div>
