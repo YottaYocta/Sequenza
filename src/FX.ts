@@ -443,7 +443,7 @@ export const processBar = (
 };
 
 // ASCII character set ordered by density (from darkest to lightest)
-const ASCII_CHARS = "@%#*+=-:. ";
+const ASCII_CHARS = " .:-=+*#%@";
 
 /**
  * Map brightness (0-1) to an ASCII character
