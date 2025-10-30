@@ -109,7 +109,7 @@
 </script>
 
 <div
-  class="w-84 h-84 flex flex-col gap-1 items-start justify-start rounded-tr-3xl p-4 border bg-neutral-50"
+  class="w-72 h-72 flex flex-col gap-1 items-start justify-start rounded-tr-3xl p-4 border bg-neutral-50"
 >
   <span
     class="absolute top-0 elft-0 -translate-1/2 w-2 h-2 bg-black flex items-center"
@@ -129,28 +129,22 @@
       <button onclick={copyImageToClipboard} class="button-1">
         COPY IMAGE
       </button>
-      <button onclick={saveImageFile} class="button-1">
-        SAVE IMAGE
-      </button>
+      <button onclick={saveImageFile} class="button-1"> SAVE IMAGE </button>
     </div>
     <div class="h-full w-full flex items-center justify-center">
-      <canvas {@attach renderCanvas} class="max-w-full h-auto hover:outline"
+      <canvas
+        {@attach renderCanvas}
+        class="max-w-48 h-auto max-h-48 hover:outline"
       ></canvas>
     </div>
   {:else if output.type === "svg"}
-    <div class="w-full h-min flex gap-2 text-nowrap">
-      <button onclick={copySvgToClipboard} class="button-1">
-        COPY SVG
-      </button>
-      <button onclick={saveSvgFile} class="button-1">
-        SAVE SVG
-      </button>
+    <div class="w-full h-min flex gap-2 text-nowrap flex-wrap gap-y-0">
+      <button onclick={copySvgToClipboard} class="button-1"> COPY SVG </button>
+      <button onclick={saveSvgFile} class="button-1"> SAVE SVG </button>
       <button onclick={copyImageToClipboard} class="button-1">
         COPY IMAGE
       </button>
-      <button onclick={saveImageFile} class="button-1">
-        SAVE IMAGE
-      </button>
+      <button onclick={saveImageFile} class="button-1"> SAVE IMAGE </button>
     </div>
 
     <div class="w-full h-full flex items-center justify-center p-2">
@@ -158,7 +152,7 @@
         viewBox="{output.data.viewBox.x} {output.data.viewBox.y} {output.data
           .viewBox.width} {output.data.viewBox.height}"
         xmlns="http://www.w3.org/2000/svg"
-        class="w-64 h-auto hover:outline"
+        class="max-w-48 max-h-48 h-auto hover:outline"
       >
         {@html output.data.children.join("")}
       </svg>

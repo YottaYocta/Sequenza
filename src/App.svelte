@@ -275,7 +275,7 @@
     </DraggableContainer>
 
     {#each processingPipeline as node, idx}
-      <DraggableContainer startY={200 + 350 * idx}>
+      <DraggableContainer startY={idx === 0 ? 200 : 100 + 400 * idx}>
         {#snippet children()}
           {#if isAdjustmentNode(node)}
             <AdjustmentNode
@@ -295,7 +295,7 @@
       <DraggableContainer
         mergedMode={true}
         startX={500}
-        startY={350 * idx + 150}
+        startY={400 * idx + 100}
       >
         {#snippet children()}
           <ViewerNode
