@@ -68,8 +68,5 @@
   };
 </script>
 
-<svg
-  {@attach svgAttachment}
-  class="absolute inset-0 pointer-events-none"
-  style="z-index: -1;"
+<svg {@attach svgAttachment} class="absolute inset-0 pointer-events-none -z-10"
 ></svg>
