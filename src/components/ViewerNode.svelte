@@ -30,6 +30,7 @@
       // Direct rendering for image outputs
       canvas.width = output.data.width;
       canvas.height = output.data.height;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.putImageData(output.data, 0, 0);
     } else if (output && output.type === "svg") {
       // Convert SVG to canvas for image export functionality
@@ -37,6 +38,7 @@
         const imageData = await getImageData(output);
         canvas.width = imageData.width;
         canvas.height = imageData.height;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.putImageData(imageData, 0, 0);
       })();
     }
