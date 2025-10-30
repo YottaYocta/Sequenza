@@ -8,4 +8,17 @@
     font-style: normal;
     letter-spacing: -0.1ch;
   }
+
+  .button-1 {
+    cursor: pointer;
+    font-size: var(--text-sm);
+  }
+  .button-1:hover {
+    outline: 1px solid #000;
+  }
+  .button-1:active {
+    outline: 1px solid #000;
+    background-color: #000;
+    color: #fff;
+  }
 }

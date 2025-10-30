@@ -126,16 +126,10 @@
     <p class="text-neutral-500 text-sm">No input</p>
   {:else if output.type === "image"}
     <div class="w-full h-min justify-start items-center flex gap-2">
-      <button
-        onclick={copyImageToClipboard}
-        class="text-sm hover:outline active:bg-black active:text-white cursor-pointer"
-      >
+      <button onclick={copyImageToClipboard} class="button-1">
         COPY IMAGE
       </button>
-      <button
-        onclick={saveImageFile}
-        class="text-sm hover:outline active:bg-black active:text-white cursor-pointer"
-      >
+      <button onclick={saveImageFile} class="button-1">
         SAVE IMAGE
       </button>
     </div>
@@ -145,28 +139,16 @@
     </div>
   {:else if output.type === "svg"}
     <div class="w-full h-min flex gap-2 text-nowrap">
-      <button
-        onclick={copySvgToClipboard}
-        class=" text-sm hover:outline active:bg-black active:text-white cursor-pointer"
-      >
+      <button onclick={copySvgToClipboard} class="button-1">
         COPY SVG
       </button>
-      <button
-        onclick={saveSvgFile}
-        class=" text-sm hover:outline active:bg-black active:text-white cursor-pointer"
-      >
+      <button onclick={saveSvgFile} class="button-1">
         SAVE SVG
       </button>
-      <button
-        onclick={copyImageToClipboard}
-        class=" text-sm hover:outline active:bg-black active:text-white cursor-pointer"
-      >
+      <button onclick={copyImageToClipboard} class="button-1">
         COPY IMAGE
       </button>
-      <button
-        onclick={saveImageFile}
-        class=" text-sm hover:outline active:bg-black active:text-white cursor-pointer"
-      >
+      <button onclick={saveImageFile} class="button-1">
         SAVE IMAGE
       </button>
     </div>
