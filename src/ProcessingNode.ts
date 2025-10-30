@@ -2,10 +2,47 @@ import type { Adjustment } from "./Adjustment";
 import { processRGB, processHSL } from "./Adjustment";
 import type { FX } from "./FX";
 import { processDot, processBar, processAscii } from "./FX";
+import { svgToImageData } from "./utils";
 
 export type Output =
   | { type: "image"; data: ImageData }
   | { type: "svg"; data: string };
+
+/**
+ * Extracts ImageData from Output.
+ * If output is already ImageData, returns it directly.
+ * If output is SVG, converts it to ImageData using offline canvas rendering.
+ * Note: For SVG conversion, dimensions are extracted from the SVG viewBox.
+ */
+export const getImageData = async (output: Output): Promise<ImageData> => {
+  if (output.type === "image") {
+    return output.data;
+  }
+
+  // Extract dimensions from SVG viewBox
+  const viewBoxMatch = output.data.match(/viewBox="0 0 (\d+) (\d+)"/);
+  if (!viewBoxMatch) {
+    throw new Error("SVG must have a viewBox attribute");
+  }
+
+  const width = parseInt(viewBoxMatch[1]);
+  const height = parseInt(viewBoxMatch[2]);
+
+  return await svgToImageData(output.data, width, height);
+};
+
+/**
+ * Extracts SVG string from Output.
+ * If output is SVG, returns the string directly.
+ * If output is ImageData, returns null (cannot convert ImageData to SVG).
+ */
+export const getSvgData = (output: Output): string | null => {
+  if (output.type === "svg") {
+    return output.data;
+  }
+  // Cannot convert ImageData to SVG
+  return null;
+};
 
 export interface ProccessingNode<T extends Adjustment | FX> {
   progress: number;
@@ -117,7 +154,11 @@ export const updateProcessingNode = <T extends FX | Adjustment>(
     }
 
     // Check if it's an FX type
-    if (behavior.type === "dot" || behavior.type === "bar" || behavior.type === "ascii") {
+    if (
+      behavior.type === "dot" ||
+      behavior.type === "bar" ||
+      behavior.type === "ascii"
+    ) {
       const fx = behavior as FX;
 
       switch (fx.type) {

@@ -1,5 +1,7 @@
 <script lang="ts">
+  import type { Attachment } from "svelte/attachments";
   import type { Output } from "../ProcessingNode";
+  import { getImageData, getSvgData } from "../ProcessingNode";
   import Endpoint from "./Endpoint.svelte";
 
   interface Props {
@@ -9,67 +11,95 @@
 
   const { output, nodeIndex }: Props = $props();
 
-  let canvasRef: HTMLCanvasElement | undefined = $state();
+  let canvasElement: HTMLCanvasElement | undefined = $state();
 
-  // Draw image data to canvas when output changes
-  $effect(() => {
-    if (output && output.type === "image" && canvasRef) {
-      const ctx = canvasRef.getContext("2d");
-      if (ctx) {
-        canvasRef.width = output.data.width;
-        canvasRef.height = output.data.height;
-        ctx.putImageData(output.data, 0, 0);
-      }
-    }
-  });
+  /**
+   * Canvas attachment that renders the output data to the canvas
+   */
+  const renderCanvas: Attachment<HTMLCanvasElement> = (
+    canvas: HTMLCanvasElement
+  ) => {
+    // Store reference for copy/save functions
+    canvasElement = canvas;
 
-  async function copyToClipboard() {
-    if (!output) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
-    if (output.type === "image" && canvasRef) {
-      try {
-        canvasRef.toBlob(async (blob) => {
-          if (blob) {
-            await navigator.clipboard.write([
-              new ClipboardItem({ "image/png": blob }),
-            ]);
-          }
-        });
-      } catch (err) {
-        console.error("Failed to copy image:", err);
+    $effect(() => {
+      if (output) {
+        (async () => {
+          const imageData = await getImageData(output);
+          canvas.width = imageData.width;
+          canvas.height = imageData.height;
+          ctx.putImageData(imageData, 0, 0);
+        })();
       }
-    } else if (output.type === "svg") {
-      try {
-        await navigator.clipboard.writeText(output.data);
-      } catch (err) {
-        console.error("Failed to copy SVG:", err);
-      }
+    });
+  };
+
+  async function copyImageToClipboard() {
+    if (!output || !canvasElement) return;
+
+    try {
+      canvasElement.toBlob(async (blob) => {
+        if (blob) {
+          await navigator.clipboard.write([
+            new ClipboardItem({ "image/png": blob }),
+          ]);
+        }
+      });
+    } catch (err) {
+      console.error("Failed to copy image:", err);
     }
   }
 
-  function saveFile() {
+  async function copySvgToClipboard() {
     if (!output) return;
 
-    if (output.type === "image" && canvasRef) {
-      canvasRef.toBlob((blob) => {
-        if (blob) {
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = "image.png";
-          a.click();
-          URL.revokeObjectURL(url);
-        }
-      });
-    } else if (output.type === "svg") {
-      const blob = new Blob([output.data], { type: "image/svg+xml" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "output.svg";
-      a.click();
-      URL.revokeObjectURL(url);
+    const svgData = getSvgData(output);
+    if (!svgData) {
+      console.error("No SVG data available");
+      return;
     }
+
+    try {
+      await navigator.clipboard.writeText(svgData);
+    } catch (err) {
+      console.error("Failed to copy SVG:", err);
+    }
+  }
+
+  function saveImageFile() {
+    if (!output || !canvasElement) return;
+
+    canvasElement.toBlob((blob) => {
+      if (blob) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "image.png";
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    });
+  }
+
+  function saveSvgFile() {
+    if (!output) return;
+
+    const svgData = getSvgData(output);
+    if (!svgData) {
+      console.error("No SVG data available");
+      return;
+    }
+
+    const blob = new Blob([svgData], { type: "image/svg+xml" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "output.svg";
+    a.click();
+    URL.revokeObjectURL(url);
   }
 </script>
 
@@ -92,37 +122,47 @@
   {:else if output.type === "image"}
     <div class="w-full justify-start items-center flex gap-2">
       <button
-        onclick={copyToClipboard}
+        onclick={copyImageToClipboard}
         class=" text-sm hover:bg-neutral-100 transition"
       >
         Copy Image
       </button>
       <button
-        onclick={saveFile}
+        onclick={saveImageFile}
         class=" text-sm hover:bg-neutral-100 transition"
       >
         Save Image
       </button>
     </div>
-    <canvas bind:this={canvasRef} class="max-w-full h-auto"></canvas>
+    <canvas {@attach renderCanvas} class="max-w-full h-auto"></canvas>
   {:else if output.type === "svg"}
-    <div class="flex gap-2">
+    <div class="flex gap-2 flex-wrap">
       <button
-        onclick={copyToClipboard}
+        onclick={copySvgToClipboard}
         class=" text-sm hover:bg-neutral-100 transition"
       >
         Copy SVG
       </button>
       <button
-        onclick={saveFile}
+        onclick={saveSvgFile}
         class=" text-sm hover:bg-neutral-100 transition"
       >
         Save SVG
       </button>
+      <button
+        onclick={copyImageToClipboard}
+        class=" text-sm hover:bg-neutral-100 transition"
+      >
+        Copy Image
+      </button>
+      <button
+        onclick={saveImageFile}
+        class=" text-sm hover:bg-neutral-100 transition"
+      >
+        Save Image
+      </button>
     </div>
 
-    <div class="w-full max-w-full p-2">
-      {@html output.data}
-    </div>
+    <canvas {@attach renderCanvas} class="max-w-full h-auto"></canvas>
   {/if}
 </div>

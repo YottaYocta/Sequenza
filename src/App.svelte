@@ -5,7 +5,11 @@
   import { createDefaultAdjustment } from "./Adjustment";
   import { newFX } from "./FX";
   import { untrack } from "svelte";
-  import { updateProcessingNode, resetNodeState } from "./ProcessingNode";
+  import {
+    updateProcessingNode,
+    resetNodeState,
+    getImageData,
+  } from "./ProcessingNode";
   import AdjustmentNode from "./components/AdjustmentNode.svelte";
   import FXNode from "./components/FXNode.svelte";
   import DraggableContainer from "./components/DraggableContainer.svelte";
@@ -96,7 +100,7 @@
 
     let animationFrameId: number | null = null;
 
-    function processFrame() {
+    async function processFrame() {
       // Use untrack to read pipeline state without creating dependencies
       const pipeline = untrack(() => processingPipeline);
       const currentNode = pipeline[currentNodeIndex];
@@ -112,12 +116,8 @@
         nodeSource = sourceImageData;
       } else {
         const prevOutput = pipeline[currentNodeIndex - 1].outputData;
-        if (prevOutput.type === "image") {
-          nodeSource = prevOutput.data;
-        } else {
-          // If previous node output is SVG, use original source
-          nodeSource = sourceImageData;
-        }
+        // Use getImageData to invariably get ImageData regardless of output type
+        nodeSource = await getImageData(prevOutput);
       }
 
       // Process one iteration
@@ -252,7 +252,7 @@
 
 <header class="w-full border-b p-4 flex items-center justify-center">
   <div class="w-full max-w-4xl px-6">
-    <h1>BRUTALFX</h1>
+    <h1 class="text-3xl tracking-[-0.25rem] font-medium">BRUTALFX</h1>
   </div>
 </header>
 <main class="w-full min-h-96 p-4 py-8 flex flexcitems-center justify-center">
