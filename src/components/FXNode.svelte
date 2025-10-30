@@ -43,7 +43,7 @@
       const startY = buttonRect.bottom - parentRect.top;
 
       // Top right corner of body
-      const endX = bodyRect.right - parentRect.left;
+      const endX = bodyRect.left - parentRect.left;
       const endY = bodyRect.top - parentRect.top;
 
       // Update the line parameters
