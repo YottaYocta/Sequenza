@@ -1,5 +1,6 @@
 <script lang="ts">
   import { type Attachment } from "svelte/attachments";
+
   let { startX, startY, endX, endY } = $props(); // positions relative to closest positioned parent
 
   const lineAttachment: Attachment<SVGElement> = (element: SVGElement) => {
@@ -24,4 +25,7 @@
   };
 </script>
 
-<svg {@attach lineAttachment} class="absolute color-black stroke-black"></svg>
+<svg
+  {@attach lineAttachment}
+  class="absolute color-black stroke-black pointer-events-none"
+></svg>

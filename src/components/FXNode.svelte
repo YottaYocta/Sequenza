@@ -3,12 +3,78 @@
   import type { FX } from "../FX";
   import { newFX } from "../FX";
   import CustomInput from "./CustomInput.svelte";
+  import Line from "./Line.svelte";
+  import type { Attachment } from "svelte/attachments";
+  import { untrack } from "svelte";
 
-  const { nodeIndex, node, onUpdateBehavior } = $props<{
+  interface Props {
     nodeIndex: number;
     node: ProccessingNode<FX>;
     onUpdateBehavior: (nodeIndex: number, behavior: FX) => void;
-  }>();
+  }
+
+  const { nodeIndex, node, onUpdateBehavior }: Props = $props();
+
+  let body = $state<HTMLDivElement | null>(null);
+  let lineParams: {
+    startX: number;
+    endX: number;
+    startY: number;
+    endY: number;
+  } | null = $state(null);
+
+  const buttonAttachment: Attachment<HTMLButtonElement> = (
+    element: HTMLButtonElement
+  ) => {
+    if (node.behavior.type === element.name && body !== null) {
+      // Get bounding rects relative to the viewport
+      const buttonRect = element.getBoundingClientRect();
+      const bodyRect = body.getBoundingClientRect();
+
+      // Get the closest positioned parent (assuming it's the shared parent)
+      const parent = element.offsetParent;
+      const parentRect = parent
+        ? parent.getBoundingClientRect()
+        : { left: 0, top: 0 };
+
+      // Calculate positions relative to the closest positioned parent
+      // Bottom right corner of button
+      const startX = buttonRect.right - parentRect.left;
+      const startY = buttonRect.bottom - parentRect.top;
+
+      // Top right corner of body
+      const endX = bodyRect.right - parentRect.left;
+      const endY = bodyRect.top - parentRect.top;
+
+      // Update the line parameters
+
+      untrack(() => {
+        lineParams = { startX, startY, endX, endY };
+      });
+    } else if (node.behavior.type !== element.name) {
+      // Clear line if this button is not selected
+    }
+  };
+
+  $inspect(lineParams);
+
+  type FXOption = {
+    type: "dot" | "bar" | "ascii" | null;
+    label: string;
+    disabled?: boolean;
+  };
+
+  const fxOptions: FXOption[] = [
+    { type: "dot", label: "DOTS" },
+    { type: "bar", label: "BARS" },
+    { type: null, label: "MIX", disabled: true },
+    { type: null, label: "DITHER", disabled: true },
+    { type: null, label: "ERODE", disabled: true },
+    { type: null, label: "HALFTONE", disabled: true },
+    { type: null, label: "MITOSIS", disabled: true },
+    { type: null, label: "EDGEDETECT", disabled: true },
+    { type: "ascii", label: "ASCII" },
+  ];
 
   function updateField(field: string, value: number) {
     onUpdateBehavior(nodeIndex, { ...node.behavior, [field]: value } as FX);
@@ -40,70 +106,36 @@
 <div class="flex flex-col min-w-64 w-min text-sm">
   <!-- Tab Header -->
   <div class="flex flex-wrap gap-1 pb-8 relative">
-    <button
-      class=" text-sm font-medium {node.behavior.type === 'dot'
-        ? 'bg-black text-white'
-        : 'bg-transparent text-black  '} cursor-pointer"
-      onclick={() => switchToType("dot")}
-    >
-      DOTS
-    </button>
-    <button
-      class=" text-sm font-medium {node.behavior.type === 'bar'
-        ? 'bg-black text-white'
-        : 'bg-transparent text-black  '} cursor-pointer"
-      onclick={() => switchToType("bar")}
-    >
-      BARS
-    </button>
-    <button
-      class=" text-sm font-medium bg-transparent text-neutral-400"
-      disabled
-    >
-      MIX
-    </button>
-    <button
-      class=" text-sm font-medium bg-transparent text-neutral-400"
-      disabled
-    >
-      DITHER
-    </button>
-    <button
-      class=" text-sm font-medium bg-transparent text-neutral-400"
-      disabled
-    >
-      ERODE
-    </button>
-    <button
-      class=" text-sm font-medium bg-transparent text-neutral-400"
-      disabled
-    >
-      HALFTONE
-    </button>
-    <button
-      class=" text-sm font-medium bg-transparent text-neutral-400"
-      disabled
-    >
-      MITOSIS
-    </button>
-    <button
-      class=" text-sm font-medium bg-transparent text-neutral-400"
-      disabled
-    >
-      EDGEDETECT
-    </button>
-    <button
-      class=" text-sm font-medium {node.behavior.type === 'ascii'
-        ? 'bg-black text-white'
-        : 'bg-transparent text-black  '} cursor-pointer"
-      onclick={() => switchToType("ascii")}
-    >
-      ASCII
-    </button>
+    {#each fxOptions as option}
+      <button
+        class="text-sm font-medium {option.disabled
+          ? 'bg-transparent text-neutral-400'
+          : node.behavior.type === option.type
+            ? 'bg-black text-white'
+            : 'bg-transparent text-black'} {option.disabled
+          ? ''
+          : 'cursor-pointer'}"
+        disabled={option.disabled}
+        onclick={() => option.type && switchToType(option.type)}
+        name={option.type}
+        {@attach buttonAttachment}
+      >
+        {option.label}
+      </button>
+    {/each}
+
+    {#if lineParams}
+      <Line
+        startX={lineParams.startX}
+        startY={lineParams.startY}
+        endX={lineParams.endX}
+        endY={lineParams.endY}
+      />
+    {/if}
   </div>
 
   <!-- Content Area -->
-  <div class="border-b border-t py-4 relative">
+  <div class="border-b border-t py-4 relative" bind:this={body}>
     <span class="absolute top-0 left-0 -translate-1/2 w-2 h-2 bg-black"></span>
     <span class="absolute bottom-0 right-0 translate-1/2 w-2 h-2 bg-black"
     ></span>
