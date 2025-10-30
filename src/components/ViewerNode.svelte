@@ -128,13 +128,13 @@
     <div class="w-full h-min justify-start items-center flex gap-2">
       <button
         onclick={copyImageToClipboard}
-        class=" text-sm hover:bg-neutral-100 transition"
+        class="text-sm hover:outline active:bg-black active:text-white cursor-pointer"
       >
         COPY IMAGE
       </button>
       <button
         onclick={saveImageFile}
-        class=" text-sm hover:bg-neutral-100 transition"
+        class="text-sm hover:outline active:bg-black active:text-white cursor-pointer"
       >
         SAVE IMAGE
       </button>
@@ -147,25 +147,25 @@
     <div class="w-full h-min flex gap-2 text-nowrap">
       <button
         onclick={copySvgToClipboard}
-        class=" text-sm hover:bg-neutral-100 transition"
+        class=" text-sm hover:outline active:bg-black active:text-white cursor-pointer"
       >
         COPY SVG
       </button>
       <button
         onclick={saveSvgFile}
-        class=" text-sm hover:bg-neutral-100 transition"
+        class=" text-sm hover:outline active:bg-black active:text-white cursor-pointer"
       >
         SAVE SVG
       </button>
       <button
         onclick={copyImageToClipboard}
-        class=" text-sm hover:bg-neutral-100 transition"
+        class=" text-sm hover:outline active:bg-black active:text-white cursor-pointer"
       >
         COPY IMAGE
       </button>
       <button
         onclick={saveImageFile}
-        class=" text-sm hover:bg-neutral-100 transition"
+        class=" text-sm hover:outline active:bg-black active:text-white cursor-pointer"
       >
         SAVE IMAGE
       </button>
