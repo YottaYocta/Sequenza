@@ -51,8 +51,6 @@
       untrack(() => {
         lineParams = { startX, startY, endX, endY };
       });
-    } else if (node.behavior.type !== element.name) {
-      // Clear line if this button is not selected
     }
   };
 

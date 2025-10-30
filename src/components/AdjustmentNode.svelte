@@ -2,12 +2,62 @@
   import type { ProccessingNode } from "../ProcessingNode";
   import type { Adjustment } from "../Adjustment";
   import CustomInput from "./CustomInput.svelte";
+  import Line from "./Line.svelte";
+  import type { Attachment } from "svelte/attachments";
 
   const { nodeIndex, node, onUpdateBehavior } = $props<{
     nodeIndex: number;
     node: ProccessingNode<Adjustment>;
     onUpdateBehavior: (nodeIndex: number, behavior: Adjustment) => void;
   }>();
+
+  let body = $state<HTMLDivElement | null>(null);
+  let lineParams: {
+    startX: number;
+    endX: number;
+    startY: number;
+    endY: number;
+  } | null = $state(null);
+
+  const buttonAttachment: Attachment<HTMLButtonElement> = (
+    element: HTMLButtonElement
+  ) => {
+    if (node.behavior.type === element.name && body) {
+      // Get bounding rects relative to the viewport
+      const buttonRect = element.getBoundingClientRect();
+      const bodyRect = body.getBoundingClientRect();
+
+      // Get the closest positioned parent (assuming it's the shared parent)
+      const parent = element.offsetParent;
+      const parentRect = parent
+        ? parent.getBoundingClientRect()
+        : { left: 0, top: 0 };
+
+      // Calculate positions relative to the closest positioned parent
+      // Bottom right corner of button
+      const startX = buttonRect.right - parentRect.left;
+      const startY = buttonRect.bottom - parentRect.top;
+
+      // Top left corner of body
+      const endX = bodyRect.left - parentRect.left;
+      const endY = bodyRect.top - parentRect.top;
+
+      // Update the line parameters
+      lineParams = { startX, startY, endX, endY };
+    }
+  };
+
+  type AdjustmentOption = {
+    type: "HSL" | "RGB" | null;
+    label: string;
+    disabled?: boolean;
+  };
+
+  const adjustmentOptions: AdjustmentOption[] = [
+    { type: "HSL", label: "HSL" },
+    { type: "RGB", label: "RGB" },
+    { type: null, label: "GRADIENTMAP", disabled: true },
+  ];
 
   function updateField(field: string, value: number) {
     onUpdateBehavior(nodeIndex, {
@@ -37,33 +87,37 @@
 
 <div class="flex flex-col">
   <!-- Tab Header -->
-  <div class="flex gap-1 pb-8">
-    <button
-      class=" text-sm font-medium {node.behavior.type === 'HSL'
-        ? 'bg-black text-white'
-        : 'bg-transparent text-black  '} cursor-pointer"
-      onclick={() => switchType("HSL")}
-    >
-      HSL
-    </button>
-    <button
-      class=" text-sm font-medium {node.behavior.type === 'RGB'
-        ? 'bg-black text-white'
-        : 'bg-transparent text-black  '} cursor-pointer"
-      onclick={() => switchType("RGB")}
-    >
-      RGB
-    </button>
-    <button
-      class=" text-sm font-medium bg-transparent text-neutral-400"
-      disabled
-    >
-      GRADIENTMAP
-    </button>
+  <div class="flex gap-1 pb-8 relative">
+    {#each adjustmentOptions as option}
+      <button
+        class="text-sm font-medium {option.disabled
+          ? 'bg-transparent text-neutral-400'
+          : node.behavior.type === option.type
+            ? 'bg-black text-white'
+            : 'bg-transparent text-black'} {option.disabled
+          ? ''
+          : 'cursor-pointer'}"
+        disabled={option.disabled}
+        onclick={() => option.type && switchType(option.type)}
+        name={option.type}
+        {@attach buttonAttachment}
+      >
+        {option.label}
+      </button>
+    {/each}
+
+    {#if lineParams}
+      <Line
+        startX={lineParams.startX}
+        startY={lineParams.startY}
+        endX={lineParams.endX}
+        endY={lineParams.endY}
+      />
+    {/if}
   </div>
 
   <!-- Content Area -->
-  <div class="py-4 flex flex-col border-b border-t relative">
+  <div class="py-4 flex flex-col border-b border-t relative" bind:this={body}>
     <span class="absolute top-0 left-0 -translate-1/2 w-2 h-2 bg-black"></span>
     <span class="absolute bottom-0 right-0 translate-1/2 w-2 h-2 bg-black"
     ></span>
