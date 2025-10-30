@@ -103,6 +103,11 @@
         name={option.type}
         {@attach buttonAttachment}
       >
+        {#if node.behavior.type === option.type}
+          <div class="absolute top-0 left-0">
+            <Endpoint nodeIdx={nodeIndex} type="start"></Endpoint>
+          </div>
+        {/if}
         {option.label}
       </button>
     {/each}
@@ -119,10 +124,10 @@
 
   <!-- Content Area -->
   <div class="py-4 flex flex-col border-b border-t relative" bind:this={body}>
-    <span class="absolute top-0 left-0 -translate-1/2 w-2 h-2 bg-black">
-      <Endpoint nodeIdx={nodeIndex} type="start"></Endpoint>
-    </span>
-    <span class="absolute bottom-0 right-0 translate-1/2 w-2 h-2 bg-black">
+    <span class="absolute top-0 left-0 -translate-1/2 w-2 h-2 bg-black"> </span>
+    <span
+      class="absolute bottom-0 right-0 translate-1/2 w-2 h-2 bg-black flex items-center"
+    >
       <Endpoint nodeIdx={nodeIndex} type="end"></Endpoint>
     </span>
     {#if node.behavior.type === "HSL"}

@@ -1,11 +1,13 @@
 <script lang="ts">
   import type { Output } from "../ProcessingNode";
+  import Endpoint from "./Endpoint.svelte";
 
   interface Props {
     output?: Output;
+    nodeIndex: number;
   }
 
-  const { output }: Props = $props();
+  const { output, nodeIndex }: Props = $props();
 
   let canvasRef: HTMLCanvasElement | undefined = $state();
 
@@ -74,7 +76,16 @@
 <div
   class="w-72 h-72 flex flex-col gap-1 items-start justify-center rounded-tr-3xl p-2 border bg-neutral-50"
 >
-  <span class="absolute bottom-0 right-0 translate-1/2 w-2 h-2 bg-black">
+  <span
+    class="absolute top-0 elft-0 -translate-1/2 w-2 h-2 bg-black flex items-center"
+  >
+    <Endpoint nodeIdx={nodeIndex} type="start"></Endpoint>
+  </span>
+
+  <span
+    class="absolute bottom-0 right-0 translate-1/2 w-2 h-2 bg-black flex items-center"
+  >
+    <Endpoint nodeIdx={nodeIndex} type="end"></Endpoint>
   </span>
   {#if !output}
     <p class="text-neutral-500 text-sm">No input</p>
