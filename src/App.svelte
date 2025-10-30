@@ -255,7 +255,6 @@
 </header>
 <main class="w-full min-h-96 p-4 py-8 flex flexcitems-center justify-center">
   <div class="w-full h-10 max-w-4xl relative">
-    <Line startX={3000} startY={0} endX={100} endY={100}></Line>
     <DraggableContainer>
       {#snippet children()}
         <SourceNode
