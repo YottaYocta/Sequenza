@@ -291,6 +291,15 @@
         />
 
         <CustomInput
+          value={node.behavior.resolutionMultiplier}
+          min={1}
+          max={4}
+          defaultValue={2}
+          handleUpdate={(v) => updateField("resolutionMultiplier", v)}
+          label="RESOLUTION"
+        />
+
+        <CustomInput
           value={node.behavior.filter.low}
           min={0}
           max={1}

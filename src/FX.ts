@@ -55,6 +55,7 @@ interface BarFX {
 interface AsciiFX {
   type: "ascii";
   charSize: number; // size of each character cell in pixels
+  resolutionMultiplier: number; // multiplier for output image siz2
   filter: MidPassFilter;
   state: {
     nextRow: number; // which row to process next
@@ -100,6 +101,7 @@ export const newFX = (type: "dot" | "bar" | "ascii"): FX => {
       return {
         type: "ascii",
         charSize: 10,
+        resolutionMultiplier: 2,
         filter: {
           low: 0,
           high: 1,
@@ -462,7 +464,7 @@ export const processAscii = (
   source: ImageData,
   currentImageData: ImageData
 ): [FX, ImageData, number] => {
-  const { state, charSize, filter } = fxState;
+  const { state, charSize, resolutionMultiplier, filter } = fxState;
 
   const nextRow = state.nextRow;
   const width = source.width;
@@ -473,23 +475,40 @@ export const processAscii = (
   const cols = Math.floor(width / charSize);
   const rows = Math.floor(height / charSize);
 
-  // Create a temporary canvas to render text
+  // Calculate output dimensions with resolution multiplier
+  const outputWidth = width * resolutionMultiplier;
+  const outputHeight = height * resolutionMultiplier;
+  const scaledCharSize = charSize * resolutionMultiplier;
+
+  // Create a temporary canvas to render text at higher resolution
   const tempCanvas = document.createElement("canvas");
-  tempCanvas.width = width;
-  tempCanvas.height = height;
+  tempCanvas.width = outputWidth;
+  tempCanvas.height = outputHeight;
   const ctx = tempCanvas.getContext("2d")!;
 
-  // Copy current image data to canvas
-  ctx.putImageData(currentImageData, 0, 0);
+  // Copy current image data to canvas (scaling up if needed)
+  if (currentImageData.width === outputWidth && currentImageData.height === outputHeight) {
+    ctx.putImageData(currentImageData, 0, 0);
+  } else {
+    // First render to scale up existing image data
+    const tempScaleCanvas = document.createElement("canvas");
+    tempScaleCanvas.width = currentImageData.width;
+    tempScaleCanvas.height = currentImageData.height;
+    const tempScaleCtx = tempScaleCanvas.getContext("2d")!;
+    tempScaleCtx.putImageData(currentImageData, 0, 0);
+
+    // Scale up to output canvas
+    ctx.drawImage(tempScaleCanvas, 0, 0, outputWidth, outputHeight);
+  }
 
   // Set up text rendering
-  ctx.font = `${charSize}px monospace`;
+  ctx.font = `${scaledCharSize}px monospace`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
 
   // Process current row of characters
   for (let col = 0; col < cols; col++) {
-    // Calculate the center pixel of this character cell
+    // Calculate the center pixel of this character cell in source dimensions
     const centerX = Math.floor(col * charSize + charSize / 2);
     const centerY = Math.floor(nextRow * charSize + charSize / 2);
 
@@ -518,13 +537,15 @@ export const processAscii = (
     // Select ASCII character based on brightness
     const char = brightnessToChar(brightness);
 
-    // Draw the character with the sampled color
+    // Draw the character with the sampled color at scaled position
+    const scaledCenterX = centerX * resolutionMultiplier;
+    const scaledCenterY = centerY * resolutionMultiplier;
     ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${a})`;
-    ctx.fillText(char, centerX, centerY);
+    ctx.fillText(char, scaledCenterX, scaledCenterY);
   }
 
   // Get the updated image data from canvas
-  const updatedImageData = ctx.getImageData(0, 0, width, height);
+  const updatedImageData = ctx.getImageData(0, 0, outputWidth, outputHeight);
 
   // Calculate next row
   const newNextRow = nextRow + 1;

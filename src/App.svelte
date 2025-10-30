@@ -98,11 +98,15 @@
     }
 
     // Reset the first incomplete node's state using unified reset function
-    untrack(() => {
+    untrack(async () => {
       const node = processingPipeline[currentNodeIndex];
       processingPipeline[currentNodeIndex] = resetNodeState(
         node,
-        sourceImageData
+        currentNodeIndex >= 1
+          ? await getImageData(
+              processingPipeline[currentNodeIndex - 1].outputData
+            )
+          : sourceImageData
       );
     });
 
@@ -144,19 +148,31 @@
 
         // If there are more nodes, reset the next node if needed and continue processing
         if (currentNodeIndex < pipeline.length) {
-          untrack(() => {
+          untrack(async () => {
             const nextNode = processingPipeline[currentNodeIndex];
 
             // If next node needs processing (progress < 1), reset its state
             if (nextNode.progress < 1) {
-              processingPipeline[currentNodeIndex] = resetNodeState(
-                nextNode,
-                sourceImageData
-              );
+              if (currentNodeIndex >= 1) {
+                const data = await getImageData(
+                  processingPipeline[currentNodeIndex - 1].outputData
+                );
+                processingPipeline[currentNodeIndex] = resetNodeState(
+                  nextNode,
+                  data
+                );
+
+                animationFrameId = requestAnimationFrame(processFrame);
+              } else {
+                processingPipeline[currentNodeIndex] = resetNodeState(
+                  nextNode,
+                  sourceImageData
+                );
+
+                animationFrameId = requestAnimationFrame(processFrame);
+              }
             }
           });
-
-          animationFrameId = requestAnimationFrame(processFrame);
         }
       } else {
         // Continue processing current node

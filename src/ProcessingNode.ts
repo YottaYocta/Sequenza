@@ -28,7 +28,9 @@ export type Output =
  */
 const svgOutputToString = (svg: SvgOutput): string => {
   const { viewBox, children } = svg;
-  return `<svg viewBox="${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}" xmlns="http://www.w3.org/2000/svg">${children.join("")}</svg>`;
+  return `<svg viewBox="${viewBox.x} ${viewBox.y} ${viewBox.width} ${
+    viewBox.height
+  }" xmlns="http://www.w3.org/2000/svg">${children.join("")}</svg>`;
 };
 
 /**
@@ -109,7 +111,10 @@ export function resetNodeState<T extends Adjustment | FX>(
     // For SVG, initialize with empty children array
     resetOutputData = {
       type: "svg",
-      data: createDefaultSvgOutput(sourceImageData.width, sourceImageData.height),
+      data: createDefaultSvgOutput(
+        sourceImageData.width,
+        sourceImageData.height
+      ),
     };
   }
 
