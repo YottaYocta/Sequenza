@@ -109,7 +109,7 @@
 </script>
 
 <div
-  class="w-72 h-72 flex flex-col gap-1 items-start justify-center rounded-tr-3xl p-2 border bg-neutral-50"
+  class="w-84 h-84 flex flex-col gap-1 items-start justify-start rounded-tr-3xl p-4 border bg-neutral-50"
 >
   <span
     class="absolute top-0 elft-0 -translate-1/2 w-2 h-2 bg-black flex items-center"
@@ -125,56 +125,58 @@
   {#if !output}
     <p class="text-neutral-500 text-sm">No input</p>
   {:else if output.type === "image"}
-    <div class="w-full justify-start items-center flex gap-2">
+    <div class="w-full h-min justify-start items-center flex gap-2">
       <button
         onclick={copyImageToClipboard}
         class=" text-sm hover:bg-neutral-100 transition"
       >
-        Copy Image
+        COPY IMAGE
       </button>
       <button
         onclick={saveImageFile}
         class=" text-sm hover:bg-neutral-100 transition"
       >
-        Save Image
+        SAVE IMAGE
       </button>
     </div>
-    <canvas {@attach renderCanvas} class="max-w-full h-auto"></canvas>
+    <div class="h-full w-full flex items-center justify-center">
+      <canvas {@attach renderCanvas} class="max-w-full h-auto hover:outline"
+      ></canvas>
+    </div>
   {:else if output.type === "svg"}
-    <div class="flex gap-2 flex-wrap">
+    <div class="w-full h-min flex gap-2 text-nowrap">
       <button
         onclick={copySvgToClipboard}
         class=" text-sm hover:bg-neutral-100 transition"
       >
-        Copy SVG
+        COPY SVG
       </button>
       <button
         onclick={saveSvgFile}
         class=" text-sm hover:bg-neutral-100 transition"
       >
-        Save SVG
+        SAVE SVG
       </button>
       <button
         onclick={copyImageToClipboard}
         class=" text-sm hover:bg-neutral-100 transition"
       >
-        Copy Image
+        COPY IMAGE
       </button>
       <button
         onclick={saveImageFile}
         class=" text-sm hover:bg-neutral-100 transition"
       >
-        Save Image
+        SAVE IMAGE
       </button>
     </div>
 
-    <!-- Display SVG directly -->
-    <div class="w-full max-w-full p-2">
+    <div class="w-full h-full flex items-center justify-center p-2">
       <svg
         viewBox="{output.data.viewBox.x} {output.data.viewBox.y} {output.data
           .viewBox.width} {output.data.viewBox.height}"
         xmlns="http://www.w3.org/2000/svg"
-        class="w-full h-auto"
+        class="w-64 h-auto hover:outline"
       >
         {@html output.data.children.join("")}
       </svg>
@@ -182,5 +184,12 @@
 
     <!-- Hidden canvas for image export functionality -->
     <canvas {@attach renderCanvas} class="hidden"></canvas>
+  {/if}
+
+  {#if output !== undefined}
+    <p class="text-sm absolute bottom-2 left-4 translate-x-1/2">
+      {output.type === "svg" ? output.data.viewBox.width : output.data.width} x
+      {output.type === "svg" ? output.data.viewBox.height : output.data.height}
+    </p>
   {/if}
 </div>
