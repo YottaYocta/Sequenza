@@ -101,7 +101,7 @@
   >
     {currentImageData ? "Change Image" : "Upload Image"}
     <div class="absolute right-0 bottom-0">
-      <Endpoint nodeIdx="0" type="end"></Endpoint>
+      <Endpoint nodeIdx={0} type="end"></Endpoint>
     </div>
   </button>
 </div>

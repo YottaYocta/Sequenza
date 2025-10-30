@@ -20,20 +20,23 @@
 
   const draggable: Attachment<HTMLDivElement> = (element: HTMLDivElement) => {
     if (dragging !== null) {
-      const offsetX = dragging.startX;
-      const offsetY = dragging.startY;
+      const initialRect = element.getBoundingClientRect();
+      // gives dragging start position relative to current element
+      const dragOffsetX = dragging.startX - initialRect.left;
+      const dragOffsetY = dragging.startY - initialRect.top;
 
       const handleMouseMove = (e: MouseEvent) => {
-        const parentRect = element.parentElement?.getBoundingClientRect() || {
-          left: 0,
+        const parentRect = element.offsetParent?.getBoundingClientRect() ?? {
           top: 0,
+          left: 0,
         };
+        const normalizedMouseX = e.clientX - parentRect.left;
+        const normalizedMouseY = e.clientY - parentRect.top;
+        const targetX = normalizedMouseX - dragOffsetX;
+        const targetY = normalizedMouseY - dragOffsetY;
 
-        const relativeX = e.clientX - parentRect.left;
-        const relativeY = e.clientY - parentRect.top;
-
-        element.style.left = `${relativeX - offsetX}px`;
-        element.style.top = `${relativeY - offsetY}px`;
+        element.style.left = `${targetX}px`;
+        element.style.top = `${targetY}px`;
       };
 
       window.addEventListener("mousemove", handleMouseMove);
@@ -49,8 +52,8 @@
   ) => {
     const handleMouseDown = (e: MouseEvent) => {
       dragging = {
-        startX: e.offsetX + dragHandle.offsetLeft,
-        startY: e.offsetY + dragHandle.offsetTop,
+        startX: e.clientX,
+        startY: e.clientY,
       };
 
       window.addEventListener("mouseup", handleMouseUp);
