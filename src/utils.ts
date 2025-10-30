@@ -27,13 +27,16 @@ export const svgToImageData = async (
   width: number,
   height: number
 ): Promise<ImageData> => {
+  // Validate dimensions
+  if (width <= 0 || height <= 0) {
+    throw new Error(
+      `Invalid dimensions for SVG conversion: ${width}x${height}`
+    );
+  }
+
   return new Promise((resolve, reject) => {
     // Create an image element
     const img = new Image();
-
-    // Create a Blob from the SVG string
-    const blob = new Blob([svgString], { type: "image/svg+xml" });
-    const url = URL.createObjectURL(blob);
 
     img.onload = () => {
       // Create an offline canvas
@@ -43,7 +46,6 @@ export const svgToImageData = async (
 
       const ctx = canvas.getContext("2d");
       if (!ctx) {
-        URL.revokeObjectURL(url);
         reject(new Error("Failed to get canvas context"));
         return;
       }
@@ -54,16 +56,19 @@ export const svgToImageData = async (
       // Extract ImageData
       const imageData = ctx.getImageData(0, 0, width, height);
 
-      // Clean up
-      URL.revokeObjectURL(url);
       resolve(imageData);
     };
 
-    img.onerror = () => {
-      URL.revokeObjectURL(url);
+    img.onerror = (e) => {
+      console.error("SVG load error:", e);
+      console.error("SVG string:", svgString);
       reject(new Error("Failed to load SVG image"));
     };
 
-    img.src = url;
+    // Use data URL instead of blob URL to avoid CORS issues
+    const encodedSvg = encodeURIComponent(svgString)
+      .replace(/'/g, "%27")
+      .replace(/"/g, "%22");
+    img.src = `data:image/svg+xml,${encodedSvg}`;
   });
 };

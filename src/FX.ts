@@ -1,7 +1,29 @@
+import type { SvgOutput } from "./ProcessingNode";
+
 export type MidPassFilter = {
   // filter value that returns true for all values in between low and high and false otherwise (low and high are clamped to 0 to 1)
   low: number;
   high: number;
+};
+
+/**
+ * Creates a default SvgOutput structure with optional viewBox parameters
+ */
+export const createDefaultSvgOutput = (
+  width: number = 0,
+  height: number = 0,
+  x: number = 0,
+  y: number = 0
+): SvgOutput => {
+  return {
+    viewBox: {
+      x,
+      y,
+      width,
+      height,
+    },
+    children: [],
+  };
 };
 
 interface DotFX {
@@ -146,13 +168,14 @@ function createStarPath(size: number): string {
 
 /**
  * given the FX state + source image data, should process the next row of dots
- * returns updated FX state (advancing to the next row), SVG string output, and number between 0-1 representing progress
+ * Mutates the svgData by appending new child elements
+ * returns updated FX state (advancing to the next row) and number between 0-1 representing progress
  */
 export const processDot = (
   fxState: FX & { type: "dot" },
   source: ImageData,
-  currentSVG: string
-): [FX, string, number] => {
+  svgData: SvgOutput
+): [FX, number] => {
   const {
     state,
     horizontalCount,
@@ -218,8 +241,10 @@ export const processDot = (
     rowSVG += dotWithColor;
   }
 
-  // Append this row's dots to the current SVG
-  const updatedSVG = currentSVG + rowSVG;
+  // Append this row's dots to the SVG children array
+  if (rowSVG.length > 0) {
+    svgData.children.push(rowSVG);
+  }
 
   // Calculate next row
   const newNextRow = nextRow + 1;
@@ -235,7 +260,7 @@ export const processDot = (
     },
   };
 
-  return [updatedState, updatedSVG, progress];
+  return [updatedState, progress];
 };
 
 /**
@@ -305,13 +330,14 @@ function createBarShape(
 
 /**
  * Process one bar (column or row depending on direction)
- * Returns updated FX state, SVG string output, and progress (0-1)
+ * Mutates the svgData by appending new child elements
+ * Returns updated FX state and progress (0-1)
  */
 export const processBar = (
   fxState: FX & { type: "bar" },
   source: ImageData,
-  currentSVG: string
-): [FX, string, number] => {
+  svgData: SvgOutput
+): [FX, number] => {
   const { state, direction, numberBars, barSize, borderRadius, filter } =
     fxState;
 
@@ -394,8 +420,10 @@ export const processBar = (
     }
   }
 
-  // Append this bar to the current SVG
-  const updatedSVG = currentSVG + barSVG;
+  // Append this bar to the SVG children array
+  if (barSVG.length > 0) {
+    svgData.children.push(barSVG);
+  }
 
   // Calculate next bar
   const newNextBar = nextBar + 1;
@@ -411,7 +439,7 @@ export const processBar = (
     },
   };
 
-  return [updatedState, updatedSVG, progress];
+  return [updatedState, progress];
 };
 
 // ASCII character set ordered by density (from darkest to lightest)

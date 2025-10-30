@@ -1,44 +1,68 @@
 import type { Adjustment } from "./Adjustment";
 import { processRGB, processHSL } from "./Adjustment";
 import type { FX } from "./FX";
-import { processDot, processBar, processAscii } from "./FX";
+import {
+  processDot,
+  processBar,
+  processAscii,
+  createDefaultSvgOutput,
+} from "./FX";
 import { svgToImageData } from "./utils";
+
+export interface SvgOutput {
+  viewBox: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+  children: string[];
+}
 
 export type Output =
   | { type: "image"; data: ImageData }
-  | { type: "svg"; data: string };
+  | { type: "svg"; data: SvgOutput };
+
+/**
+ * Converts SvgOutput to complete SVG string
+ */
+const svgOutputToString = (svg: SvgOutput): string => {
+  const { viewBox, children } = svg;
+  return `<svg viewBox="${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}" xmlns="http://www.w3.org/2000/svg">${children.join("")}</svg>`;
+};
 
 /**
  * Extracts ImageData from Output.
  * If output is already ImageData, returns it directly.
  * If output is SVG, converts it to ImageData using offline canvas rendering.
- * Note: For SVG conversion, dimensions are extracted from the SVG viewBox.
  */
 export const getImageData = async (output: Output): Promise<ImageData> => {
   if (output.type === "image") {
     return output.data;
   }
 
-  // Extract dimensions from SVG viewBox
-  const viewBoxMatch = output.data.match(/viewBox="0 0 (\d+) (\d+)"/);
-  if (!viewBoxMatch) {
-    throw new Error("SVG must have a viewBox attribute");
+  const { width, height } = output.data.viewBox;
+
+  // Handle empty/uninitialized SVG (0x0 dimensions)
+  if (width <= 0 || height <= 0) {
+    // Return a 1x1 transparent ImageData as fallback
+    return new ImageData(1, 1);
   }
 
-  const width = parseInt(viewBoxMatch[1]);
-  const height = parseInt(viewBoxMatch[2]);
+  // Convert SVG structure to string
+  const svgString = svgOutputToString(output.data);
 
-  return await svgToImageData(output.data, width, height);
+  return await svgToImageData(svgString, width, height);
 };
 
 /**
  * Extracts SVG string from Output.
- * If output is SVG, returns the string directly.
+ * If output is SVG, converts the structure to a complete SVG string.
  * If output is ImageData, returns null (cannot convert ImageData to SVG).
  */
 export const getSvgData = (output: Output): string | null => {
   if (output.type === "svg") {
-    return output.data;
+    return svgOutputToString(output.data);
   }
   // Cannot convert ImageData to SVG
   return null;
@@ -82,8 +106,11 @@ export function resetNodeState<T extends Adjustment | FX>(
       data: new ImageData(sourceImageData.width, sourceImageData.height),
     };
   } else {
-    // For SVG, initialize with empty string
-    resetOutputData = { type: "svg", data: "" };
+    // For SVG, initialize with empty children array
+    resetOutputData = {
+      type: "svg",
+      data: createDefaultSvgOutput(sourceImageData.width, sourceImageData.height),
+    };
   }
 
   return {
@@ -163,63 +190,47 @@ export const updateProcessingNode = <T extends FX | Adjustment>(
 
       switch (fx.type) {
         case "dot": {
-          // Get current SVG string or initialize
-          let currentSVG = "";
-          if (outputData.type === "svg" && outputData.data) {
-            currentSVG = outputData.data;
+          // Get current SVG data or initialize
+          let svgData: SvgOutput;
+          if (outputData.type === "svg") {
+            svgData = outputData.data;
+          } else {
+            // Initialize new SVG structure
+            svgData = createDefaultSvgOutput(source.width, source.height);
           }
 
-          // Initialize SVG wrapper if empty (starting fresh)
-          if (!currentSVG || currentSVG === "") {
-            currentSVG = `<svg viewBox="0 0 ${source.width} ${source.height}" xmlns="http://www.w3.org/2000/svg">`;
-          }
-
-          const [updatedBehavior, updatedSVG, progress] = processDot(
+          const [updatedBehavior, progress] = processDot(
             fx as FX & { type: "dot" },
             source,
-            currentSVG
+            svgData
           );
-
-          // Close SVG tag when complete
-          let finalSVG = updatedSVG;
-          if (progress >= 1 && !updatedSVG.includes("</svg>")) {
-            finalSVG = updatedSVG + "</svg>";
-          }
 
           return {
             progress,
             behavior: updatedBehavior as T,
-            outputData: { type: "svg", data: finalSVG },
+            outputData: { type: "svg", data: svgData },
           };
         }
         case "bar": {
-          // Get current SVG string or initialize
-          let currentSVG = "";
-          if (outputData.type === "svg" && outputData.data) {
-            currentSVG = outputData.data;
+          // Get current SVG data or initialize
+          let svgData: SvgOutput;
+          if (outputData.type === "svg") {
+            svgData = outputData.data;
+          } else {
+            // Initialize new SVG structure
+            svgData = createDefaultSvgOutput(source.width, source.height);
           }
 
-          // Initialize SVG wrapper if empty (starting fresh)
-          if (!currentSVG || currentSVG === "") {
-            currentSVG = `<svg viewBox="0 0 ${source.width} ${source.height}" xmlns="http://www.w3.org/2000/svg">`;
-          }
-
-          const [updatedBehavior, updatedSVG, progress] = processBar(
+          const [updatedBehavior, progress] = processBar(
             fx as FX & { type: "bar" },
             source,
-            currentSVG
+            svgData
           );
-
-          // Close SVG tag when complete
-          let finalSVG = updatedSVG;
-          if (progress >= 1 && !updatedSVG.includes("</svg>")) {
-            finalSVG = updatedSVG + "</svg>";
-          }
 
           return {
             progress,
             behavior: updatedBehavior as T,
-            outputData: { type: "svg", data: finalSVG },
+            outputData: { type: "svg", data: svgData },
           };
         }
         case "ascii": {

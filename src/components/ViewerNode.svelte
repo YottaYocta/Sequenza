@@ -170,7 +170,14 @@
 
     <!-- Display SVG directly -->
     <div class="w-full max-w-full p-2">
-      {@html output.data}
+      <svg
+        viewBox="{output.data.viewBox.x} {output.data.viewBox.y} {output.data
+          .viewBox.width} {output.data.viewBox.height}"
+        xmlns="http://www.w3.org/2000/svg"
+        class="w-full h-auto"
+      >
+        {@html output.data.children.join("")}
+      </svg>
     </div>
 
     <!-- Hidden canvas for image export functionality -->

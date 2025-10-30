@@ -3,7 +3,7 @@
   import type { Adjustment } from "./Adjustment";
   import type { FX } from "./FX";
   import { createDefaultAdjustment } from "./Adjustment";
-  import { newFX } from "./FX";
+  import { newFX, createDefaultSvgOutput } from "./FX";
   import { untrack } from "svelte";
   import {
     updateProcessingNode,
@@ -55,7 +55,7 @@
       behavior: newFX("dot"),
       outputData: {
         type: "svg",
-        data: "",
+        data: createDefaultSvgOutput(),
       },
     },
     {
@@ -63,7 +63,7 @@
       behavior: newFX("dot"),
       outputData: {
         type: "svg",
-        data: "",
+        data: createDefaultSvgOutput(),
       },
     },
   ]);
