@@ -14,7 +14,8 @@
   let canvasElement: HTMLCanvasElement | undefined = $state();
 
   /**
-   * Canvas attachment that renders the output data to the canvas
+   * Canvas attachment that renders the output data to the canvas.
+   * Only used for image outputs or when we need a rasterized version of SVG.
    */
   const renderCanvas: Attachment<HTMLCanvasElement> = (
     canvas: HTMLCanvasElement
@@ -25,16 +26,20 @@
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    $effect(() => {
-      if (output) {
-        (async () => {
-          const imageData = await getImageData(output);
-          canvas.width = imageData.width;
-          canvas.height = imageData.height;
-          ctx.putImageData(imageData, 0, 0);
-        })();
-      }
-    });
+    if (output && output.type === "image") {
+      // Direct rendering for image outputs
+      canvas.width = output.data.width;
+      canvas.height = output.data.height;
+      ctx.putImageData(output.data, 0, 0);
+    } else if (output && output.type === "svg") {
+      // Convert SVG to canvas for image export functionality
+      (async () => {
+        const imageData = await getImageData(output);
+        canvas.width = imageData.width;
+        canvas.height = imageData.height;
+        ctx.putImageData(imageData, 0, 0);
+      })();
+    }
   };
 
   async function copyImageToClipboard() {
@@ -163,6 +168,12 @@
       </button>
     </div>
 
-    <canvas {@attach renderCanvas} class="max-w-full h-auto"></canvas>
+    <!-- Display SVG directly -->
+    <div class="w-full max-w-full p-2">
+      {@html output.data}
+    </div>
+
+    <!-- Hidden canvas for image export functionality -->
+    <canvas {@attach renderCanvas} class="hidden"></canvas>
   {/if}
 </div>
