@@ -55,8 +55,6 @@
     }
   };
 
-  $inspect(lineParams);
-
   type FXOption = {
     type: "dot" | "bar" | "ascii" | null;
     label: string;

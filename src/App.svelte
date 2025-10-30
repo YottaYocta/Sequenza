@@ -132,7 +132,6 @@
       if (updatedNode.progress >= 1) {
         // Move to next node
         console.log("finished:");
-        console.log(currentNode.behavior);
         currentNodeIndex++;
 
         // If there are more nodes, reset the next node if needed and continue processing
@@ -169,6 +168,7 @@
   });
 
   function handleUpdateAdjustment(nodeIndex: number, behavior: Adjustment) {
+    nodeIndex = Math.floor(nodeIndex / 2);
     // Reset state in the behavior (ensure state.nextRow = 0)
     const resetBehavior = {
       ...behavior,
@@ -198,6 +198,8 @@
 
   function handleUpdateFX(nodeIndex: number, behavior: FX) {
     // Reset state in the behavior (ensure state.nextRow = 0 or nextBar = 0)
+    nodeIndex = Math.floor(nodeIndex / 2);
+
     let resetBehavior;
     if (behavior.type === "bar") {
       resetBehavior = {
