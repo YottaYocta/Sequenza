@@ -58,6 +58,14 @@
         data: "",
       },
     },
+    {
+      progress: 0,
+      behavior: newFX("dot"),
+      outputData: {
+        type: "svg",
+        data: "",
+      },
+    },
   ]);
 
   // Boolean trigger for re-rendering - toggles whenever behavior changes
@@ -266,38 +274,37 @@
       {/snippet}
     </DraggableContainer>
 
-    <DraggableContainer startY={200}>
-      {#snippet children()}
-        <AdjustmentNode
-          nodeIndex={1}
-          node={processingPipeline[0] as ProccessingNode<Adjustment>}
-          onUpdateBehavior={handleUpdateAdjustment}
-        />
-      {/snippet}
-    </DraggableContainer>
-
-    <!-- Viewer: even indices on right, odd indices on left (opposite of node) -->
-    <DraggableContainer mergedMode={true} startX={500}>
-      {#snippet children()}
-        <ViewerNode nodeIndex={2} output={processingPipeline[0].outputData}
-        ></ViewerNode>
-      {/snippet}
-    </DraggableContainer>
-
-    <DraggableContainer startY={450}>
-      {#snippet children()}
-        <FXNode
-          nodeIndex={3}
-          node={processingPipeline[1] as ProccessingNode<FX>}
-          onUpdateBehavior={handleUpdateFX}
-        />
-      {/snippet}
-    </DraggableContainer>
-
-    <DraggableContainer mergedMode={true} startX={500} startY={400}>
-      <ViewerNode nodeIndex={5} output={processingPipeline[1].outputData}
-      ></ViewerNode>
-    </DraggableContainer>
+    {#each processingPipeline as node, idx}
+      <DraggableContainer startY={200 + 350 * idx}>
+        {#snippet children()}
+          {#if isAdjustmentNode(node)}
+            <AdjustmentNode
+              nodeIndex={idx * 2 + 1}
+              {node}
+              onUpdateBehavior={handleUpdateAdjustment}
+            />
+          {:else}
+            <FXNode
+              nodeIndex={idx * 2 + 1}
+              node={node as ProccessingNode<FX>}
+              onUpdateBehavior={handleUpdateFX}
+            />
+          {/if}
+        {/snippet}
+      </DraggableContainer>
+      <DraggableContainer
+        mergedMode={true}
+        startX={500}
+        startY={350 * idx + 150}
+      >
+        {#snippet children()}
+          <ViewerNode
+            nodeIndex={(idx + 1) * 2}
+            output={processingPipeline[idx].outputData}
+          ></ViewerNode>
+        {/snippet}
+      </DraggableContainer>
+    {/each}
 
     <!-- Connection lines SVG -->
     <ConnectionLines />
