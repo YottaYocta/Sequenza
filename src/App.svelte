@@ -13,6 +13,8 @@
   import SourceNode from "./components/SourceNode.svelte";
   import DefaultImg from "./assets/headset.jpg";
   import Line from "./components/Line.svelte";
+  import Endpoint from "./components/Endpoint.svelte";
+  import ConnectionLines from "./components/ConnectionLines.svelte";
 
   let sourceOutput = $state<Output>({
     type: "image",
@@ -277,14 +279,20 @@
     <!-- Viewer: even indices on right, odd indices on left (opposite of node) -->
     <DraggableContainer mergedMode={true} startX={500}>
       {#snippet children()}
+        <div class="absolute top-0 left-0">
+          <Endpoint nodeIdx={1} type="start"></Endpoint>
+        </div>
         <ViewerNode output={processingPipeline[0].outputData}></ViewerNode>
+        <div class="absolute bottom-0 right-0">
+          <Endpoint nodeIdx={1} type="end"></Endpoint>
+        </div>
       {/snippet}
     </DraggableContainer>
 
     <DraggableContainer startY={450}>
       {#snippet children()}
         <FXNode
-          nodeIndex={1}
+          nodeIndex={2}
           node={processingPipeline[1] as ProccessingNode<FX>}
           onUpdateBehavior={handleUpdateFX}
         />
@@ -292,7 +300,13 @@
     </DraggableContainer>
 
     <DraggableContainer mergedMode={true} startX={500} startY={400}>
+      <div class="absolute top-0 left-0">
+        <Endpoint nodeIdx={3} type="start"></Endpoint>
+      </div>
       <ViewerNode output={processingPipeline[1].outputData}></ViewerNode>
     </DraggableContainer>
+
+    <!-- Connection lines SVG -->
+    <ConnectionLines />
   </div>
 </main>

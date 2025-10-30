@@ -4,6 +4,7 @@
   import CustomInput from "./CustomInput.svelte";
   import Line from "./Line.svelte";
   import type { Attachment } from "svelte/attachments";
+  import Endpoint from "./Endpoint.svelte";
 
   const { nodeIndex, node, onUpdateBehavior } = $props<{
     nodeIndex: number;
@@ -118,9 +119,12 @@
 
   <!-- Content Area -->
   <div class="py-4 flex flex-col border-b border-t relative" bind:this={body}>
-    <span class="absolute top-0 left-0 -translate-1/2 w-2 h-2 bg-black"></span>
-    <span class="absolute bottom-0 right-0 translate-1/2 w-2 h-2 bg-black"
-    ></span>
+    <span class="absolute top-0 left-0 -translate-1/2 w-2 h-2 bg-black">
+      <Endpoint nodeIdx={nodeIndex} type="start"></Endpoint>
+    </span>
+    <span class="absolute bottom-0 right-0 translate-1/2 w-2 h-2 bg-black">
+      <Endpoint nodeIdx={nodeIndex} type="end"></Endpoint>
+    </span>
     {#if node.behavior.type === "HSL"}
       <CustomInput
         label="HUE"

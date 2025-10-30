@@ -6,6 +6,7 @@
   import Line from "./Line.svelte";
   import type { Attachment } from "svelte/attachments";
   import { untrack } from "svelte";
+  import Endpoint from "./Endpoint.svelte";
 
   interface Props {
     nodeIndex: number;
@@ -134,9 +135,12 @@
 
   <!-- Content Area -->
   <div class="border-b border-t py-4 relative" bind:this={body}>
-    <span class="absolute top-0 left-0 -translate-1/2 w-2 h-2 bg-black"></span>
-    <span class="absolute bottom-0 right-0 translate-1/2 w-2 h-2 bg-black"
-    ></span>
+    <span class="absolute top-0 left-0 -translate-1/2 w-2 h-2 bg-black">
+      <Endpoint nodeIdx={nodeIndex} type="start"></Endpoint>
+    </span>
+    <span class="absolute bottom-0 right-0 translate-1/2 w-2 h-2 bg-black">
+      <Endpoint nodeIdx={nodeIndex} type="end"></Endpoint>
+    </span>
     {#if node.behavior.type === "dot"}
       <div class="flex flex-col">
         <CustomInput
