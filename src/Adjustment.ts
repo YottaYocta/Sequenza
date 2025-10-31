@@ -16,9 +16,12 @@ export type Adjustment =
       state: {
         nextRow: number; // which row to process next (0 to height-1)
       };
+    }
+  | {
+      type: "GRADMAP";
+      stops: { position: number; color: string }[];
+      interpolation: "linear" | "constant";
     };
-
-// TODO: add gradient map
 
 /**
  * Convert RGB (0-255) to HSL (H: 0-360, S: 0-1, L: 0-1)
@@ -226,4 +229,32 @@ export const createDefaultAdjustment = (type: "HSL" | "RGB"): Adjustment => {
         },
       };
   }
+};
+
+/**
+ *
+ * @param behavior gradient behavior
+ * @param progress value between 0 and 1 corresponding to gradient progress
+ * @returns a hex string for the color
+ */
+export const evalGradientAt = (
+  behavior: Adjustment & { type: "GRADMAP" },
+  progress: number
+): string => {
+  // evaluates gradient color at the given progress
+  //
+  throw Error("Not implemented");
+};
+
+/**
+ *
+ * @param behavior gradient map behavior
+ * @param inputData source data to apply the map to
+ * @returns a new instance of ImageData containing the mapped image
+ */
+export const processGradientMap = (
+  behavior: Adjustment & { type: "GRADMAP" },
+  inputData: ImageData
+): ImageData => {
+  throw Error("Not implemented");
 };
