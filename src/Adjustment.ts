@@ -206,7 +206,9 @@ export const processHSL = (
   return [updatedState, currentData, progress];
 };
 
-export const createDefaultAdjustment = (type: "HSL" | "RGB" | "GRADMAP"): Adjustment => {
+export const createDefaultAdjustment = (
+  type: "HSL" | "RGB" | "GRADMAP"
+): Adjustment => {
   switch (type) {
     case "HSL":
       return {
@@ -284,6 +286,8 @@ const interpolateColors = (
   return rgbToHex(r, g, b);
 };
 
+export type Gradient = Adjustment & { type: "GRADMAP" };
+
 /**
  *
  * @param behavior gradient behavior
@@ -338,7 +342,8 @@ export const evalGradientAt = (
 
   // Calculate local t value between the two stops
   const range = upperStop.position - lowerStop.position;
-  const localT = range === 0 ? 0 : (clampedProgress - lowerStop.position) / range;
+  const localT =
+    range === 0 ? 0 : (clampedProgress - lowerStop.position) / range;
 
   // Apply interpolation type
   if (interpolation === "constant") {

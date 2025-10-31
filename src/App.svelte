@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Output, ProccessingNode } from "./ProcessingNode";
-  import type { Adjustment } from "./Adjustment";
+  import type { Adjustment, Gradient } from "./Adjustment";
   import type { FX } from "./FX";
   import { createDefaultAdjustment } from "./Adjustment";
   import { newFX, createDefaultSvgOutput } from "./FX";
@@ -17,6 +17,11 @@
   import SourceNode from "./components/SourceNode.svelte";
   import DefaultImg from "./assets/headset.jpg";
   import ConnectionLines from "./components/ConnectionLines.svelte";
+  import GradientInputNode from "./components/GradientInputNode.svelte";
+
+  let testGradient = $state<Gradient>(
+    createDefaultAdjustment("GRADMAP") as Gradient
+  );
 
   let sourceOutput = $state<Output>({
     type: "image",
@@ -48,14 +53,6 @@
       outputData: {
         type: "image",
         data: new ImageData(1, 1),
-      },
-    },
-    {
-      progress: 0,
-      behavior: newFX("dot"),
-      outputData: {
-        type: "svg",
-        data: createDefaultSvgOutput(),
       },
     },
     {
@@ -324,5 +321,13 @@
 
     <!-- Connection lines SVG -->
     <ConnectionLines />
+    <DraggableContainer startY={600}>
+      <GradientInputNode
+        gradient={testGradient}
+        handleUpdateGradient={(newGradient) => {
+          testGradient = newGradient;
+        }}
+      ></GradientInputNode>
+    </DraggableContainer>
   </div>
 </main>
