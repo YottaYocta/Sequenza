@@ -1,5 +1,5 @@
 import type { Adjustment } from "./Adjustment";
-import { processRGB, processHSL } from "./Adjustment";
+import { processRGB, processHSL, processGradientMap } from "./Adjustment";
 import type { FX } from "./FX";
 import {
   processDot,
@@ -152,7 +152,7 @@ export const updateProcessingNode = <T extends FX | Adjustment>(
   // Determine if FX or Adjustment and dispatch to appropriate handler
   if ("type" in behavior) {
     // Check if it's an Adjustment type
-    if (behavior.type === "RGB" || behavior.type === "HSL") {
+    if (behavior.type === "RGB" || behavior.type === "HSL" || behavior.type === "GRADMAP") {
       const adjustment = behavior as Adjustment;
 
       switch (adjustment.type) {
@@ -179,6 +179,19 @@ export const updateProcessingNode = <T extends FX | Adjustment>(
           return {
             progress,
             behavior: updatedBehavior as T,
+            outputData: { type: "image", data: updatedImageData },
+          };
+        }
+        case "GRADMAP": {
+          // GRADMAP processes the entire image at once (non-incremental)
+          const updatedImageData = processGradientMap(
+            adjustment as Adjustment & { type: "GRADMAP" },
+            source
+          );
+
+          return {
+            progress: 1, // Completes immediately
+            behavior: adjustment as T,
             outputData: { type: "image", data: updatedImageData },
           };
         }

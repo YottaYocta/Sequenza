@@ -206,7 +206,7 @@ export const processHSL = (
   return [updatedState, currentData, progress];
 };
 
-export const createDefaultAdjustment = (type: "HSL" | "RGB"): Adjustment => {
+export const createDefaultAdjustment = (type: "HSL" | "RGB" | "GRADMAP"): Adjustment => {
   switch (type) {
     case "HSL":
       return {
@@ -228,7 +228,60 @@ export const createDefaultAdjustment = (type: "HSL" | "RGB"): Adjustment => {
           nextRow: 0,
         },
       };
+    case "GRADMAP":
+      return {
+        type: "GRADMAP",
+        stops: [
+          { position: 0, color: "#000000" },
+          { position: 1, color: "#ffffff" },
+        ],
+        interpolation: "linear",
+      };
   }
+};
+
+/**
+ * Helper function to parse hex color string to RGB
+ */
+const hexToRgb = (hex: string): [number, number, number] => {
+  // Remove # if present
+  const cleanHex = hex.replace(/^#/, "");
+
+  // Parse hex values
+  const r = parseInt(cleanHex.substring(0, 2), 16);
+  const g = parseInt(cleanHex.substring(2, 4), 16);
+  const b = parseInt(cleanHex.substring(4, 6), 16);
+
+  return [r, g, b];
+};
+
+/**
+ * Helper function to convert RGB to hex string
+ */
+const rgbToHex = (r: number, g: number, b: number): string => {
+  const toHex = (n: number) => {
+    const clamped = Math.max(0, Math.min(255, Math.round(n)));
+    return clamped.toString(16).padStart(2, "0");
+  };
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+};
+
+/**
+ * Helper function to linearly interpolate between two colors
+ */
+const interpolateColors = (
+  color1: string,
+  color2: string,
+  t: number
+): string => {
+  const [r1, g1, b1] = hexToRgb(color1);
+  const [r2, g2, b2] = hexToRgb(color2);
+
+  const r = r1 + (r2 - r1) * t;
+  const g = g1 + (g2 - g1) * t;
+  const b = b1 + (b2 - b1) * t;
+
+  return rgbToHex(r, g, b);
 };
 
 /**
@@ -241,9 +294,60 @@ export const evalGradientAt = (
   behavior: Adjustment & { type: "GRADMAP" },
   progress: number
 ): string => {
-  // evaluates gradient color at the given progress
-  //
-  throw Error("Not implemented");
+  const { stops, interpolation } = behavior;
+
+  // Clamp progress to 0-1
+  const clampedProgress = Math.max(0, Math.min(1, progress));
+
+  // Sort stops by position (in case they're not sorted)
+  const sortedStops = [...stops].sort((a, b) => a.position - b.position);
+
+  // Handle edge cases
+  if (sortedStops.length === 0) {
+    return "#000000"; // Default to black if no stops
+  }
+  if (sortedStops.length === 1) {
+    return sortedStops[0].color;
+  }
+
+  // Find the two stops that bracket the progress value
+  let lowerStop = sortedStops[0];
+  let upperStop = sortedStops[sortedStops.length - 1];
+
+  // If progress is before first stop
+  if (clampedProgress <= sortedStops[0].position) {
+    return sortedStops[0].color;
+  }
+
+  // If progress is after last stop
+  if (clampedProgress >= sortedStops[sortedStops.length - 1].position) {
+    return sortedStops[sortedStops.length - 1].color;
+  }
+
+  // Find the bracketing stops
+  for (let i = 0; i < sortedStops.length - 1; i++) {
+    if (
+      clampedProgress >= sortedStops[i].position &&
+      clampedProgress <= sortedStops[i + 1].position
+    ) {
+      lowerStop = sortedStops[i];
+      upperStop = sortedStops[i + 1];
+      break;
+    }
+  }
+
+  // Calculate local t value between the two stops
+  const range = upperStop.position - lowerStop.position;
+  const localT = range === 0 ? 0 : (clampedProgress - lowerStop.position) / range;
+
+  // Apply interpolation type
+  if (interpolation === "constant") {
+    // Constant interpolation: use the lower stop's color
+    return lowerStop.color;
+  } else {
+    // Linear interpolation
+    return interpolateColors(lowerStop.color, upperStop.color, localT);
+  }
 };
 
 /**
@@ -256,5 +360,34 @@ export const processGradientMap = (
   behavior: Adjustment & { type: "GRADMAP" },
   inputData: ImageData
 ): ImageData => {
-  throw Error("Not implemented");
+  const { width, height, data } = inputData;
+
+  // Create a new ImageData for the output
+  const outputData = new ImageData(width, height);
+
+  // Process each pixel
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i];
+    const g = data[i + 1];
+    const b = data[i + 2];
+    const a = data[i + 3];
+
+    // Calculate brightness/luminance of the pixel (0-1)
+    // Using relative luminance formula (perceived brightness)
+    const brightness = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+    // Get the gradient color at this brightness level
+    const gradientColor = evalGradientAt(behavior, brightness);
+
+    // Parse the gradient color
+    const [newR, newG, newB] = hexToRgb(gradientColor);
+
+    // Write the mapped color to output
+    outputData.data[i] = newR;
+    outputData.data[i + 1] = newG;
+    outputData.data[i + 2] = newB;
+    outputData.data[i + 3] = a; // Preserve alpha channel
+  }
+
+  return outputData;
 };
