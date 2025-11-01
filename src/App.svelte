@@ -267,7 +267,11 @@
   function isAdjustmentNode(
     node: ProccessingNode<Adjustment | FX>
   ): node is ProccessingNode<Adjustment> {
-    return node.behavior.type === "HSL" || node.behavior.type === "RGB";
+    return (
+      node.behavior.type === "HSL" ||
+      node.behavior.type === "RGB" ||
+      node.behavior.type === "GRADMAP"
+    );
   }
 </script>
 
