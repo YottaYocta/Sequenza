@@ -105,7 +105,7 @@
   <div class="flex flex-wrap gap-1 pb-8 relative">
     {#each fxOptions as option}
       <button
-        class="text-sm font-medium {option.disabled
+        class="text-sm {option.disabled
           ? 'bg-transparent text-neutral-400'
           : node.behavior.type === option.type
             ? 'bg-black text-white'

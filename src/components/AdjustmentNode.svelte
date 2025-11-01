@@ -91,7 +91,7 @@
   <div class="flex gap-1 pb-8 relative">
     {#each adjustmentOptions as option}
       <button
-        class="text-sm font-medium {option.disabled
+        class="text-sm {option.disabled
           ? 'bg-transparent text-neutral-400'
           : node.behavior.type === option.type
             ? 'bg-black text-white'
@@ -123,7 +123,10 @@
   </div>
 
   <!-- Content Area -->
-  <div class="py-4 flex flex-col border-b border-t relative" bind:this={body}>
+  <div
+    class="py-4 flex flex-col border-b border-t relative text-sm"
+    bind:this={body}
+  >
     <span class="absolute top-0 left-0 -translate-1/2 w-2 h-2 bg-black"> </span>
     <span
       class="absolute bottom-0 right-0 translate-1/2 w-2 h-2 bg-black flex items-center"

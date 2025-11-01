@@ -38,7 +38,7 @@
 </script>
 
 <input
-  class="w-10 custom-number-input outline-none focus:bg-black focus:text-white text-end no-spin-buttons"
+  class="min-w-10 w-10 h-4 custom-number-input outline-none focus:bg-black focus:text-white text-end no-spin-buttons border"
   {step}
   {min}
   {max}
