@@ -1,16 +1,19 @@
 <script lang="ts">
   import type { ProccessingNode } from "../ProcessingNode";
-  import type { Adjustment } from "../Adjustment";
+  import type { Adjustment, Gradient } from "../Adjustment";
   import CustomInput from "./CustomInput.svelte";
   import Line from "./Line.svelte";
   import type { Attachment } from "svelte/attachments";
   import Endpoint from "./Endpoint.svelte";
+  import GradientInputNode from "./GradientInputNode.svelte";
 
-  const { nodeIndex, node, onUpdateBehavior } = $props<{
+  interface Props {
     nodeIndex: number;
     node: ProccessingNode<Adjustment>;
     onUpdateBehavior: (nodeIndex: number, behavior: Adjustment) => void;
-  }>();
+  }
+
+  const { nodeIndex, node, onUpdateBehavior }: Props = $props();
 
   let body = $state<HTMLDivElement | null>(null);
   let lineParams: {
@@ -49,7 +52,7 @@
   };
 
   type AdjustmentOption = {
-    type: "HSL" | "RGB" | null;
+    type: "HSL" | "RGB" | "GRADMAP";
     label: string;
     disabled?: boolean;
   };
@@ -57,7 +60,7 @@
   const adjustmentOptions: AdjustmentOption[] = [
     { type: "HSL", label: "HSL" },
     { type: "RGB", label: "RGB" },
-    { type: null, label: "GRADIENTMAP", disabled: true },
+    { type: "GRADMAP", label: "GRADIENTMAP" },
   ];
 
   function updateField(field: string, value: number) {
@@ -67,21 +70,36 @@
     } as Adjustment);
   }
 
-  function switchType(type: "HSL" | "RGB") {
-    if (type === "HSL") {
-      onUpdateBehavior(nodeIndex, {
-        type: "HSL",
-        hue: 0,
-        saturation: 0,
-        lightness: 0,
-      } as Adjustment);
-    } else {
-      onUpdateBehavior(nodeIndex, {
-        type: "RGB",
-        red: 0,
-        green: 0,
-        blue: 0,
-      } as Adjustment);
+  function switchType(type: "HSL" | "RGB" | "GRADMAP") {
+    switch (type) {
+      case "HSL":
+        onUpdateBehavior(nodeIndex, {
+          type: "HSL",
+          hue: 0,
+          saturation: 0,
+          lightness: 0,
+        } as Adjustment);
+
+        break;
+
+      case "RGB":
+        onUpdateBehavior(nodeIndex, {
+          type: "RGB",
+          red: 0,
+          green: 0,
+          blue: 0,
+        } as Adjustment);
+        break;
+      case "GRADMAP":
+        onUpdateBehavior(nodeIndex, {
+          type: "GRADMAP",
+          stops: [
+            { position: 0, color: "#000000" },
+            { position: 0, color: "#ffffff" },
+          ],
+          interpolation: "linear",
+        } as Gradient);
+        break;
     }
   }
 </script>
@@ -122,7 +140,7 @@
     {/if}
   </div>
 
-  <!-- Content Area -->
+  <!-- form switch handling -->
   <div
     class="py-4 flex flex-col border-b border-t relative text-sm"
     bind:this={body}
@@ -165,6 +183,11 @@
         defaultValue={0}
         handleUpdate={(v) => updateField("lightness", v)}
       />
+    {:else if node.behavior.type === "GRADMAP"}
+      <GradientInputNode
+        gradient={node.behavior}
+        handleUpdateGradient={(g) => onUpdateBehavior(nodeIndex, g)}
+      ></GradientInputNode>
     {:else if node.behavior.type === "RGB"}
       <CustomInput
         label="RED"
