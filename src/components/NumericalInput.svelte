@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { tick } from "svelte";
+
   interface Props {
     name: string;
     value: number;
@@ -8,9 +10,31 @@
     handleValueChanged: (newValue: number) => void;
   }
 
-  let { value, name, step, min, max, handleValueChanged } = $props();
+  let { value, name, step, min, max, handleValueChanged }: Props = $props();
 
-  let displayValue: string = $derived(value);
+  let displayValue: string = $derived(String(value));
+
+  const handleSubmit = () => {
+    const numericalRegexString = /^\s*-?(\d+|\d*\.\d+|\d+\.\d*)\s*$/;
+    const isValidNumber = numericalRegexString.test(displayValue);
+
+    if (isValidNumber) {
+      const parsedValue = parseFloat(displayValue);
+      if (!Number.isNaN(parsedValue)) {
+        if (min !== undefined && parsedValue <= min) {
+          handleValueChanged(min);
+        } else if (max !== undefined && parsedValue >= max) {
+          handleValueChanged(max);
+        } else {
+          handleValueChanged(parsedValue);
+        }
+      } else {
+        handleValueChanged(value);
+      }
+    } else {
+      displayValue = String(value);
+    }
+  };
 </script>
 
 <input
@@ -23,15 +47,11 @@
   bind:value={displayValue}
   onkeypress={(key) => {
     if (key.key === "Enter") {
-      const numericalRegexString = /^\s*-?(\d+|\d*\.\d+|\d+\.\d*)\s*$/;
-      const isValidNumber = numericalRegexString.test(displayValue);
-
-      if (isValidNumber) {
-        const parsedValue = parseFloat(displayValue);
-        if (!Number.isNaN(parsedValue)) handleValueChanged(parsedValue);
-      } else {
-        displayValue = value;
-      }
+      handleSubmit();
+    } else if (key.key === "ArrowUp") {
+      displayValue = String(value + (step ?? 1));
+    } else if (key.key === "ArrowDown") {
+      displayValue = String(value - (step ?? 1));
     }
   }}
 />

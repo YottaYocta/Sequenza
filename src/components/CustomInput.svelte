@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Attachment } from "svelte/attachments";
+  import NumericalInput from "./NumericalInput.svelte";
 
   const {
     min = 0,
@@ -19,22 +20,6 @@
     label: string;
   } = $props();
 
-  let inputValue = $derived(String(value.toFixed(1)));
-
-  type DragState = { startX: number } | null;
-
-  function updateFromInput() {
-    const floatRegex = /^-?\d+(\.\d+)?$/;
-
-    if (floatRegex.test(inputValue)) {
-      const num = parseFloat(inputValue);
-      if (num >= min && num <= max) {
-        handleUpdate(num);
-        return;
-      }
-    }
-  }
-
   function startDrag(track: HTMLDivElement, e: MouseEvent) {
     const update = (clientX: number) => {
       const rect = track.getBoundingClientRect();
@@ -42,7 +27,6 @@
       ratio = Math.max(0, Math.min(1, ratio));
       const newVal = Math.round((min + ratio * (max - min)) / step) * step;
       handleUpdate(newVal);
-      inputValue = String(newVal);
     };
 
     update(e.clientX);
@@ -73,19 +57,20 @@
 
   function resetValue() {
     handleUpdate(defaultValue);
-    inputValue = String(defaultValue);
   }
 </script>
 
 <div class="flex items-center gap-2">
   <label class="w-full text-right text-nowrap" for={label}>{label}</label>
 
-  <input
+  <NumericalInput
     name={label}
-    class="w-10 custom-number-input outline-none focus:bg-black focus:text-white text-end"
-    bind:value={inputValue}
-    onkeydown={(e) => e.key === "Enter" && updateFromInput()}
-  />
+    {min}
+    {max}
+    {step}
+    {value}
+    handleValueChanged={handleUpdate}
+  ></NumericalInput>
 
   <div
     class="relative w-48 min-w-36 h-3 border border-black cursor-pointer border-l-4 border-r-4 bg-white"

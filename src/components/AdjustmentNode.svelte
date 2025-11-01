@@ -138,7 +138,9 @@
         step={0.01}
         value={node.behavior.hue}
         defaultValue={0}
-        handleUpdate={(v) => updateField("hue", v)}
+        handleUpdate={(v) => {
+          updateField("hue", v);
+        }}
       />
 
       <CustomInput
