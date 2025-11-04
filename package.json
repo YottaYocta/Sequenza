@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.16",
+    "@types/crypto-js": "^4.2.2",
     "tailwindcss": "^4.1.16"
   }
 }

@@ -2,11 +2,18 @@ import type { Behavior } from "./Behavior";
 import type { Output } from "./Output";
 
 export interface ProcessingUnit {
-  id: string;
   behavior: Behavior;
   cachedOutput: Output | null;
   progress: number;
 }
+
+export const newProcessingUnit = (behavior: Behavior): ProcessingUnit => {
+  return {
+    behavior: structuredClone(behavior),
+    cachedOutput: null,
+    progress: 0,
+  };
+};
 
 type StepFunction = () => [number, Output]; // progress and the output
 
