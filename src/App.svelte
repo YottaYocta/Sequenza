@@ -325,13 +325,5 @@
 
     <!-- Connection lines SVG -->
     <ConnectionLines />
-    <DraggableContainer startY={600}>
-      <GradientInputNode
-        gradient={testGradient}
-        handleUpdateGradient={(newGradient) => {
-          testGradient = newGradient;
-        }}
-      ></GradientInputNode>
-    </DraggableContainer>
   </div>
 </main>
