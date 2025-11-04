@@ -2,6 +2,7 @@ import type { Behavior } from "./Behavior";
 import type { Output } from "./Output";
 import {
   newProcessingTask,
+  newProcessingUnit,
   type ProcessingTask,
   type ProcessingUnit,
 } from "./ProcessingUnit";
@@ -18,6 +19,24 @@ export const newEditorState = (source: Output): EditorState => {
     processingUnits: [],
     currentTask: null,
   };
+};
+
+export const pushUnit = (state: EditorState, newBehavior: Behavior) => {
+  state.processingUnits.push(newProcessingUnit(newBehavior));
+  syncProcessingTask(state);
+};
+
+export const removeUnitAt = (
+  state: EditorState,
+  index: number
+): ProcessingUnit => {
+  if (index >= 0 && index < state.processingUnits.length) {
+    const removed = state.processingUnits.splice(index, 1)[0];
+    syncProcessingTask(state);
+    return removed;
+  } else {
+    throw new Error(`tried to remove behavior at invalid index ${index}`);
+  }
 };
 
 const syncProcessingTask = (state: EditorState) => {
