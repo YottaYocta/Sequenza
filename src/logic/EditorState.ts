@@ -12,6 +12,14 @@ interface EditorState {
   currentTask: ProcessingTask | null;
 }
 
+export const newEditorState = (source: Output): EditorState => {
+  return {
+    source,
+    processingUnits: [],
+    currentTask: null,
+  };
+};
+
 const syncProcessingTask = (state: EditorState) => {
   const firstUncompletedIndex = state.processingUnits.findIndex(
     (unit) => unit.progress < 1 || unit.cachedOutput === null
