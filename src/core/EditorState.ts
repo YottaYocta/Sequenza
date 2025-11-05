@@ -21,39 +21,39 @@ export const newEditorState = (source: Output): EditorState => {
   };
 };
 
-export const pushUnit = (state: EditorState, newBehavior: Behavior) => {
+export const pushUnit = async (state: EditorState, newBehavior: Behavior) => {
   state.processingUnits.push(newProcessingUnit(newBehavior));
-  syncProcessingTask(state);
+  await syncProcessingTask(state);
 };
 
-export const removeUnitAt = (
+export const removeUnitAt = async (
   state: EditorState,
   index: number
-): ProcessingUnit => {
+): Promise<ProcessingUnit> => {
   if (index >= 0 && index < state.processingUnits.length) {
     const removed = state.processingUnits.splice(index, 1)[0];
-    syncProcessingTask(state);
+    await syncProcessingTask(state);
     return removed;
   } else {
     throw new Error(`tried to remove behavior at invalid index ${index}`);
   }
 };
 
-const syncProcessingTask = (state: EditorState) => {
+const syncProcessingTask = async (state: EditorState) => {
   const firstUncompletedIndex = state.processingUnits.findIndex(
     (unit) => unit.progress < 1 || unit.cachedOutput === null
   );
   if (firstUncompletedIndex > 0) {
     const previousSource = state.processingUnits[firstUncompletedIndex - 1]
       .cachedOutput as Output;
-    const newTask = newProcessingTask(
+    const newTask = await newProcessingTask(
       previousSource,
       state.processingUnits[firstUncompletedIndex].behavior,
       firstUncompletedIndex
     );
     state.currentTask = newTask;
   } else if (firstUncompletedIndex === 0) {
-    const newTask = newProcessingTask(
+    const newTask = await newProcessingTask(
       state.source,
       state.processingUnits[firstUncompletedIndex].behavior,
       firstUncompletedIndex
@@ -64,17 +64,17 @@ const syncProcessingTask = (state: EditorState) => {
   }
 };
 
-export const updateBehaviorAt = (
+export const updateBehaviorAt = async (
   state: EditorState,
   index: number,
   newBehavior: Behavior
-): void => {
+): Promise<void> => {
   if (index >= 0 && index < state.processingUnits.length) {
     state.processingUnits[index].behavior = newBehavior;
     for (let i = index; i < state.processingUnits.length; i++) {
       state.processingUnits[i].progress = 0;
     }
-    syncProcessingTask(state);
+    await syncProcessingTask(state);
   } else throw new Error(`tried to update behavior at invalid index ${index}`);
 };
 

@@ -25,18 +25,18 @@ export interface ProcessingTask {
 export type StepFunctionFactory = (
   input: Output,
   behavior: Behavior
-) => StepFunction;
+) => Promise<StepFunction>;
 
 export const GlobalStepFunctionFactoryRegistry: Map<
   string,
   StepFunctionFactory
 > = new Map<string, StepFunctionFactory>();
 
-export const newProcessingTask = (
+export const newProcessingTask = async (
   input: Output,
   behavior: Behavior,
   unitIndex: number
-): ProcessingTask => {
+): Promise<ProcessingTask> => {
   const createStepFunction = GlobalStepFunctionFactoryRegistry.get(
     behavior.type
   );
@@ -45,7 +45,7 @@ export const newProcessingTask = (
       `step function factory for '${behavior.type}' does not exist`
     );
   } else {
-    const stepFunction = createStepFunction(input, behavior);
+    const stepFunction = await createStepFunction(input, behavior);
     return {
       unitIndex,
       stepFunction,
