@@ -4,6 +4,7 @@ export interface NumericalField {
   max: number;
   default: number;
   step: number;
+  value: number;
 }
 
 export const newNumericalField = (
@@ -18,6 +19,7 @@ export const newNumericalField = (
     max,
     default: defaultValue,
     step,
+    value: defaultValue,
   };
 };
 

@@ -49,7 +49,11 @@ const RGBStepFunctionFactory: StepFunctionFactory = async (
     }
 
     // Create SVG blob and render it
-    const svgString = `<svg viewBox="${svg.viewBox.x} ${svg.viewBox.y} ${svg.viewBox.width} ${svg.viewBox.height}" xmlns="http://www.w3.org/2000/svg">${svg.children.join("")}</svg>`;
+    const svgString = `<svg viewBox="${svg.viewBox.x} ${svg.viewBox.y} ${
+      svg.viewBox.width
+    } ${
+      svg.viewBox.height
+    }" xmlns="http://www.w3.org/2000/svg">${svg.children.join("")}</svg>`;
     const svgBlob = new Blob([svgString], { type: "image/svg+xml" });
     const url = URL.createObjectURL(svgBlob);
 
@@ -68,7 +72,12 @@ const RGBStepFunctionFactory: StepFunctionFactory = async (
       img.src = url;
     });
 
-    inputImageData = ctx.getImageData(0, 0, svg.viewBox.width, svg.viewBox.height);
+    inputImageData = ctx.getImageData(
+      0,
+      0,
+      svg.viewBox.width,
+      svg.viewBox.height
+    );
   }
 
   // Deep clone the behavior
@@ -81,9 +90,9 @@ const RGBStepFunctionFactory: StepFunctionFactory = async (
   );
 
   // Extract RGB adjustment values
-  const rAdjust = behaviorSnapshot.fields.r.default;
-  const gAdjust = behaviorSnapshot.fields.g.default;
-  const bAdjust = behaviorSnapshot.fields.b.default;
+  const rAdjust = behaviorSnapshot.fields.r.value;
+  const gAdjust = behaviorSnapshot.fields.g.value;
+  const bAdjust = behaviorSnapshot.fields.b.value;
 
   // Define chunk size (e.g., 64x64 squares)
   const chunkSize = 64;
