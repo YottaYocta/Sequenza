@@ -15,7 +15,7 @@ export const newProcessingUnit = (behavior: Behavior): ProcessingUnit => {
   };
 };
 
-type StepFunction = () => [number, Output]; // progress and the output
+export type StepFunction = () => [number, Output]; // progress and the output
 
 export interface ProcessingTask {
   unitIndex: number;
@@ -24,7 +24,7 @@ export interface ProcessingTask {
 
 export type StepFunctionFactory = (
   input: Output,
-  behavior: Behavior
+  behaviorSnapshot: Behavior
 ) => StepFunction;
 
 export const GlobalStepFunctionFactoryRegistry: Map<
