@@ -3,7 +3,7 @@ import {
   type NumericalField,
   newNumericalField,
 } from "../core/Behavior";
-import type { Output } from "../core/Output";
+import { type Output, outputToImageData } from "../core/Output";
 import {
   GlobalStepFunctionFactoryRegistry,
   type StepFunction,
@@ -35,50 +35,7 @@ const RGBStepFunctionFactory: StepFunctionFactory = async (
   behavior: Behavior
 ): Promise<StepFunction> => {
   // Convert input to ImageData
-  let inputImageData: ImageData;
-
-  if (input.type === "image") {
-    inputImageData = input.data;
-  } else {
-    // SVG type - render to offline canvas
-    const svg = input.data;
-    const canvas = new OffscreenCanvas(svg.viewBox.width, svg.viewBox.height);
-    const ctx = canvas.getContext("2d");
-    if (!ctx) {
-      throw new Error("Failed to get 2D context from OffscreenCanvas");
-    }
-
-    // Create SVG blob and render it
-    const svgString = `<svg viewBox="${svg.viewBox.x} ${svg.viewBox.y} ${
-      svg.viewBox.width
-    } ${
-      svg.viewBox.height
-    }" xmlns="http://www.w3.org/2000/svg">${svg.children.join("")}</svg>`;
-    const svgBlob = new Blob([svgString], { type: "image/svg+xml" });
-    const url = URL.createObjectURL(svgBlob);
-
-    // Load and draw the SVG
-    const img = new Image();
-    await new Promise<void>((resolve, reject) => {
-      img.onload = () => {
-        ctx.drawImage(img, 0, 0);
-        URL.revokeObjectURL(url);
-        resolve();
-      };
-      img.onerror = () => {
-        URL.revokeObjectURL(url);
-        reject(new Error("Failed to load SVG image"));
-      };
-      img.src = url;
-    });
-
-    inputImageData = ctx.getImageData(
-      0,
-      0,
-      svg.viewBox.width,
-      svg.viewBox.height
-    );
-  }
+  const inputImageData = await outputToImageData(input);
 
   // Deep clone the behavior
   const behaviorSnapshot = structuredClone(behavior) as RGBBehavior;
