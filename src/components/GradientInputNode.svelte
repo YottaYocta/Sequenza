@@ -66,15 +66,14 @@
   };
 
   function updateGradient(updatedGradient: GradientField) {
-    const newBehavior = cloneBehavior(behavior);
     // Find the gradient field name and update it
-    for (const [fieldName, field] of Object.entries(newBehavior.fields)) {
+    for (const [fieldName, field] of Object.entries(behavior.fields)) {
       if (field.type === "GradientMap") {
-        newBehavior.fields[fieldName] = updatedGradient;
+        behavior.fields[fieldName] = updatedGradient;
         break;
       }
     }
-    onUpdateBehavior(newBehavior);
+    onUpdateBehavior(behavior);
   }
 
   function addStop() {
