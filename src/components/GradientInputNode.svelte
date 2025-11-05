@@ -33,36 +33,42 @@
     }
   };
 
-  const sliderAttachment: Attachment<HTMLButtonElement> = (
-    element: HTMLButtonElement
-  ) => {
-    const handleMouseMove = (e: MouseEvent) => {
-      const parent = element.parentElement;
-      if (!parent) return;
-      const parentBoundingBox = parent.getBoundingClientRect();
-      const targetX = e.clientX - parentBoundingBox.x;
-      const leftEdge = parentBoundingBox.width;
+  const sliderAttachmentFactory = (
+    stopIndex: number
+  ): Attachment<HTMLButtonElement> => {
+    const sliderAttachment: Attachment<HTMLButtonElement> = (
+      element: HTMLButtonElement
+    ) => {
+      const handleMouseMove = (e: MouseEvent) => {
+        const parent = element.parentElement;
+        if (!parent) return;
+        const parentBoundingBox = parent.getBoundingClientRect();
+        const targetX = e.clientX - parentBoundingBox.x;
+        const gradientRampWidth = parentBoundingBox.width;
 
-      const clampedX = Math.max(0, Math.min(targetX, leftEdge));
+        const clampedX = Math.max(0, Math.min(targetX, gradientRampWidth));
+        element.style.left = `${clampedX}px`;
 
-      element.style.left = `${clampedX}px`;
+        updateStopPosition(stopIndex, clampedX / gradientRampWidth);
+      };
+
+      const handleMouseUp = (e: MouseEvent) => {
+        window.removeEventListener("mousemove", handleMouseMove);
+      };
+
+      const handleMouseDown = (e: MouseEvent) => {
+        window.addEventListener("mouseup", handleMouseUp);
+        window.addEventListener("mousemove", handleMouseMove);
+      };
+
+      element.addEventListener("mousedown", handleMouseDown);
+      return () => {
+        window.removeEventListener("mouseup", handleMouseUp);
+        element.removeEventListener("mousedown", handleMouseDown);
+        window.removeEventListener("mousemove", handleMouseMove);
+      };
     };
-
-    const handleMouseUp = (e: MouseEvent) => {
-      window.removeEventListener("mousemove", handleMouseMove);
-    };
-
-    const handleMouseDown = (e: MouseEvent) => {
-      window.addEventListener("mouseup", handleMouseUp);
-      window.addEventListener("mousemove", handleMouseMove);
-    };
-
-    element.addEventListener("mousedown", handleMouseDown);
-    return () => {
-      window.removeEventListener("mouseup", handleMouseUp);
-      element.removeEventListener("mousedown", handleMouseDown);
-      window.removeEventListener("mousemove", handleMouseMove);
-    };
+    return sliderAttachment;
   };
 
   function updateGradient(updatedGradient: GradientField) {
@@ -127,7 +133,7 @@
             aria-label={`handle for stop ${idx}`}
             class="w-4 h-2 -translate-x-1/2 border absolute -bottom-3"
             style={`left: ${stop.position * 100}%; background: ${stop.color}; `}
-            {@attach sliderAttachment}
+            {@attach sliderAttachmentFactory(idx)}
           >
           </button>
         {/each}
