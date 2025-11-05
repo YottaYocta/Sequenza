@@ -24,9 +24,9 @@ export const createNewRGBBehavior = (r = 0, g = 0, b = 0): RGBBehavior => {
   return {
     type: "rgb",
     fields: {
-      r: newNumericalField(0, 255, r, 1),
-      g: newNumericalField(0, 255, g, 1),
-      b: newNumericalField(0, 255, b, 1),
+      r: newNumericalField(-255, 255, r, 1),
+      g: newNumericalField(-255, 255, g, 1),
+      b: newNumericalField(-255, 255, b, 1),
     },
   };
 };

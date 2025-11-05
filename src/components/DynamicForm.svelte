@@ -16,6 +16,7 @@
     if (fieldName in updatedBehavior.fields) {
       const field = updatedBehavior.fields[fieldName];
       if (field.type === "Numerical") {
+        field.value = value;
         field.default = value;
       }
     }

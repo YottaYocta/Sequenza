@@ -59,6 +59,7 @@ export const cloneBehavior = <T extends Behavior>(behavior: T): T => {
         max: field.max,
         default: field.default,
         step: field.step,
+        value: field.value,
       };
     } else if (field.type === "GradientMap") {
       cloned.fields[fieldName] = {
