@@ -43,7 +43,7 @@
       const targetX = e.clientX - parentBoundingBox.x;
       const leftEdge = parentBoundingBox.width;
 
-      const clampedX = Math.min(0, Math.max(targetX, leftEdge));
+      const clampedX = Math.max(0, Math.min(targetX, leftEdge));
 
       element.style.left = `${clampedX}px`;
     };
@@ -128,6 +128,7 @@
             aria-label={`handle for stop ${idx}`}
             class="w-4 h-2 -translate-x-1/2 border absolute -bottom-3"
             style={`left: ${stop.position * 100}%; background: ${stop.color}; `}
+            {@attach sliderAttachment}
           >
           </button>
         {/each}
