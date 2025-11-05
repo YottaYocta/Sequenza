@@ -9,6 +9,7 @@ import {
   type StepFunction,
   type StepFunctionFactory,
 } from "../core/ProcessingUnit";
+import { generateChunks } from "../core/util";
 
 interface RGBBehavior extends Behavior {
   type: "rgb";
@@ -54,28 +55,9 @@ const RGBStepFunctionFactory: StepFunctionFactory = async (
   // Define chunk size (e.g., 64x64 squares)
   const chunkSize = 64;
   const width = inputImageData.width;
-  const height = inputImageData.height;
 
   // Precompute list of chunks
-  interface Chunk {
-    startX: number;
-    startY: number;
-    endX: number;
-    endY: number;
-  }
-
-  const chunks: Chunk[] = [];
-  for (let y = 0; y < height; y += chunkSize) {
-    for (let x = 0; x < width; x += chunkSize) {
-      chunks.push({
-        startX: x,
-        startY: y,
-        endX: Math.min(x + chunkSize, width),
-        endY: Math.min(y + chunkSize, height),
-      });
-    }
-  }
-
+  const chunks = generateChunks(inputImageData, chunkSize, chunkSize);
   const totalChunks = chunks.length;
   let currentChunkIndex = 0;
 
