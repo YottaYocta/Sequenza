@@ -10,6 +10,7 @@ import {
   type StepFunction,
   type StepFunctionFactory,
 } from "../core/ProcessingUnit";
+import { cloneBehavior } from "../core/util";
 
 interface BarBehavior extends Behavior {
   type: "bar";
@@ -124,7 +125,7 @@ const BarStepFunctionFactory: StepFunctionFactory = async (
   const inputImageData = await outputToImageData(input);
 
   // Deep clone the behavior
-  const behaviorSnapshot = structuredClone(behavior) as BarBehavior;
+  const behaviorSnapshot = cloneBehavior(behavior) as BarBehavior;
 
   // Extract parameters
   const isHorizontal = behaviorSnapshot.fields.direction.default === 0;

@@ -10,6 +10,7 @@ import {
   type StepFunction,
   type StepFunctionFactory,
 } from "../core/ProcessingUnit";
+import { cloneBehavior } from "../core/util";
 
 interface DotBehavior extends Behavior {
   type: "dot";
@@ -117,11 +118,15 @@ const DotStepFunctionFactory: StepFunctionFactory = async (
   const inputImageData = await outputToImageData(input);
 
   // Deep clone the behavior
-  const behaviorSnapshot = structuredClone(behavior) as DotBehavior;
+  const behaviorSnapshot = cloneBehavior(behavior) as DotBehavior;
 
   // Extract parameters
-  const horizontalCount = Math.floor(behaviorSnapshot.fields.horizontalCount.default);
-  const verticalCount = Math.floor(behaviorSnapshot.fields.verticalCount.default);
+  const horizontalCount = Math.floor(
+    behaviorSnapshot.fields.horizontalCount.default
+  );
+  const verticalCount = Math.floor(
+    behaviorSnapshot.fields.verticalCount.default
+  );
   const dotRadius = behaviorSnapshot.fields.dotRadius.default;
   const borderRadius = behaviorSnapshot.fields.borderRadius.default;
   const rotation = behaviorSnapshot.fields.rotation.default;

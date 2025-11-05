@@ -1,19 +1,21 @@
 <script lang="ts">
-  import type { ProccessingNode } from "../ProcessingNode";
-  import type { Adjustment, Gradient } from "../Adjustment";
-  import CustomInput from "./CustomInput.svelte";
+  import type { Behavior } from "../core/Behavior";
+  import { createNewHSLBehavior } from "../adjustments/hsl";
+  import { createNewRGBBehavior } from "../adjustments/rgb";
+  import { createNewGradientMapBehavior } from "../adjustments/gradientmap";
+  import DynamicForm from "./DynamicForm.svelte";
   import Line from "./Line.svelte";
   import type { Attachment } from "svelte/attachments";
   import Endpoint from "./Endpoint.svelte";
-  import GradientInputNode from "./GradientInputNode.svelte";
+  import { untrack } from "svelte";
 
   interface Props {
     nodeIndex: number;
-    node: ProccessingNode<Adjustment>;
-    onUpdateBehavior: (nodeIndex: number, behavior: Adjustment) => void;
+    behavior: Behavior;
+    onUpdateBehavior: (nodeIndex: number, behavior: Behavior) => any;
   }
 
-  const { nodeIndex, node, onUpdateBehavior }: Props = $props();
+  const { nodeIndex, behavior, onUpdateBehavior }: Props = $props();
 
   let body = $state<HTMLDivElement | null>(null);
   let lineParams: {
@@ -26,7 +28,7 @@
   const buttonAttachment: Attachment<HTMLButtonElement> = (
     element: HTMLButtonElement
   ) => {
-    if (node.behavior.type === element.name && body) {
+    if (behavior.type === element.name && body !== null) {
       // Get bounding rects relative to the viewport
       const buttonRect = element.getBoundingClientRect();
       const bodyRect = body.getBoundingClientRect();
@@ -47,84 +49,62 @@
       const endY = bodyRect.top - parentRect.top;
 
       // Update the line parameters
-      lineParams = { startX, startY, endX, endY };
+      untrack(() => {
+        lineParams = { startX, startY, endX, endY };
+      });
     }
   };
 
   type AdjustmentOption = {
-    type: "HSL" | "RGB" | "GRADMAP";
+    type: "hsl" | "rgb" | "gradientmap";
     label: string;
     disabled?: boolean;
   };
 
   const adjustmentOptions: AdjustmentOption[] = [
-    { type: "HSL", label: "HSL" },
-    { type: "RGB", label: "RGB" },
-    { type: "GRADMAP", label: "GRADIENTMAP" },
+    { type: "hsl", label: "HSL" },
+    { type: "rgb", label: "RGB" },
+    { type: "gradientmap", label: "GRADIENTMAP" },
   ];
 
-  function updateField(field: string, value: number) {
-    onUpdateBehavior(nodeIndex, {
-      ...node.behavior,
-      [field]: value,
-    } as Adjustment);
-  }
-
-  function switchType(type: "HSL" | "RGB" | "GRADMAP") {
-    switch (type) {
-      case "HSL":
-        onUpdateBehavior(nodeIndex, {
-          type: "HSL",
-          hue: 0,
-          saturation: 0,
-          lightness: 0,
-        } as Adjustment);
-
-        break;
-
-      case "RGB":
-        onUpdateBehavior(nodeIndex, {
-          type: "RGB",
-          red: 0,
-          green: 0,
-          blue: 0,
-        } as Adjustment);
-        break;
-      case "GRADMAP":
-        onUpdateBehavior(nodeIndex, {
-          type: "GRADMAP",
-          stops: [
-            { position: 0, color: "#000000" },
-            { position: 0, color: "#ffffff" },
-          ],
-          interpolation: "linear",
-        } as Gradient);
-        break;
+  function switchToType(type: "hsl" | "rgb" | "gradientmap") {
+    if (behavior.type !== type) {
+      let newBehavior: Behavior;
+      switch (type) {
+        case "hsl":
+          newBehavior = createNewHSLBehavior();
+          break;
+        case "rgb":
+          newBehavior = createNewRGBBehavior();
+          break;
+        case "gradientmap":
+          newBehavior = createNewGradientMapBehavior();
+          break;
+      }
+      onUpdateBehavior(nodeIndex, newBehavior);
     }
   }
 </script>
 
-<div class="flex flex-col">
+<div class="flex flex-col min-w-64 w-min text-sm">
   <!-- Tab Header -->
-  <div class="flex gap-1 pb-8 relative">
+  <div class="flex flex-wrap gap-1 pb-8 relative">
     {#each adjustmentOptions as option}
       <button
         class="text-sm {option.disabled
           ? 'bg-transparent text-neutral-400'
-          : node.behavior.type === option.type
+          : behavior.type === option.type
             ? 'bg-black text-white'
             : 'bg-transparent text-black'} {option.disabled
           ? ''
           : 'cursor-pointer'}"
         disabled={option.disabled}
-        onclick={() => option.type && switchType(option.type)}
+        onclick={() => option.type && switchToType(option.type)}
         name={option.type}
         {@attach buttonAttachment}
       >
-        {#if node.behavior.type === option.type}
-          <div class="absolute top-0 left-0">
-            <Endpoint nodeIdx={nodeIndex} type="start"></Endpoint>
-          </div>
+        {#if behavior.type === option.type}
+          <Endpoint nodeIdx={nodeIndex} type="start"></Endpoint>
         {/if}
         {option.label}
       </button>
@@ -140,84 +120,17 @@
     {/if}
   </div>
 
-  <!-- form switch handling -->
-  <div
-    class="py-4 flex flex-col border-b border-t relative text-sm"
-    bind:this={body}
-  >
+  <!-- Content Area -->
+  <div class="border-b border-t py-4 relative" bind:this={body}>
     <span class="absolute top-0 left-0 -translate-1/2 w-2 h-2 bg-black"> </span>
     <span
       class="absolute bottom-0 right-0 translate-1/2 w-2 h-2 bg-black flex items-center"
     >
       <Endpoint nodeIdx={nodeIndex} type="end"></Endpoint>
     </span>
-    {#if node.behavior.type === "HSL"}
-      <CustomInput
-        label="HUE"
-        min={-180}
-        max={180}
-        step={0.01}
-        value={node.behavior.hue}
-        defaultValue={0}
-        handleUpdate={(v) => {
-          updateField("hue", v);
-        }}
-      />
-
-      <CustomInput
-        label="SATURATION"
-        min={0}
-        max={1}
-        step={0.01}
-        value={node.behavior.saturation}
-        defaultValue={0}
-        handleUpdate={(v) => updateField("saturation", v)}
-      />
-
-      <CustomInput
-        label="LIGHTNESS"
-        min={-1}
-        max={1}
-        step={0.01}
-        value={node.behavior.lightness}
-        defaultValue={0}
-        handleUpdate={(v) => updateField("lightness", v)}
-      />
-    {:else if node.behavior.type === "GRADMAP"}
-      <GradientInputNode
-        gradient={node.behavior}
-        handleUpdateGradient={(g) => onUpdateBehavior(nodeIndex, g)}
-      ></GradientInputNode>
-    {:else if node.behavior.type === "RGB"}
-      <CustomInput
-        label="RED"
-        min={0}
-        max={255}
-        step={1}
-        value={node.behavior.red}
-        defaultValue={0}
-        handleUpdate={(v) => updateField("red", v)}
-      />
-
-      <CustomInput
-        label="GREEN"
-        min={0}
-        max={255}
-        step={1}
-        value={node.behavior.green}
-        defaultValue={0}
-        handleUpdate={(v) => updateField("green", v)}
-      />
-
-      <CustomInput
-        label="BLUE"
-        min={0}
-        max={255}
-        step={1}
-        value={node.behavior.blue}
-        defaultValue={0}
-        handleUpdate={(v) => updateField("blue", v)}
-      />
-    {/if}
+    <DynamicForm
+      {behavior}
+      onUpdateBehavior={(b) => onUpdateBehavior(nodeIndex, b)}
+    />
   </div>
 </div>

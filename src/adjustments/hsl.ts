@@ -9,7 +9,7 @@ import {
   type StepFunction,
   type StepFunctionFactory,
 } from "../core/ProcessingUnit";
-import { generateChunks } from "../core/util";
+import { generateChunks, cloneBehavior } from "../core/util";
 
 interface HSLBehavior extends Behavior {
   type: "hsl";
@@ -20,7 +20,7 @@ interface HSLBehavior extends Behavior {
   };
 }
 
-const createNewHSLBehavior = (h = 0, s = 0, l = 0): HSLBehavior => {
+export const createNewHSLBehavior = (h = 0, s = 0, l = 0): HSLBehavior => {
   return {
     type: "hsl",
     fields: {
@@ -119,7 +119,7 @@ const HSLStepFunctionFactory: StepFunctionFactory = async (
   const inputImageData = await outputToImageData(input);
 
   // Deep clone the behavior
-  const behaviorSnapshot = structuredClone(behavior) as HSLBehavior;
+  const behaviorSnapshot = cloneBehavior<HSLBehavior>(behavior as HSLBehavior);
 
   // Create output ImageData
   const outputImageData = new ImageData(

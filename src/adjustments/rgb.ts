@@ -9,7 +9,7 @@ import {
   type StepFunction,
   type StepFunctionFactory,
 } from "../core/ProcessingUnit";
-import { generateChunks } from "../core/util";
+import { cloneBehavior, generateChunks } from "../core/util";
 
 interface RGBBehavior extends Behavior {
   type: "rgb";
@@ -20,7 +20,7 @@ interface RGBBehavior extends Behavior {
   };
 }
 
-const createNewRGBBehavior = (r = 0, g = 0, b = 0): RGBBehavior => {
+export const createNewRGBBehavior = (r = 0, g = 0, b = 0): RGBBehavior => {
   return {
     type: "rgb",
     fields: {
@@ -46,7 +46,7 @@ const RGBStepFunctionFactory: StepFunctionFactory = async (
   const inputImageData = await outputToImageData(input);
 
   // Deep clone the behavior
-  const behaviorSnapshot = structuredClone(behavior) as RGBBehavior;
+  const behaviorSnapshot = cloneBehavior(behavior) as RGBBehavior;
 
   // Create output ImageData
   const outputImageData = new ImageData(

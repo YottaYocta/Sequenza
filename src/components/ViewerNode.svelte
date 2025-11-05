@@ -5,7 +5,7 @@
   import Endpoint from "./Endpoint.svelte";
 
   interface Props {
-    output?: Output;
+    output: Output | null;
     nodeIndex: number;
   }
 
@@ -164,7 +164,7 @@
     <canvas {@attach renderCanvas} class="hidden"></canvas>
   {/if}
 
-  {#if output !== undefined}
+  {#if output !== null}
     <p class="text-sm absolute bottom-2 left-4 translate-x-1/2">
       {output.type === "svg" ? output.data.viewBox.width : output.data.width} x
       {output.type === "svg" ? output.data.viewBox.height : output.data.height}

@@ -9,6 +9,7 @@ import {
   type StepFunction,
   type StepFunctionFactory,
 } from "../core/ProcessingUnit";
+import { cloneBehavior } from "../core/util";
 
 interface AsciiBehavior extends Behavior {
   type: "ascii";
@@ -63,7 +64,7 @@ const AsciiStepFunctionFactory: StepFunctionFactory = async (
   const inputImageData = await outputToImageData(input);
 
   // Deep clone the behavior
-  const behaviorSnapshot = structuredClone(behavior) as AsciiBehavior;
+  const behaviorSnapshot = cloneBehavior(behavior) as AsciiBehavior;
 
   // Extract parameters
   const charSize = Math.floor(behaviorSnapshot.fields.charSize.default);

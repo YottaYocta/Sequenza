@@ -25,12 +25,15 @@ export const newNumericalField = (
 
 export interface GradientField {
   type: "GradientMap";
-  stops: { position: number; color: string };
+  stops: { position: number; color: string }[];
   easing: "Linear" | "Constant";
 }
 
 export const newGradient = (
-  stops: { position: number; color: string }[] = [],
+  stops: { position: number; color: string }[] = [
+    { position: 0, color: "#000000" },
+    { position: 1, color: "#ffffff" },
+  ],
   easing: "Linear" | "Constant" = "Linear"
 ): GradientField => {
   for (const stop of stops) {
@@ -42,7 +45,7 @@ export const newGradient = (
   }
   return {
     type: "GradientMap",
-    stops: stops.length > 0 ? stops[0] : { position: 0, color: "#000000" },
+    stops: stops,
     easing,
   };
 };

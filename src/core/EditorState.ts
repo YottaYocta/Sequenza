@@ -7,8 +7,8 @@ import {
   type ProcessingUnit,
 } from "./ProcessingUnit";
 
-interface EditorState {
-  source: Output;
+export interface EditorState {
+  source: Output | null;
   processingUnits: ProcessingUnit[]; // list of nodes in execution order
   currentTask: ProcessingTask | null;
 }
@@ -21,9 +21,18 @@ export const newEditorState = (source: Output): EditorState => {
   };
 };
 
+export const setSource = async (state: EditorState, source: Output) => {
+  state.source = source;
+  // Reset all units
+  for (let i = 0; i < state.processingUnits.length; i++) {
+    state.processingUnits[i].progress = 0;
+  }
+  await pollUnprocessedUnits(state);
+};
+
 export const pushUnit = async (state: EditorState, newBehavior: Behavior) => {
   state.processingUnits.push(newProcessingUnit(newBehavior));
-  await syncProcessingTask(state);
+  await pollUnprocessedUnits(state);
 };
 
 export const removeUnitAt = async (
@@ -32,14 +41,14 @@ export const removeUnitAt = async (
 ): Promise<ProcessingUnit> => {
   if (index >= 0 && index < state.processingUnits.length) {
     const removed = state.processingUnits.splice(index, 1)[0];
-    await syncProcessingTask(state);
+    await pollUnprocessedUnits(state);
     return removed;
   } else {
     throw new Error(`tried to remove behavior at invalid index ${index}`);
   }
 };
 
-const syncProcessingTask = async (state: EditorState) => {
+export const pollUnprocessedUnits = async (state: EditorState) => {
   const firstUncompletedIndex = state.processingUnits.findIndex(
     (unit) => unit.progress < 1 || unit.cachedOutput === null
   );
@@ -52,7 +61,7 @@ const syncProcessingTask = async (state: EditorState) => {
       firstUncompletedIndex
     );
     state.currentTask = newTask;
-  } else if (firstUncompletedIndex === 0) {
+  } else if (firstUncompletedIndex === 0 && state.source !== null) {
     const newTask = await newProcessingTask(
       state.source,
       state.processingUnits[firstUncompletedIndex].behavior,
@@ -74,14 +83,14 @@ export const updateBehaviorAt = async (
     for (let i = index; i < state.processingUnits.length; i++) {
       state.processingUnits[i].progress = 0;
     }
-    await syncProcessingTask(state);
+    await pollUnprocessedUnits(state);
   } else throw new Error(`tried to update behavior at invalid index ${index}`);
 };
 
 /**
  *
  * @param state state to process a step for
- * @returns true if finished, false otherwise
+ * @returns true if still processing (incomplete), false otherwise
  */
 export const processTaskStep = (state: EditorState): boolean => {
   if (state.currentTask !== null) {
@@ -89,11 +98,11 @@ export const processTaskStep = (state: EditorState): boolean => {
     state.processingUnits[state.currentTask.unitIndex].progress = progress;
     state.processingUnits[state.currentTask.unitIndex].cachedOutput = output;
     if (progress >= 1) {
-      return true;
-    } else {
       return false;
+    } else {
+      return true;
     }
   } else {
-    return true;
+    return false;
   }
 };

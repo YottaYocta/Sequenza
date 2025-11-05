@@ -9,7 +9,7 @@ import {
   type StepFunction,
   type StepFunctionFactory,
 } from "../core/ProcessingUnit";
-import { generateChunks } from "../core/util";
+import { cloneBehavior, generateChunks } from "../core/util";
 
 interface GradientMapBehavior extends Behavior {
   type: "gradientmap";
@@ -18,7 +18,7 @@ interface GradientMapBehavior extends Behavior {
   };
 }
 
-const createNewGradientMapBehavior = (
+export const createNewGradientMapBehavior = (
   stops: { position: number; color: string }[] = [
     { position: 0, color: "#000000" },
     { position: 1, color: "#ffffff" },
@@ -80,13 +80,64 @@ const interpolateColors = (
 /**
  * Evaluates the gradient at a given progress value (0-1)
  */
-const evalGradientAt = (
+export const evalGradientAt = (
   gradient: GradientField,
   progress: number
 ): string => {
-  // For now, using the single stop from the gradient field
-  // In a full implementation, this would handle multiple stops
-  return gradient.stops.color;
+  const { stops, easing } = gradient;
+
+  // Clamp progress to 0-1
+  const clampedProgress = Math.max(0, Math.min(1, progress));
+
+  // Sort stops by position (in case they're not sorted)
+  const sortedStops = [...stops].sort((a, b) => a.position - b.position);
+
+  // Handle edge cases
+  if (sortedStops.length === 0) {
+    return "#000000"; // Default to black if no stops
+  }
+  if (sortedStops.length === 1) {
+    return sortedStops[0].color;
+  }
+
+  // If progress is before first stop
+  if (clampedProgress <= sortedStops[0].position) {
+    return sortedStops[0].color;
+  }
+
+  // If progress is after last stop
+  if (clampedProgress >= sortedStops[sortedStops.length - 1].position) {
+    return sortedStops[sortedStops.length - 1].color;
+  }
+
+  // Find the bracketing stops
+  let lowerStop = sortedStops[0];
+  let upperStop = sortedStops[sortedStops.length - 1];
+
+  for (let i = 0; i < sortedStops.length - 1; i++) {
+    if (
+      clampedProgress >= sortedStops[i].position &&
+      clampedProgress <= sortedStops[i + 1].position
+    ) {
+      lowerStop = sortedStops[i];
+      upperStop = sortedStops[i + 1];
+      break;
+    }
+  }
+
+  // Calculate local t value between the two stops
+  const range = upperStop.position - lowerStop.position;
+  const localT =
+    range === 0 ? 0 : (clampedProgress - lowerStop.position) / range;
+
+  // Apply interpolation type
+  if (easing === "Constant") {
+    // Constant interpolation: use the lower stop's color
+    return lowerStop.color;
+  } else {
+    // Linear interpolation
+    return interpolateColors(lowerStop.color, upperStop.color, localT);
+  }
 };
 
 const GradientMapStepFunctionFactory: StepFunctionFactory = async (
@@ -104,7 +155,9 @@ const GradientMapStepFunctionFactory: StepFunctionFactory = async (
   const inputImageData = await outputToImageData(input);
 
   // Deep clone the behavior
-  const behaviorSnapshot = structuredClone(behavior) as GradientMapBehavior;
+  const behaviorSnapshot = cloneBehavior<GradientMapBehavior>(
+    behavior as GradientMapBehavior
+  );
 
   // Create output ImageData
   const outputImageData = new ImageData(
@@ -171,4 +224,7 @@ const GradientMapStepFunctionFactory: StepFunctionFactory = async (
   };
 };
 
-GlobalStepFunctionFactoryRegistry.set("gradientmap", GradientMapStepFunctionFactory);
+GlobalStepFunctionFactoryRegistry.set(
+  "gradientmap",
+  GradientMapStepFunctionFactory
+);

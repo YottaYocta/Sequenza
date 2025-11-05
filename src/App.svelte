@@ -1,15 +1,17 @@
 <script lang="ts">
-  import type { Output, ProccessingNode } from "./ProcessingNode";
-  import type { Adjustment, Gradient } from "./Adjustment";
-  import type { FX } from "./FX";
-  import { createDefaultAdjustment } from "./Adjustment";
-  import { newFX, createDefaultSvgOutput } from "./FX";
-  import { untrack } from "svelte";
+  import type { Behavior } from "./core/Behavior";
+  import type { EditorState } from "./core/EditorState";
   import {
-    updateProcessingNode,
-    resetNodeState,
-    getImageData,
-  } from "./ProcessingNode";
+    newEditorState,
+    setSource,
+    pushUnit,
+    pollUnprocessedUnits,
+    updateBehaviorAt,
+    processTaskStep,
+  } from "./core/EditorState";
+  import { createNewRGBBehavior } from "./adjustments/rgb";
+  import { createNewDotBehavior } from "./fx/dots";
+  import { untrack } from "svelte";
   import AdjustmentNode from "./components/AdjustmentNode.svelte";
   import FXNode from "./components/FXNode.svelte";
   import DraggableContainer from "./components/DraggableContainer.svelte";
@@ -17,168 +19,76 @@
   import SourceNode from "./components/SourceNode.svelte";
   import DefaultImg from "./assets/headset.jpg";
   import ConnectionLines from "./components/ConnectionLines.svelte";
-  import GradientInputNode from "./components/GradientInputNode.svelte";
 
-  let testGradient = $state<Gradient>(
-    createDefaultAdjustment("GRADMAP") as Gradient
+  // Initialize editor state with placeholder
+  let editorState: EditorState = $state<EditorState>(
+    newEditorState({
+      type: "image",
+      data: new ImageData(1, 1),
+    })
   );
 
-  let sourceOutput = $state<Output>({
-    type: "image",
-    data: new ImageData(1, 1), // placeholder empty image
-  });
+  // Initialize with RGB and Dot behaviors
+  (async () => {
+    await pushUnit(editorState, createNewRGBBehavior());
+    await pushUnit(editorState, createNewDotBehavior());
+  })();
 
-  function handleSourceImageLoad(imageData: ImageData) {
-    sourceOutput = {
+  // Boolean trigger for re-rendering
+  let renderTrigger = $state(false);
+
+  async function handleSourceImageLoad(imageData: ImageData) {
+    await setSource(editorState, {
       type: "image",
       data: imageData,
-    };
+    });
 
-    // Reset all nodes' progress when source image changes
-    for (let i = 0; i < processingPipeline.length; i++) {
-      processingPipeline[i] = {
-        ...processingPipeline[i],
-        progress: 0,
-      };
-    }
-
-    // Toggle render trigger to restart processing from the beginning
     renderTrigger = !renderTrigger;
   }
 
-  let processingPipeline = $state<ProccessingNode<Adjustment | FX>[]>([
-    {
-      progress: 0,
-      behavior: createDefaultAdjustment("HSL"),
-      outputData: {
-        type: "image",
-        data: new ImageData(1, 1),
-      },
-    },
-    {
-      progress: 0,
-      behavior: newFX("dot"),
-      outputData: {
-        type: "svg",
-        data: createDefaultSvgOutput(),
-      },
-    },
-  ]);
-
-  // Boolean trigger for re-rendering - toggles whenever behavior changes
-  let renderTrigger = $state(false);
-
   $effect(() => {
-    // this effect runs whenever the source image changes or renderTrigger toggles
-    const source = sourceOutput;
-    renderTrigger; // create dependency on renderTrigger
+    // Create dependency on renderTrigger
+    renderTrigger;
 
     // Only process if we have actual image data
-    if (source.type !== "image") return;
+    const source = editorState.source;
+    if (!source || source.type !== "image") return;
     const sourceImageData = source.data;
     if (sourceImageData.width <= 1) return;
 
-    // Find the first node with progress < 1 (incomplete node)
-    let currentNodeIndex = untrack(() => {
-      const pipeline = processingPipeline;
-      for (let i = 0; i < pipeline.length; i++) {
-        if (pipeline[i].progress < 1) {
-          return i;
-        }
-      }
-      return pipeline.length; // All nodes complete
-    });
-
-    // If all nodes are complete, nothing to do
-    if (currentNodeIndex >= processingPipeline.length) {
-      return;
-    }
-
-    // Reset the first incomplete node's state using unified reset function
-    untrack(async () => {
-      const node = processingPipeline[currentNodeIndex];
-      processingPipeline[currentNodeIndex] = resetNodeState(
-        node,
-        currentNodeIndex >= 1
-          ? await getImageData(
-              processingPipeline[currentNodeIndex - 1].outputData
-            )
-          : sourceImageData
-      );
-    });
-
+    // Cleanup function for animation frame
     let animationFrameId: number | null = null;
 
-    async function processFrame() {
-      // Use untrack to read pipeline state without creating dependencies
-      const pipeline = untrack(() => processingPipeline);
-      const currentNode = pipeline[currentNodeIndex];
+    // Run in untracked section to sync currentTask
+    untrack(async () => {
+      await pollUnprocessedUnits(editorState);
 
-      if (!currentNode) {
-        // Done processing all nodes
-        return;
-      }
+      // If there's a current task, start processing
+      if (editorState.currentTask !== null) {
+        async function processFrame() {
+          const hasMore = untrack(() => processTaskStep(editorState));
 
-      // Determine the source for this node (either original source or previous node's output)
-      let nodeSource: ImageData;
-      if (currentNodeIndex === 0) {
-        nodeSource = sourceImageData;
-      } else {
-        const prevOutput = pipeline[currentNodeIndex - 1].outputData;
-        // Use getImageData to invariably get ImageData regardless of output type
-        nodeSource = await getImageData(prevOutput);
-      }
+          if (!hasMore) {
+            // Current task completed, check for next task
+            await pollUnprocessedUnits(editorState);
 
-      // Process one iteration
-      const updatedNode = updateProcessingNode(currentNode, nodeSource);
-
-      // Update the pipeline with the new node state
-      untrack(() => {
-        processingPipeline[currentNodeIndex] = updatedNode;
-      });
-
-      // Check if current node is complete
-      if (updatedNode.progress >= 1) {
-        // Move to next node
-        console.log("finished:");
-        currentNodeIndex++;
-
-        // If there are more nodes, reset the next node if needed and continue processing
-        if (currentNodeIndex < pipeline.length) {
-          untrack(async () => {
-            const nextNode = processingPipeline[currentNodeIndex];
-
-            // If next node needs processing (progress < 1), reset its state
-            if (nextNode.progress < 1) {
-              if (currentNodeIndex >= 1) {
-                const data = await getImageData(
-                  processingPipeline[currentNodeIndex - 1].outputData
-                );
-                processingPipeline[currentNodeIndex] = resetNodeState(
-                  nextNode,
-                  data
-                );
-
-                animationFrameId = requestAnimationFrame(processFrame);
-              } else {
-                processingPipeline[currentNodeIndex] = resetNodeState(
-                  nextNode,
-                  sourceImageData
-                );
-
-                animationFrameId = requestAnimationFrame(processFrame);
-              }
+            if (editorState.currentTask !== null) {
+              // There's another task to process
+              animationFrameId = requestAnimationFrame(processFrame);
+            } else {
+              // All tasks complete, trigger re-render
+              renderTrigger = !renderTrigger;
             }
-          });
+          } else {
+            // Continue processing current task
+            animationFrameId = requestAnimationFrame(processFrame);
+          }
         }
-      } else {
-        // Continue processing current node
+
+        // Start processing
         animationFrameId = requestAnimationFrame(processFrame);
       }
-    }
-
-    // Start processing
-    animationFrameId = requestAnimationFrame(processFrame);
+    });
 
     // Cleanup function
     return () => {
@@ -188,89 +98,17 @@
     };
   });
 
-  function handleUpdateAdjustment(nodeIndex: number, behavior: Adjustment) {
-    nodeIndex = Math.floor(nodeIndex / 2);
-    // Reset state in the behavior (ensure state.nextRow = 0)
-    const resetBehavior = {
-      ...behavior,
-      state: {
-        nextRow: 0,
-      },
-    };
-
-    // Update the specific node with new behavior and reset progress
-    processingPipeline[nodeIndex] = {
-      ...processingPipeline[nodeIndex],
-      behavior: resetBehavior,
-      progress: 0,
-    };
-
-    // Reset progress for all downstream nodes
-    for (let i = nodeIndex + 1; i < processingPipeline.length; i++) {
-      processingPipeline[i] = {
-        ...processingPipeline[i],
-        progress: 0,
-      };
-    }
-
-    // Toggle render trigger to restart processing
+  async function handleUpdateBehavior(nodeIndex: number, behavior: Behavior) {
+    const actualIndex = Math.floor(nodeIndex / 2);
+    await updateBehaviorAt(editorState, actualIndex, behavior);
     renderTrigger = !renderTrigger;
   }
 
-  function handleUpdateFX(nodeIndex: number, behavior: FX) {
-    // Reset state in the behavior (ensure state.nextRow = 0 or nextBar = 0)
-    nodeIndex = Math.floor(nodeIndex / 2);
-
-    let resetBehavior;
-    if (behavior.type === "bar") {
-      resetBehavior = {
-        ...behavior,
-        state: {
-          nextBar: 0,
-        },
-      };
-    } else if (behavior.type === "ascii") {
-      resetBehavior = {
-        ...behavior,
-        state: {
-          nextRow: 0,
-        },
-      };
-    } else {
-      resetBehavior = {
-        ...behavior,
-        state: {
-          nextRow: 0,
-        },
-      };
-    }
-
-    // Update the specific node with new behavior and reset progress
-    processingPipeline[nodeIndex] = {
-      ...processingPipeline[nodeIndex],
-      behavior: resetBehavior,
-      progress: 0,
-    };
-
-    // Reset progress for all downstream nodes
-    for (let i = nodeIndex + 1; i < processingPipeline.length; i++) {
-      processingPipeline[i] = {
-        ...processingPipeline[i],
-        progress: 0,
-      };
-    }
-
-    // Toggle render trigger to restart processing
-    renderTrigger = !renderTrigger;
-  }
-
-  function isAdjustmentNode(
-    node: ProccessingNode<Adjustment | FX>
-  ): node is ProccessingNode<Adjustment> {
+  function isAdjustmentBehavior(behavior: Behavior): boolean {
     return (
-      node.behavior.type === "HSL" ||
-      node.behavior.type === "RGB" ||
-      node.behavior.type === "GRADMAP"
+      behavior.type === "hsl" ||
+      behavior.type === "rgb" ||
+      behavior.type === "gradientmap"
     );
   }
 </script>
@@ -291,20 +129,20 @@
       {/snippet}
     </DraggableContainer>
 
-    {#each processingPipeline as node, idx}
+    {#each editorState.processingUnits as unit, idx}
       <DraggableContainer startY={idx === 0 ? 200 : 100 + 350 * idx}>
         {#snippet children()}
-          {#if isAdjustmentNode(node)}
+          {#if isAdjustmentBehavior(unit.behavior)}
             <AdjustmentNode
               nodeIndex={idx * 2 + 1}
-              {node}
-              onUpdateBehavior={handleUpdateAdjustment}
+              behavior={unit.behavior}
+              onUpdateBehavior={handleUpdateBehavior}
             />
           {:else}
             <FXNode
               nodeIndex={idx * 2 + 1}
-              node={node as ProccessingNode<FX>}
-              onUpdateBehavior={handleUpdateFX}
+              behavior={unit.behavior}
+              onUpdateBehavior={handleUpdateBehavior}
             />
           {/if}
         {/snippet}
@@ -315,9 +153,7 @@
         startY={75 + 350 * idx}
       >
         {#snippet children()}
-          <ViewerNode
-            nodeIndex={(idx + 1) * 2}
-            output={processingPipeline[idx].outputData}
+          <ViewerNode nodeIndex={(idx + 1) * 2} output={unit.cachedOutput}
           ></ViewerNode>
         {/snippet}
       </DraggableContainer>
