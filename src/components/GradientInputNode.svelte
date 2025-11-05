@@ -33,6 +33,38 @@
     }
   };
 
+  const sliderAttachment: Attachment<HTMLButtonElement> = (
+    element: HTMLButtonElement
+  ) => {
+    const handleMouseMove = (e: MouseEvent) => {
+      const parent = element.parentElement;
+      if (!parent) return;
+      const parentBoundingBox = parent.getBoundingClientRect();
+      const targetX = e.clientX - parentBoundingBox.x;
+      const leftEdge = parentBoundingBox.width;
+
+      const clampedX = Math.min(0, Math.max(targetX, leftEdge));
+
+      element.style.left = `${clampedX}px`;
+    };
+
+    const handleMouseUp = (e: MouseEvent) => {
+      window.removeEventListener("mousemove", handleMouseMove);
+    };
+
+    const handleMouseDown = (e: MouseEvent) => {
+      window.addEventListener("mouseup", handleMouseUp);
+      window.addEventListener("mousemove", handleMouseMove);
+    };
+
+    element.addEventListener("mousedown", handleMouseDown);
+    return () => {
+      window.removeEventListener("mouseup", handleMouseUp);
+      element.removeEventListener("mousedown", handleMouseDown);
+      window.removeEventListener("mousemove", handleMouseMove);
+    };
+  };
+
   function updateGradient(updatedGradient: GradientField) {
     const newBehavior = cloneBehavior(behavior);
     // Find the gradient field name and update it

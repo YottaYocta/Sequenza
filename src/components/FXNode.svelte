@@ -91,7 +91,7 @@
 
 <div class="flex flex-col min-w-64 w-min text-sm">
   <!-- Tab Header -->
-  <div class="flex flex-wrap gap-1 pb-8 relative">
+  <div class="flex flex-wrap gap-1 pb-8 relative w-64">
     {#each fxOptions as option}
       <button
         class="text-sm {option.disabled
