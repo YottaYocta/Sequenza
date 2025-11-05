@@ -24,7 +24,7 @@ export interface ProcessingTask {
 
 export type StepFunctionFactory = (
   input: Output,
-  behaviorSnapshot: Behavior
+  behavior: Behavior
 ) => StepFunction;
 
 export const GlobalStepFunctionFactoryRegistry: Map<
@@ -45,7 +45,7 @@ export const newProcessingTask = (
       `step function factory for '${behavior.type}' does not exist`
     );
   } else {
-    const stepFunction = createStepFunction(input, structuredClone(behavior));
+    const stepFunction = createStepFunction(input, behavior);
     return {
       unitIndex,
       stepFunction,

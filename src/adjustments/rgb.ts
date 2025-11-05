@@ -21,7 +21,7 @@ const createNewRGBBehavior = (r = 0, g = 0, b = 0): RGBBehavior => {
 
 const RGBStepFunctionFactory: StepFunctionFactory = (
   input: Output,
-  behaviorSnapshot: Behavior
+  behavior: Behavior
 ): StepFunction => {
   throw new Error("Not Implemented");
 };
