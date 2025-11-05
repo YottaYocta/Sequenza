@@ -35,6 +35,13 @@ const RGBStepFunctionFactory: StepFunctionFactory = async (
   input: Output,
   behavior: Behavior
 ): Promise<StepFunction> => {
+  // Assert behavior is RGB type
+  if (behavior.type !== "rgb") {
+    throw new Error(
+      `RGB factory requires behavior type "rgb", got "${behavior.type}"`
+    );
+  }
+
   // Convert input to ImageData
   const inputImageData = await outputToImageData(input);
 
