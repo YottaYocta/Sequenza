@@ -19,6 +19,8 @@
   import SourceNode from "./components/SourceNode.svelte";
   import DefaultImg from "./assets/headset.jpg";
   import ConnectionLines from "./components/ConnectionLines.svelte";
+  import { newProcessingUnit } from "./core/ProcessingUnit";
+  import { createNewHSLBehavior } from "./adjustments/hsl";
 
   // Initialize editor state with placeholder
   let editorState: EditorState = $state<EditorState>(
@@ -161,5 +163,21 @@
 
     <!-- Connection lines SVG -->
     <ConnectionLines />
+    <div
+      class="right-8 fixed bottom-2 flex items-center justify-center gap-8 text-nowrap"
+    >
+      <button
+        class="button-1"
+        onclick={() => {
+          pushUnit(editorState, createNewHSLBehavior());
+        }}>Add Adjustment</button
+      >
+      <button
+        class="button-1"
+        onclick={() => {
+          pushUnit(editorState, createNewDotBehavior());
+        }}>Add FX</button
+      >
+    </div>
   </div>
 </main>
