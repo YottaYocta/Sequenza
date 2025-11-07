@@ -90,7 +90,7 @@ export const updateBehaviorAt = async (
 /**
  *
  * @param state state to process a step for
- * @returns true if still processing (incomplete), false otherwise
+ * @returns true if processing finished, false otherwise
  */
 export const processTaskStep = (state: EditorState): boolean => {
   if (state.currentTask !== null) {
@@ -98,11 +98,11 @@ export const processTaskStep = (state: EditorState): boolean => {
     state.processingUnits[state.currentTask.unitIndex].progress = progress;
     state.processingUnits[state.currentTask.unitIndex].cachedOutput = output;
     if (progress >= 1) {
-      return false;
-    } else {
       return true;
+    } else {
+      return false;
     }
   } else {
-    return false;
+    return true;
   }
 };

@@ -19,7 +19,6 @@
   import SourceNode from "./components/SourceNode.svelte";
   import DefaultImg from "./assets/headset.jpg";
   import ConnectionLines from "./components/ConnectionLines.svelte";
-  import { newProcessingUnit } from "./core/ProcessingUnit";
   import { createNewHSLBehavior } from "./adjustments/hsl";
 
   // Initialize editor state with placeholder
@@ -49,48 +48,30 @@
   }
 
   $effect(() => {
-    // Create dependency on renderTrigger
-    renderTrigger;
-
-    // Only process if we have actual image data
+    // Only process if we have loaded source image data. For now, only allow images
     const source = editorState.source;
     if (!source || source.type !== "image") return;
+
     const sourceImageData = source.data;
     if (sourceImageData.width <= 1) return;
 
-    // Cleanup function for animation frame
     let animationFrameId: number | null = null;
 
-    // Run in untracked section to sync currentTask
-    untrack(async () => {
-      await pollUnprocessedUnits(editorState);
+    if (editorState.currentTask !== null) {
+      async function processFrame() {
+        const taskFinished = untrack(() => processTaskStep(editorState));
 
-      // If there's a current task, start processing
-      if (editorState.currentTask !== null) {
-        async function processFrame() {
-          const hasMore = untrack(() => processTaskStep(editorState));
-
-          if (!hasMore) {
-            // Current task completed, check for next task
-            await pollUnprocessedUnits(editorState);
-
-            if (editorState.currentTask !== null) {
-              // There's another task to process
-              animationFrameId = requestAnimationFrame(processFrame);
-            } else {
-              // All tasks complete, trigger re-render
-              renderTrigger = !renderTrigger;
-            }
-          } else {
-            // Continue processing current task
-            animationFrameId = requestAnimationFrame(processFrame);
-          }
+        if (taskFinished) {
+          // Current task completed, check for next task
+          await pollUnprocessedUnits(editorState);
+        } else {
+          // Continue processing current task
+          animationFrameId = requestAnimationFrame(processFrame);
         }
-
-        // Start processing
-        animationFrameId = requestAnimationFrame(processFrame);
       }
-    });
+
+      animationFrameId = requestAnimationFrame(processFrame);
+    }
 
     // Cleanup function
     return () => {
