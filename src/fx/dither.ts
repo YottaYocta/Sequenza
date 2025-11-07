@@ -36,6 +36,7 @@ export const DitherStepFunctionFactory: StepFunctionFactory = async (
   const inputImageData = await outputToImageData(input);
   const { width, height } = inputImageData;
   const behaviorSnapshot = cloneBehavior(behavior) as DitherBehavior;
+  const ditherSize = behaviorSnapshot.fields.ditherSize.value;
   const outputImageData = new ImageData(width, height);
   outputImageData.data.set(new Uint8ClampedArray(inputImageData.data));
   const output: Output = {
@@ -67,16 +68,20 @@ export const DitherStepFunctionFactory: StepFunctionFactory = async (
   };
 
   const stepFunction: StepFunction = () => {
-    const targetRow = currentRow + rowStep;
-    for (; currentRow < height && currentRow <= targetRow; currentRow++) {
-      for (let x = 0; x < width; x++) {
+    const targetRow = currentRow + rowStep * ditherSize;
+    for (
+      ;
+      currentRow < height && currentRow <= targetRow;
+      currentRow += ditherSize
+    ) {
+      for (let x = 0; x < width; x += ditherSize) {
         const [r, g, b, a] = getRGBA(outputImageData, x, currentRow);
         const targetRGB = getNearestRGB(r, g, b);
         const targetRGBDifference = computeRGBDifference([r, g, b], targetRGB);
 
         for (let i = 1; i <= 4; i++) {
-          const xOffset = ((i + 1) % 3) - 1;
-          const yOffset = i === 1 ? 0 : 1;
+          const xOffset = (((i + 1) % 3) - 1) * ditherSize;
+          const yOffset = (i === 1 ? 0 : 1) * ditherSize;
           if (
             inImageBounds(outputImageData, x + xOffset, currentRow + yOffset)
           ) {
@@ -96,12 +101,16 @@ export const DitherStepFunctionFactory: StepFunctionFactory = async (
           }
         }
 
-        setRGBA(outputImageData, x, currentRow, [
-          targetRGB[0],
-          targetRGB[1],
-          targetRGB[2],
-          a,
-        ]);
+        for (let i = 0; i < ditherSize && x + i < width; i++) {
+          for (let j = 0; j < ditherSize && currentRow + j < height; j++) {
+            setRGBA(outputImageData, x + i, currentRow + j, [
+              targetRGB[0],
+              targetRGB[1],
+              targetRGB[2],
+              a,
+            ]);
+          }
+        }
       }
     }
     return [currentRow / height, output];
