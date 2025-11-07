@@ -33,7 +33,6 @@
   (async () => {
     await pushUnit(editorState, createNewHSLBehavior());
     await pushUnit(editorState, createNewDotBehavior());
-    await pushUnit(editorState, createNewRGBBehavior());
   })();
 
   // Boolean trigger for re-rendering
