@@ -14,6 +14,7 @@ import { cloneBehavior, getRGBA, inImageBounds, setRGBA } from "../core/util";
 export interface DitherBehavior extends Behavior {
   type: "dither";
   fields: {
+    ditherSize: NumericalField;
     numColors: NumericalField;
   };
 }
@@ -22,6 +23,7 @@ export const createDitherBehavior = (numColors = 2): DitherBehavior => {
   return {
     type: "dither",
     fields: {
+      ditherSize: newNumericalField(1, 16, 2, 1, 2),
       numColors: newNumericalField(2, 8, 4, 1, numColors),
     },
   };
