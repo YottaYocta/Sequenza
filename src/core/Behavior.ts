@@ -11,7 +11,8 @@ export const newNumericalField = (
   min = 0,
   max = 100,
   defaultValue = 0,
-  step = 1
+  step = 1,
+  value = 0
 ): NumericalField => {
   return {
     type: "Numerical",

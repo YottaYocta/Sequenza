@@ -75,3 +75,64 @@ export const cloneBehavior = <T extends Behavior>(behavior: T): T => {
 
   return cloned as T;
 };
+
+export const inImageBounds = (
+  imageData: ImageData,
+  x: number,
+  y: number
+): boolean => {
+  return x < 0 || x >= imageData.width || y < 0 || y >= imageData.height;
+};
+
+/**
+ *
+ * @param data source ImageData using RGBA color format
+ * @param x coord of target pixel
+ * @param y coord of target pixel
+ * @returns array containing [r, g, b, a]
+ */
+export const getRGBA = (
+  imageData: ImageData,
+  x: number,
+  y: number
+): [number, number, number, number] => {
+  if (inImageBounds(imageData, x, y)) {
+    throw Error(
+      `pixel at (x: ${x}, y:${y}) is out of bounds for image of size ${imageData.width} x ${imageData.height}`
+    );
+  } else {
+    const baseIndex = (y * imageData.width + x) * 4;
+    return [
+      imageData.data[baseIndex],
+      imageData.data[baseIndex + 1],
+      imageData.data[baseIndex + 2],
+      imageData.data[baseIndex + 3],
+    ];
+  }
+};
+
+/**
+ *
+ * @param data imageData to manipulate
+ * @param x target pixel's x coord
+ * @param y target pixel's y coord
+ * @param rgba target RGBA value to set the pixel to
+ */
+export const setRGBA = (
+  imageData: ImageData,
+  x: number,
+  y: number,
+  rgba: [number, number, number, number]
+) => {
+  if (inImageBounds(imageData, x, y)) {
+    throw Error(
+      `pixel at (x: ${x}, y:${y}) is out of bounds for image of size ${imageData.width} x ${imageData.height}`
+    );
+  } else {
+    const baseIndex = (y * imageData.width + x) * 4;
+    imageData.data[baseIndex] = rgba[0];
+    imageData.data[baseIndex + 1] = rgba[1];
+    imageData.data[baseIndex + 2] = rgba[2];
+    imageData.data[baseIndex + 3] = rgba[3];
+  }
+};
