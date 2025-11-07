@@ -22,7 +22,7 @@ export const outputToImageData = async (output: Output): Promise<ImageData> => {
     return output.data;
   }
 
-  // SVG type - render to offline canvas
+  // get source data + canvas
   const svg = output.data;
   const canvas = new OffscreenCanvas(svg.viewBox.width, svg.viewBox.height);
   const ctx = canvas.getContext("2d");
@@ -30,16 +30,20 @@ export const outputToImageData = async (output: Output): Promise<ImageData> => {
     throw new Error("Failed to get 2D context from OffscreenCanvas");
   }
 
-  // Create SVG blob and render it
-  const svgString = `<svg viewBox="${svg.viewBox.x} ${svg.viewBox.y} ${svg.viewBox.width} ${svg.viewBox.height}" xmlns="http://www.w3.org/2000/svg">${svg.children.join("")}</svg>`;
+  // create svg image url
+  const svgString = `<svg viewBox="${svg.viewBox.x} ${svg.viewBox.y} ${
+    svg.viewBox.width
+  } ${
+    svg.viewBox.height
+  }" xmlns="http://www.w3.org/2000/svg">${svg.children.join("")}</svg>`;
   const svgBlob = new Blob([svgString], { type: "image/svg+xml" });
   const url = URL.createObjectURL(svgBlob);
 
-  // Load and draw the SVG
+  // render new image
   const img = new Image();
   await new Promise<void>((resolve, reject) => {
     img.onload = () => {
-      ctx.drawImage(img, 0, 0);
+      ctx.drawImage(img, 0, 0, svg.viewBox.width, svg.viewBox.height);
       URL.revokeObjectURL(url);
       resolve();
     };

@@ -31,8 +31,9 @@
 
   // Initialize with RGB and Dot behaviors
   (async () => {
-    await pushUnit(editorState, createNewRGBBehavior());
+    await pushUnit(editorState, createNewHSLBehavior());
     await pushUnit(editorState, createNewDotBehavior());
+    await pushUnit(editorState, createNewRGBBehavior());
   })();
 
   // Boolean trigger for re-rendering
