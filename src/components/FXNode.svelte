@@ -7,6 +7,7 @@
   import type { Attachment } from "svelte/attachments";
   import { untrack } from "svelte";
   import Endpoint from "./Endpoint.svelte";
+  import { createDitherBehavior } from "../fx/dither";
 
   interface Props {
     nodeIndex: number;
@@ -56,24 +57,24 @@
   };
 
   type FXOption = {
-    type: "dot" | "ascii" | null;
+    type: "dot" | "ascii" | "dither" | null;
     label: string;
     disabled?: boolean;
   };
 
   const fxOptions: FXOption[] = [
     { type: "dot", label: "DOTS" },
+    { type: "ascii", label: "ASCII" },
+    { type: "dither", label: "DITHER" },
     { type: null, label: "BARS", disabled: true },
     { type: null, label: "MIX", disabled: true },
-    { type: null, label: "DITHER", disabled: true },
     { type: null, label: "ERODE", disabled: true },
     { type: null, label: "HALFTONE", disabled: true },
     { type: null, label: "MITOSIS", disabled: true },
     { type: null, label: "EDGEDETECT", disabled: true },
-    { type: "ascii", label: "ASCII" },
   ];
 
-  function switchToType(type: "dot" | "ascii") {
+  function switchToType(type: "dot" | "ascii" | "dither") {
     if (behavior.type !== type) {
       let newBehavior: Behavior;
       switch (type) {
@@ -83,6 +84,8 @@
         case "ascii":
           newBehavior = createNewAsciiBehavior();
           break;
+        case "dither":
+          newBehavior = createDitherBehavior();
       }
       onUpdateBehavior(nodeIndex, newBehavior);
     }

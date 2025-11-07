@@ -18,7 +18,7 @@ export interface DitherBehavior extends Behavior {
   };
 }
 
-export const newDitherBehavior = (numColors = 2): DitherBehavior => {
+export const createDitherBehavior = (numColors = 2): DitherBehavior => {
   return {
     type: "dither",
     fields: {
@@ -68,9 +68,9 @@ export const DitherStepFunctionFactory: StepFunctionFactory = async (
     const targetRow = currentRow + rowStep;
     for (; currentRow < height && currentRow <= targetRow; currentRow++) {
       for (let x = 0; x < width; x++) {
-        const [r, g, b] = getRGBA(outputImageData, x, currentRow);
+        const [r, g, b, a] = getRGBA(outputImageData, x, currentRow);
         const targetRGB = getNearestRGB(r, g, b);
-        const targetRGBDifference = computeRGBDifference(targetRGB, [r, g, b]);
+        const targetRGBDifference = computeRGBDifference([r, g, b], targetRGB);
 
         for (let i = 1; i <= 4; i++) {
           const xOffset = ((i + 1) % 3) - 1;
@@ -78,7 +78,8 @@ export const DitherStepFunctionFactory: StepFunctionFactory = async (
           if (
             inImageBounds(outputImageData, x + xOffset, currentRow + yOffset)
           ) {
-            const errorMultFactor = 7 / 16;
+            const errorMultFactor =
+              (i === 1 ? 7 : i === 2 ? 3 : i === 3 ? 5 : 1) / 16;
             const [rO, gO, bO, aO] = getRGBA(
               outputImageData,
               x + xOffset,
@@ -92,6 +93,13 @@ export const DitherStepFunctionFactory: StepFunctionFactory = async (
             ]);
           }
         }
+
+        setRGBA(outputImageData, x, currentRow, [
+          targetRGB[0],
+          targetRGB[1],
+          targetRGB[2],
+          a,
+        ]);
       }
     }
     return [currentRow / height, output];

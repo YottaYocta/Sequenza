@@ -136,7 +136,7 @@
     <div class="h-full w-full flex items-center justify-center">
       <canvas
         {@attach renderCanvas}
-        class="max-w-48 h-auto max-h-48 hover:outline"
+        class="max-w-48 h-auto max-h-48 hover:outline [image-rendering:pixelated] [image-rendering:crisp-edges]"
       ></canvas>
     </div>
   {:else if output.type === "svg"}

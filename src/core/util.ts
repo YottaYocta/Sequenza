@@ -81,7 +81,7 @@ export const inImageBounds = (
   x: number,
   y: number
 ): boolean => {
-  return x < 0 || x >= imageData.width || y < 0 || y >= imageData.height;
+  return !(x < 0 || x >= imageData.width || y < 0 || y >= imageData.height);
 };
 
 /**
@@ -96,7 +96,7 @@ export const getRGBA = (
   x: number,
   y: number
 ): [number, number, number, number] => {
-  if (inImageBounds(imageData, x, y)) {
+  if (!inImageBounds(imageData, x, y)) {
     throw Error(
       `pixel at (x: ${x}, y:${y}) is out of bounds for image of size ${imageData.width} x ${imageData.height}`
     );
@@ -124,7 +124,7 @@ export const setRGBA = (
   y: number,
   rgba: [number, number, number, number]
 ) => {
-  if (inImageBounds(imageData, x, y)) {
+  if (!inImageBounds(imageData, x, y)) {
     throw Error(
       `pixel at (x: ${x}, y:${y}) is out of bounds for image of size ${imageData.width} x ${imageData.height}`
     );
