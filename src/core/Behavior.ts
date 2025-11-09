@@ -30,18 +30,18 @@ export interface GradientField {
   easing: "Linear" | "Constant";
 }
 
-export interface OptionField {
-  type: "OptionField";
+export interface SelectionField {
+  type: "SelectionField";
   options: string[];
   value: string;
 }
 
-export const newOptionField = (
+export const newSelectionField = (
   values: string[],
   value: string
-): OptionField => {
+): SelectionField => {
   return {
-    type: "OptionField",
+    type: "SelectionField",
     options: [...values],
     value,
   };
@@ -68,7 +68,7 @@ export const newGradient = (
   };
 };
 
-type BehaviorField = NumericalField | GradientField | OptionField;
+type BehaviorField = NumericalField | GradientField | SelectionField;
 
 export interface Behavior {
   type: string;
@@ -108,9 +108,9 @@ export const cloneBehavior = <T extends Behavior>(behavior: T): T => {
         })),
         easing: field.easing,
       };
-    } else if (field.type === "OptionField") {
+    } else if (field.type === "SelectionField") {
       cloned.fields[fieldName] = {
-        type: "OptionField",
+        type: "SelectionField",
         options: [...field.options],
         value: field.value,
       };

@@ -24,11 +24,11 @@
     onUpdateBehavior(updatedBehavior);
   }
 
-  function updateOptionField(fieldName: string, value: string) {
+  function updateSelectionField(fieldName: string, value: string) {
     const updatedBehavior = cloneBehavior(behavior);
     if (fieldName in updatedBehavior.fields) {
       const field = updatedBehavior.fields[fieldName];
-      if (field.type === "OptionField") {
+      if (field.type === "SelectionField") {
         field.value = value;
       }
     }
@@ -52,13 +52,13 @@
       />
     {:else if field.type === "GradientMap"}
       <GradientInputNode {behavior} {onUpdateBehavior} />
-    {:else if field.type === "OptionField"}
-      {@const optionField = field}
+    {:else if field.type === "SelectionField"}
+      {@const SelectionField = field}
       <OptionInput
         label={fieldName.toUpperCase()}
-        options={optionField.options}
-        value={optionField.value}
-        handleUpdate={(v) => updateOptionField(fieldName, v)}
+        options={SelectionField.options}
+        value={SelectionField.value}
+        handleUpdate={(v) => updateSelectionField(fieldName, v)}
       />
     {/if}
   {/each}

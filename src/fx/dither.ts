@@ -1,11 +1,11 @@
 import {
   newGradient,
   newNumericalField,
-  newOptionField,
+  newSelectionField,
   type Behavior,
   type GradientField,
   type NumericalField,
-  type OptionField,
+  type SelectionField,
 } from "../core/Behavior";
 import { outputToImageData, type Output } from "../core/Output";
 import {
@@ -19,7 +19,7 @@ import { cloneBehavior } from "../core/Behavior";
 export interface DitherBehavior extends Behavior {
   type: "dither";
   fields: {
-    ditherType: OptionField;
+    ditherType: SelectionField;
     ditherSize: NumericalField;
     colorMapping: GradientField;
   };
@@ -31,7 +31,7 @@ export const createDitherBehavior = (numColors = 2): DitherBehavior => {
   return {
     type: "dither",
     fields: {
-      ditherType: newOptionField(DITHER_OPTIONS, DITHER_OPTIONS[0]),
+      ditherType: newSelectionField(DITHER_OPTIONS, DITHER_OPTIONS[0]),
       ditherSize: newNumericalField(1, 16, 2, 1, 2),
       colorMapping: newGradient(
         [
