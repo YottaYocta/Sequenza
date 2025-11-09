@@ -10,7 +10,7 @@ import {
   type StepFunction,
   type StepFunctionFactory,
 } from "../core/ProcessingUnit";
-import { cloneBehavior } from "../core/util";
+import { cloneBehavior } from "../core/Behavior";
 
 interface DotBehavior extends Behavior {
   type: "dot";

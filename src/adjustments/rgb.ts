@@ -9,7 +9,8 @@ import {
   type StepFunction,
   type StepFunctionFactory,
 } from "../core/ProcessingUnit";
-import { cloneBehavior, generateChunks } from "../core/util";
+import { generateChunks } from "../core/util";
+import { cloneBehavior } from "../core/Behavior";
 
 interface RGBBehavior extends Behavior {
   type: "rgb";

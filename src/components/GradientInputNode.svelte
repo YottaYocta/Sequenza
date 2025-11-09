@@ -2,7 +2,7 @@
   import type { Attachment } from "svelte/attachments";
   import type { Behavior, GradientField } from "../core/Behavior";
   import { evalGradientAt } from "../adjustments/gradientmap";
-  import { cloneBehavior } from "../core/util";
+  import { cloneBehavior } from "../core/Behavior";
   import NumericalInput from "./NumericalInput.svelte";
 
   interface Props {

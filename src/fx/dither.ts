@@ -1,7 +1,9 @@
 import {
   newNumericalField,
+  newOptionField,
   type Behavior,
   type NumericalField,
+  type OptionField,
 } from "../core/Behavior";
 import { outputToImageData, type Output } from "../core/Output";
 import {
@@ -9,11 +11,13 @@ import {
   type StepFunction,
   type StepFunctionFactory,
 } from "../core/ProcessingUnit";
-import { cloneBehavior, getRGBA, inImageBounds, setRGBA } from "../core/util";
+import { getRGBA, inImageBounds, setRGBA } from "../core/util";
+import { cloneBehavior } from "../core/Behavior";
 
 export interface DitherBehavior extends Behavior {
   type: "dither";
   fields: {
+    ditherType: OptionField;
     ditherSize: NumericalField;
     numColors: NumericalField;
   };
@@ -23,6 +27,7 @@ export const createDitherBehavior = (numColors = 2): DitherBehavior => {
   return {
     type: "dither",
     fields: {
+      ditherType: newOptionField(["Floyd-Steinberg"], "Floyd-Steinberg"),
       ditherSize: newNumericalField(1, 16, 2, 1, 2),
       numColors: newNumericalField(2, 8, 4, 1, numColors),
     },

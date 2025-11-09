@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Behavior } from "../core/Behavior";
-  import { cloneBehavior } from "../core/util";
+  import { cloneBehavior } from "../core/Behavior";
   import CustomInput from "./CustomInput.svelte";
   import GradientInputNode from "./GradientInputNode.svelte";
 

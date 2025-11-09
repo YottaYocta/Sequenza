@@ -9,7 +9,8 @@ import {
   type StepFunction,
   type StepFunctionFactory,
 } from "../core/ProcessingUnit";
-import { generateChunks, cloneBehavior } from "../core/util";
+import { generateChunks } from "../core/util";
+import { cloneBehavior } from "../core/Behavior";
 
 interface HSLBehavior extends Behavior {
   type: "hsl";

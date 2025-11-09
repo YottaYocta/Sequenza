@@ -37,45 +37,6 @@ export const generateChunks = (
   return chunks;
 };
 
-/**
- * Deep clones a Behavior object, handling Svelte proxy objects.
- * This function manually reconstructs the behavior to avoid issues with cloneBehavior on proxies.
- * @param behavior The behavior to clone
- * @returns A deep clone of the behavior
- */
-export const cloneBehavior = <T extends Behavior>(behavior: T): T => {
-  // Create a plain object by manually copying all properties
-  const cloned: any = {
-    type: behavior.type,
-    fields: {},
-  };
-
-  // Deep clone each field in the fields record
-  for (const [fieldName, field] of Object.entries(behavior.fields)) {
-    if (field.type === "Numerical") {
-      cloned.fields[fieldName] = {
-        type: field.type,
-        min: field.min,
-        max: field.max,
-        default: field.default,
-        step: field.step,
-        value: field.value,
-      };
-    } else if (field.type === "GradientMap") {
-      cloned.fields[fieldName] = {
-        type: field.type,
-        stops: field.stops.map((stop) => ({
-          position: stop.position,
-          color: stop.color,
-        })),
-        easing: field.easing,
-      };
-    }
-  }
-
-  return cloned as T;
-};
-
 export const inImageBounds = (
   imageData: ImageData,
   x: number,
