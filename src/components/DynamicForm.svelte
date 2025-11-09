@@ -3,6 +3,7 @@
   import { cloneBehavior } from "../core/Behavior";
   import CustomInput from "./CustomInput.svelte";
   import GradientInputNode from "./GradientInputNode.svelte";
+  import OptionInput from "./OptionInput.svelte";
 
   interface Props {
     behavior: Behavior;
@@ -18,6 +19,17 @@
       if (field.type === "Numerical") {
         field.value = value;
         field.default = value;
+      }
+    }
+    onUpdateBehavior(updatedBehavior);
+  }
+
+  function updateOptionField(fieldName: string, value: string) {
+    const updatedBehavior = cloneBehavior(behavior);
+    if (fieldName in updatedBehavior.fields) {
+      const field = updatedBehavior.fields[fieldName];
+      if (field.type === "OptionField") {
+        field.value = value;
       }
     }
     onUpdateBehavior(updatedBehavior);
@@ -40,6 +52,14 @@
       />
     {:else if field.type === "GradientMap"}
       <GradientInputNode {behavior} {onUpdateBehavior} />
+    {:else if field.type === "OptionField"}
+      {@const optionField = field}
+      <OptionInput
+        label={fieldName.toUpperCase()}
+        options={optionField.options}
+        value={optionField.value}
+        handleUpdate={(v) => updateOptionField(fieldName, v)}
+      />
     {/if}
   {/each}
 </div>

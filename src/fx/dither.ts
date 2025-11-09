@@ -23,11 +23,13 @@ export interface DitherBehavior extends Behavior {
   };
 }
 
+export const DITHER_OPTIONS = ["floyd-steinberg", "bayer"];
+
 export const createDitherBehavior = (numColors = 2): DitherBehavior => {
   return {
     type: "dither",
     fields: {
-      ditherType: newOptionField(["Floyd-Steinberg"], "Floyd-Steinberg"),
+      ditherType: newOptionField(DITHER_OPTIONS, DITHER_OPTIONS[0]),
       ditherSize: newNumericalField(1, 16, 2, 1, 2),
       numColors: newNumericalField(2, 8, 4, 1, numColors),
     },
