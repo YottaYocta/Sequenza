@@ -1,4 +1,5 @@
 import {
+  createSwitchField,
   newGradient,
   newNumericalField,
   newSelectionField,
@@ -6,6 +7,7 @@ import {
   type GradientField,
   type NumericalField,
   type SelectionField,
+  type SwitchField,
 } from "../core/Behavior";
 import { outputToImageData, type Output } from "../core/Output";
 import {
@@ -21,7 +23,7 @@ export interface DitherBehavior extends Behavior {
   fields: {
     ditherType: SelectionField;
     ditherSize: NumericalField;
-    colorMapping: GradientField;
+    colorMapping: SwitchField;
   };
 }
 
@@ -33,13 +35,21 @@ export const createDitherBehavior = (numColors = 2): DitherBehavior => {
     fields: {
       ditherType: newSelectionField(DITHER_OPTIONS, DITHER_OPTIONS[0]),
       ditherSize: newNumericalField(1, 16, 2, 1, 2),
-      colorMapping: newGradient(
-        [
-          { position: 0, color: "#000000" },
-          { position: 0.5, color: "#ffffff" },
-        ],
-        "Constant"
-      ),
+      colorMapping: createSwitchField("colorCount", {
+        colorCount: {
+          numColors: newNumericalField(2, 16, 2, 1, 2),
+        },
+        colorRamp: {
+          numColors: newNumericalField(2, 16, 2, 1, 2),
+          colorRamp: newGradient(
+            [
+              { position: 0, color: "#000000" },
+              { position: 0.5, color: "#ffffff" },
+            ],
+            "Constant"
+          ),
+        },
+      }),
     },
   };
 };

@@ -36,6 +36,18 @@ export interface SelectionField {
   value: string;
 }
 
+export interface SwitchField {
+  type: "SwitchField";
+  currentField: string;
+  switchFields: Record<
+    string,
+    Record<
+      string,
+      GradientField | SelectionField | NumericalField | SwitchField
+    >
+  >;
+}
+
 export const newSelectionField = (
   values: string[],
   value: string
@@ -68,12 +80,90 @@ export const newGradient = (
   };
 };
 
-type BehaviorField = NumericalField | GradientField | SelectionField;
+export const createSwitchField = (
+  currentField: string,
+  switchFields: Record<
+    string,
+    Record<
+      string,
+      GradientField | SelectionField | NumericalField | SwitchField
+    >
+  >
+): SwitchField => {
+  return {
+    type: "SwitchField",
+    currentField,
+    switchFields,
+  };
+};
+
+type BehaviorField =
+  | NumericalField
+  | GradientField
+  | SelectionField
+  | SwitchField;
 
 export interface Behavior {
   type: string;
   fields: Record<string, BehaviorField>;
 }
+
+/**
+ * Deep clones a BehaviorField, handling all field types recursively.
+ */
+const cloneField = (
+  field: GradientField | SelectionField | NumericalField | SwitchField
+): GradientField | SelectionField | NumericalField | SwitchField => {
+  if (field.type === "Numerical") {
+    return {
+      type: field.type,
+      min: field.min,
+      max: field.max,
+      default: field.default,
+      step: field.step,
+      value: field.value,
+    };
+  } else if (field.type === "GradientMap") {
+    return {
+      type: field.type,
+      stops: field.stops.map((stop) => ({
+        position: stop.position,
+        color: stop.color,
+      })),
+      easing: field.easing,
+    };
+  } else if (field.type === "SelectionField") {
+    return {
+      type: "SelectionField",
+      options: [...field.options],
+      value: field.value,
+    };
+  } else if (field.type === "SwitchField") {
+    const clonedSwitchFields: Record<
+      string,
+      Record<
+        string,
+        GradientField | SelectionField | NumericalField | SwitchField
+      >
+    > = {};
+
+    for (const [switchKey, switchOptions] of Object.entries(
+      field.switchFields
+    )) {
+      clonedSwitchFields[switchKey] = {};
+      for (const [optionKey, field] of Object.entries(switchOptions)) {
+        clonedSwitchFields[switchKey][optionKey] = cloneField(field);
+      }
+    }
+
+    return {
+      type: "SwitchField",
+      currentField: field.currentField,
+      switchFields: clonedSwitchFields,
+    };
+  }
+  throw new Error(`Unknown field type: ${(field as any).type}`);
+};
 
 /**
  * Deep clones a Behavior object, handling Svelte proxy objects.
@@ -90,31 +180,7 @@ export const cloneBehavior = <T extends Behavior>(behavior: T): T => {
 
   // Deep clone each field in the fields record
   for (const [fieldName, field] of Object.entries(behavior.fields)) {
-    if (field.type === "Numerical") {
-      cloned.fields[fieldName] = {
-        type: field.type,
-        min: field.min,
-        max: field.max,
-        default: field.default,
-        step: field.step,
-        value: field.value,
-      };
-    } else if (field.type === "GradientMap") {
-      cloned.fields[fieldName] = {
-        type: field.type,
-        stops: field.stops.map((stop) => ({
-          position: stop.position,
-          color: stop.color,
-        })),
-        easing: field.easing,
-      };
-    } else if (field.type === "SelectionField") {
-      cloned.fields[fieldName] = {
-        type: "SelectionField",
-        options: [...field.options],
-        value: field.value,
-      };
-    }
+    cloned.fields[fieldName] = cloneField(field);
   }
 
   return cloned as T;

@@ -4,6 +4,7 @@
   import CustomInput from "./CustomInput.svelte";
   import GradientInputNode from "./GradientInputNode.svelte";
   import OptionInput from "./OptionInput.svelte";
+  import SwitchInput from "./SwitchInput.svelte";
 
   interface Props {
     behavior: Behavior;
@@ -59,6 +60,14 @@
         options={SelectionField.options}
         value={SelectionField.value}
         handleUpdate={(v) => updateSelectionField(fieldName, v)}
+      />
+    {:else if field.type === "SwitchField"}
+      {@const switchField = field}
+      <SwitchInput
+        {fieldName}
+        {switchField}
+        {behavior}
+        {onUpdateBehavior}
       />
     {/if}
   {/each}
