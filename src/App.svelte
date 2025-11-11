@@ -18,7 +18,7 @@
   import SourceNode from "./components/SourceNode.svelte";
   import DefaultImg from "./assets/headset.jpg";
   import ConnectionLines from "./components/ConnectionLines.svelte";
-  import { createNewHSLBehavior } from "./adjustments/hsl";
+  import { createNewHSLBehavior } from "./adjustments/hsl/hsl";
 
   // Initialize editor state with placeholder
   let editorState: EditorState = $state<EditorState>(

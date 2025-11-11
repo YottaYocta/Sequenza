@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Attachment } from "svelte/attachments";
   import type { GradientField } from "../core/Behavior";
-  import { evalGradientAt } from "../adjustments/gradientmap";
+  import { evalGradientAt } from "../adjustments/gradientmap/gradientmap";
   import NumericalInput from "./NumericalInput.svelte";
 
   interface Props {

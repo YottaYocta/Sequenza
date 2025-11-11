@@ -1,8 +1,8 @@
 <script lang="ts">
   import type { Behavior } from "../core/Behavior";
-  import { createNewHSLBehavior } from "../adjustments/hsl";
+  import { createNewHSLBehavior } from "../adjustments/hsl/hsl";
   import { createNewRGBBehavior } from "../adjustments/rgb/rgb";
-  import { createNewGradientMapBehavior } from "../adjustments/gradientmap";
+  import { createNewGradientMapBehavior } from "../adjustments/gradientmap/gradientmap";
   import DynamicForm from "./DynamicForm.svelte";
   import Line from "./Line.svelte";
   import type { Attachment } from "svelte/attachments";

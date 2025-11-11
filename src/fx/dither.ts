@@ -22,7 +22,7 @@ import {
   setRGBA,
 } from "../core/util";
 import { cloneBehavior } from "../core/Behavior";
-import { evalGradientAt } from "../adjustments/gradientmap";
+import { evalGradientAt } from "../adjustments/gradientmap/gradientmap";
 
 interface BehaviorSwitchField extends SwitchField {
   currentField: "byNumColors" | "byGradient";
