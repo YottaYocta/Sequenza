@@ -32,10 +32,27 @@ interface BehaviorSwitchField extends SwitchField {
   };
 }
 
+interface DitherSelectionField extends SelectionField {
+  type: "SelectionField";
+  options: [
+    "floyd-steinberg",
+    "bayer16x16",
+    "bayer8x8",
+    "bayer4x4",
+    "bayer2x2"
+  ];
+  value:
+    | "floyd-steinberg"
+    | "bayer16x16"
+    | "bayer8x8"
+    | "bayer4x4"
+    | "bayer2x2";
+}
+
 export interface DitherBehavior extends Behavior {
   type: "dither";
   fields: {
-    ditherType: SelectionField;
+    ditherType: DitherSelectionField;
     ditherSize: NumericalField;
     colorMapping: BehaviorSwitchField;
   };
@@ -43,11 +60,21 @@ export interface DitherBehavior extends Behavior {
 
 export const DITHER_OPTIONS = ["floyd-steinberg", "bayer"];
 
-export const createDitherBehavior = (numColors = 2): DitherBehavior => {
+export const createDitherBehavior = (): DitherBehavior => {
   return {
     type: "dither",
     fields: {
-      ditherType: newSelectionField(DITHER_OPTIONS, DITHER_OPTIONS[0]),
+      ditherType: {
+        type: "SelectionField",
+        options: [
+          "floyd-steinberg",
+          "bayer16x16",
+          "bayer8x8",
+          "bayer4x4",
+          "bayer2x2",
+        ],
+        value: "floyd-steinberg",
+      },
       ditherSize: newNumericalField(1, 16, 2, 1, 2),
       colorMapping: {
         type: "SwitchField",
@@ -138,6 +165,8 @@ export const DitherStepFunctionFactory: StepFunctionFactory = async (
             ) {
               const errorMultFactor =
                 (i === 1 ? 7 : i === 2 ? 3 : i === 3 ? 5 : 1) / 16;
+
+              // RGBA values of pixel that error should be diffused to
               const [rO, gO, bO, aO] = getRGBA(
                 outputImageData,
                 x + xOffset,
@@ -169,17 +198,94 @@ export const DitherStepFunctionFactory: StepFunctionFactory = async (
 
     return stepFunction;
   } else {
-    // Bayer matrix dithering using 8x8 matrix
-    const bayerMatrix8x8 = [
-      [0, 32, 8, 40, 2, 34, 10, 42],
-      [48, 16, 56, 24, 50, 18, 58, 26],
-      [12, 44, 4, 36, 14, 46, 6, 38],
-      [60, 28, 52, 20, 62, 30, 54, 22],
-      [3, 35, 11, 43, 1, 33, 9, 41],
-      [51, 19, 59, 27, 49, 17, 57, 25],
-      [15, 47, 7, 39, 13, 45, 5, 37],
-      [63, 31, 55, 23, 61, 29, 53, 21],
-    ];
+    let bayerMatrix: number[][];
+    let matrixSize: number;
+
+    if (behaviorSnapshot.fields.ditherType.value === "bayer2x2") {
+      matrixSize = 2;
+      bayerMatrix = [
+        [0, 2],
+        [3, 1],
+      ];
+    } else if (behaviorSnapshot.fields.ditherType.value === "bayer4x4") {
+      matrixSize = 4;
+      bayerMatrix = [
+        [0, 8, 2, 10],
+        [12, 4, 14, 6],
+        [3, 11, 1, 9],
+        [15, 7, 13, 5],
+      ];
+    } else if (behaviorSnapshot.fields.ditherType.value === "bayer8x8") {
+      matrixSize = 8;
+      bayerMatrix = [
+        [0, 32, 8, 40, 2, 34, 10, 42],
+        [48, 16, 56, 24, 50, 18, 58, 26],
+        [12, 44, 4, 36, 14, 46, 6, 38],
+        [60, 28, 52, 20, 62, 30, 54, 22],
+        [3, 35, 11, 43, 1, 33, 9, 41],
+        [51, 19, 59, 27, 49, 17, 57, 25],
+        [15, 47, 7, 39, 13, 45, 5, 37],
+        [63, 31, 55, 23, 61, 29, 53, 21],
+      ];
+    } else {
+      matrixSize = 16;
+      bayerMatrix = [
+        [0, 128, 32, 160, 8, 136, 40, 168, 2, 130, 34, 162, 10, 138, 42, 170],
+        [
+          192, 64, 224, 96, 200, 72, 232, 104, 194, 66, 226, 98, 202, 74, 234,
+          106,
+        ],
+        [
+          48, 176, 16, 144, 56, 184, 24, 152, 50, 178, 18, 146, 58, 186, 26,
+          154,
+        ],
+        [
+          240, 112, 208, 80, 248, 120, 216, 88, 242, 114, 210, 82, 250, 122,
+          218, 90,
+        ],
+        [12, 140, 44, 172, 4, 132, 36, 164, 14, 142, 46, 174, 6, 134, 38, 166],
+        [
+          204, 76, 236, 108, 196, 68, 228, 100, 206, 78, 238, 110, 198, 70, 230,
+          102,
+        ],
+        [
+          60, 188, 28, 156, 52, 180, 20, 148, 62, 190, 30, 158, 54, 182, 22,
+          150,
+        ],
+        [
+          252, 124, 220, 92, 244, 116, 212, 84, 254, 126, 222, 94, 246, 118,
+          214, 86,
+        ],
+        [3, 131, 35, 163, 11, 139, 43, 171, 1, 129, 33, 161, 9, 137, 41, 169],
+        [
+          195, 67, 227, 99, 203, 75, 235, 107, 193, 65, 225, 97, 201, 73, 233,
+          105,
+        ],
+        [
+          51, 179, 19, 147, 59, 187, 27, 155, 49, 177, 17, 145, 57, 185, 25,
+          153,
+        ],
+        [
+          243, 115, 211, 83, 251, 123, 219, 91, 241, 113, 209, 81, 249, 121,
+          217, 89,
+        ],
+        [15, 143, 47, 175, 7, 135, 39, 167, 13, 141, 45, 173, 5, 133, 37, 165],
+        [
+          207, 79, 239, 111, 199, 71, 231, 103, 205, 77, 237, 109, 197, 69, 229,
+          101,
+        ],
+        [
+          63, 191, 31, 159, 55, 183, 23, 151, 61, 189, 29, 157, 53, 181, 21,
+          149,
+        ],
+        [
+          255, 127, 223, 95, 247, 119, 215, 87, 253, 125, 221, 93, 245, 117,
+          213, 85,
+        ],
+      ];
+    }
+
+    const maxThreshold = matrixSize * matrixSize;
 
     const stepFunction: StepFunction = () => {
       const targetRow = currentRow + rowStep * ditherSize;
@@ -191,19 +297,18 @@ export const DitherStepFunctionFactory: StepFunctionFactory = async (
         for (let x = 0; x < width; x += ditherSize) {
           const [r, g, b, a] = getRGBA(outputImageData, x, currentRow);
 
-          // Get Bayer threshold for this position (normalized to 0-1)
-          const bayerX = Math.floor(x / ditherSize) % 8;
-          const bayerY = Math.floor(currentRow / ditherSize) % 8;
-          const threshold = (bayerMatrix8x8[bayerY][bayerX] + 0.5) / 64;
+          // apply bayer color offsets
+          const bayerX = Math.floor(x / ditherSize) % matrixSize;
+          const bayerY = Math.floor(currentRow / ditherSize) % matrixSize;
+          const threshold = (bayerMatrix[bayerY][bayerX] + 0.5) / maxThreshold;
 
-          // Apply threshold to create dithering effect
           const adjustedR = r + (threshold - 0.5) * 255;
           const adjustedG = g + (threshold - 0.5) * 255;
           const adjustedB = b + (threshold - 0.5) * 255;
 
           const targetRGB = getNearestRGB(adjustedR, adjustedG, adjustedB);
 
-          // Apply the quantized color to the dither block
+          // quantize color
           for (let i = 0; i < ditherSize && x + i < width; i++) {
             for (let j = 0; j < ditherSize && currentRow + j < height; j++) {
               setRGBA(outputImageData, x + i, currentRow + j, [
@@ -229,7 +334,7 @@ GlobalStepFunctionFactoryRegistry.set("dither", DitherStepFunctionFactory);
  * computes differences in rgb
  * @param color1 first color
  * @param color2 second color
- * @returns [difference in R, difference in G, difference in B, total difference ]
+ * @returns [difference in R, difference in G, difference in B]
  */
 const computeRGBDifference = (
   color1: [number, number, number],
