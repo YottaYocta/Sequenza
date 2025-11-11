@@ -2,15 +2,16 @@ import {
   type Behavior,
   type NumericalField,
   newNumericalField,
-} from "../core/Behavior";
-import { type Output, outputToImageData } from "../core/Output";
+} from "../../core/Behavior";
+import { type Output, outputToImageData } from "../../core/Output";
 import {
   GlobalStepFunctionFactoryRegistry,
   type StepFunction,
   type StepFunctionFactory,
-} from "../core/ProcessingUnit";
-import { generateChunks } from "../core/util";
-import { cloneBehavior } from "../core/Behavior";
+} from "../../core/ProcessingUnit";
+import { generateChunks } from "../../core/util";
+import { cloneBehavior } from "../../core/Behavior";
+import rgbFragSource from "./rgb.frag?raw";
 
 interface RGBBehavior extends Behavior {
   type: "rgb";
@@ -67,9 +68,7 @@ const RGBStepFunctionFactory: StepFunctionFactory = async (
   const gl = canvas.getContext("webgl");
 
   if (gl) {
-    // WebGL path - render in one pass
     try {
-      // Vertex shader - simple pass-through
       const vertexShaderSource = `
         attribute vec2 a_position;
         attribute vec2 a_texCoord;
@@ -81,23 +80,8 @@ const RGBStepFunctionFactory: StepFunctionFactory = async (
         }
       `;
 
-      // Fragment shader - apply RGB adjustments
-      const fragmentShaderSource = `
-        precision mediump float;
+      const fragmentShaderSource = rgbFragSource;
 
-        uniform sampler2D u_texture;
-        uniform vec3 u_rgbAdjust;
-        varying vec2 v_texCoord;
-
-        void main() {
-          vec4 color = texture2D(u_texture, v_texCoord);
-          vec3 adjusted = color.rgb + u_rgbAdjust / 255.0;
-          adjusted = clamp(adjusted, 0.0, 1.0);
-          gl_FragColor = vec4(adjusted, color.a);
-        }
-      `;
-
-      // Compile shaders
       const vertexShader = gl.createShader(gl.VERTEX_SHADER)!;
       gl.shaderSource(vertexShader, vertexShaderSource);
       gl.compileShader(vertexShader);
@@ -113,11 +97,16 @@ const RGBStepFunctionFactory: StepFunctionFactory = async (
       gl.linkProgram(program);
       gl.useProgram(program);
 
-      // Set up geometry (fullscreen quad)
+      gl.detachShader(program, vertexShader);
+      gl.detachShader(program, fragmentShader);
+      gl.deleteShader(vertexShader);
+      gl.deleteShader(fragmentShader);
+
       const positions = new Float32Array([
         -1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1,
       ]);
-      const texCoords = new Float32Array([0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0]);
+
+      const texCoords = new Float32Array([0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1]);
 
       const positionBuffer = gl.createBuffer();
       gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
@@ -135,7 +124,6 @@ const RGBStepFunctionFactory: StepFunctionFactory = async (
       gl.enableVertexAttribArray(texCoordLocation);
       gl.vertexAttribPointer(texCoordLocation, 2, gl.FLOAT, false, 0, 0);
 
-      // Upload texture
       const texture = gl.createTexture();
       gl.bindTexture(gl.TEXTURE_2D, texture);
       gl.texImage2D(
@@ -151,15 +139,12 @@ const RGBStepFunctionFactory: StepFunctionFactory = async (
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
-      // Set uniforms
       const rgbAdjustLocation = gl.getUniformLocation(program, "u_rgbAdjust");
       gl.uniform3f(rgbAdjustLocation, rAdjust, gAdjust, bAdjust);
 
-      // Render
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.drawArrays(gl.TRIANGLES, 0, 6);
-
-      // Read back pixels
+      gl.finish();
       gl.readPixels(
         0,
         0,
@@ -170,20 +155,11 @@ const RGBStepFunctionFactory: StepFunctionFactory = async (
         outputImageData.data
       );
 
-      // WebGL renders upside down, flip Y axis
-      const flippedData = new Uint8ClampedArray(outputImageData.data.length);
-      const rowSize = canvas.width * 4;
-      for (let y = 0; y < canvas.height; y++) {
-        const srcOffset = y * rowSize;
-        const dstOffset = (canvas.height - 1 - y) * rowSize;
-        flippedData.set(
-          outputImageData.data.subarray(srcOffset, srcOffset + rowSize),
-          dstOffset
-        );
-      }
-      outputImageData.data.set(flippedData);
+      gl.deleteBuffer(positionBuffer);
+      gl.deleteBuffer(texCoordBuffer);
+      gl.deleteTexture(texture);
+      gl.deleteProgram(program);
 
-      // Return single-step function (WebGL processes everything instantly)
       return (): [number, Output] => {
         return [1, { type: "image", data: outputImageData }];
       };

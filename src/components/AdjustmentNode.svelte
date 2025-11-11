@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Behavior } from "../core/Behavior";
   import { createNewHSLBehavior } from "../adjustments/hsl";
-  import { createNewRGBBehavior } from "../adjustments/rgb";
+  import { createNewRGBBehavior } from "../adjustments/rgb/rgb";
   import { createNewGradientMapBehavior } from "../adjustments/gradientmap";
   import DynamicForm from "./DynamicForm.svelte";
   import Line from "./Line.svelte";

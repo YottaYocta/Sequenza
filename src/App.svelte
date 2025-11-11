@@ -9,7 +9,6 @@
     updateBehaviorAt,
     processTaskStep,
   } from "./core/EditorState";
-  import { createNewRGBBehavior } from "./adjustments/rgb";
   import { createNewDotBehavior } from "./fx/dots";
   import { untrack } from "svelte";
   import AdjustmentNode from "./components/AdjustmentNode.svelte";
