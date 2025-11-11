@@ -36,6 +36,11 @@ export interface SelectionField {
   value: string;
 }
 
+export type SwitchFieldType = Record<
+  string,
+  Record<string, GradientField | SelectionField | NumericalField | SwitchField>
+>;
+
 export interface SwitchField {
   type: "SwitchField";
   currentField: string;
@@ -77,23 +82,6 @@ export const newGradient = (
     type: "GradientMap",
     stops: stops,
     easing,
-  };
-};
-
-export const createSwitchField = (
-  currentField: string,
-  switchFields: Record<
-    string,
-    Record<
-      string,
-      GradientField | SelectionField | NumericalField | SwitchField
-    >
-  >
-): SwitchField => {
-  return {
-    type: "SwitchField",
-    currentField,
-    switchFields,
   };
 };
 

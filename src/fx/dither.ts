@@ -1,5 +1,4 @@
 import {
-  createSwitchField,
   newGradient,
   newNumericalField,
   newSelectionField,
@@ -15,15 +14,30 @@ import {
   type StepFunction,
   type StepFunctionFactory,
 } from "../core/ProcessingUnit";
-import { getRGBA, inImageBounds, setRGBA } from "../core/util";
+import {
+  getRGBA,
+  hexToRgb,
+  inImageBounds,
+  perceptualLuminance,
+  setRGBA,
+} from "../core/util";
 import { cloneBehavior } from "../core/Behavior";
+import { evalGradientAt } from "../adjustments/gradientmap";
+
+interface BehaviorSwitchField extends SwitchField {
+  currentField: "byNumColors" | "byGradient";
+  switchFields: {
+    byNumColors: { numColors: NumericalField };
+    byGradient: { gradient: GradientField };
+  };
+}
 
 export interface DitherBehavior extends Behavior {
   type: "dither";
   fields: {
     ditherType: SelectionField;
     ditherSize: NumericalField;
-    colorMapping: SwitchField;
+    colorMapping: BehaviorSwitchField;
   };
 }
 
@@ -35,21 +49,24 @@ export const createDitherBehavior = (numColors = 2): DitherBehavior => {
     fields: {
       ditherType: newSelectionField(DITHER_OPTIONS, DITHER_OPTIONS[0]),
       ditherSize: newNumericalField(1, 16, 2, 1, 2),
-      colorMapping: createSwitchField("colorCount", {
-        colorCount: {
-          numColors: newNumericalField(2, 16, 2, 1, 2),
+      colorMapping: {
+        type: "SwitchField",
+        currentField: "byNumColors",
+        switchFields: {
+          byNumColors: {
+            numColors: newNumericalField(2, 16, 2, 1, 2),
+          },
+          byGradient: {
+            gradient: newGradient(
+              [
+                { position: 0, color: "#000000" },
+                { position: 0.5, color: "#ffffff" },
+              ],
+              "Constant"
+            ),
+          },
         },
-        colorRamp: {
-          numColors: newNumericalField(2, 16, 2, 1, 2),
-          colorRamp: newGradient(
-            [
-              { position: 0, color: "#000000" },
-              { position: 0.5, color: "#ffffff" },
-            ],
-            "Constant"
-          ),
-        },
-      }),
+      },
     },
   };
 };
@@ -78,18 +95,23 @@ export const DitherStepFunctionFactory: StepFunctionFactory = async (
     g: number,
     b: number
   ): [number, number, number] => {
-    const diffWhite = computeRGBDifference([r, g, b], [255, 255, 255]);
-    const diffBlack = computeRGBDifference([r, g, b], [0, 0, 0]);
-    const totalDiffWhite = diffWhite.reduce(
-      (prev, curr) => prev + Math.abs(curr),
-      0
-    );
-    const totalDiffBlack = diffBlack.reduce(
-      (prev, curr) => prev + Math.abs(curr),
-      0
-    );
-    if (totalDiffBlack > totalDiffWhite) return [255, 255, 255];
-    else return [0, 0, 0];
+    if (behaviorSnapshot.fields.colorMapping.currentField === "byGradient") {
+      const currentGradient =
+        behaviorSnapshot.fields.colorMapping.switchFields.byGradient.gradient;
+
+      const currentBrightness = perceptualLuminance(r, g, b);
+      const currentColor = evalGradientAt(currentGradient, currentBrightness);
+      return hexToRgb(currentColor);
+    } else {
+      const numColors =
+        behaviorSnapshot.fields.colorMapping.switchFields.byNumColors.numColors
+          .value;
+      const baseIncrement = 255 / Math.max(1, numColors - 1);
+      const baseR = Math.round(r / baseIncrement) * baseIncrement;
+      const baseG = Math.round(g / baseIncrement) * baseIncrement;
+      const baseB = Math.round(b / baseIncrement) * baseIncrement;
+      return [baseR, baseG, baseB];
+    }
   };
 
   const stepFunction: StepFunction = () => {

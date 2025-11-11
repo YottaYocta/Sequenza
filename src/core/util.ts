@@ -1,5 +1,3 @@
-import type { Behavior } from "./Behavior";
-
 export interface Chunk {
   startX: number;
   startY: number;
@@ -96,4 +94,34 @@ export const setRGBA = (
     imageData.data[baseIndex + 2] = rgba[2];
     imageData.data[baseIndex + 3] = rgba[3];
   }
+};
+
+/**
+ *
+ * returns perceived luminance of rgb color on range [0 - 1], with 0 being darkest possible luminance
+ * @param r [0, 255]
+ * @param g [0, 255]
+ * @param b [0, 255]
+ */
+export const perceptualLuminance = (
+  r: number,
+  g: number,
+  b: number
+): number => {
+  return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+};
+
+/**
+ * Helper function to parse hex color string to RGB
+ */
+export const hexToRgb = (hex: string): [number, number, number] => {
+  // Remove # if present
+  const cleanHex = hex.replace(/^#/, "");
+
+  // Parse hex values
+  const r = parseInt(cleanHex.substring(0, 2), 16);
+  const g = parseInt(cleanHex.substring(2, 4), 16);
+  const b = parseInt(cleanHex.substring(4, 6), 16);
+
+  return [r, g, b];
 };
