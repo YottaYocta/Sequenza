@@ -1,25 +1,27 @@
 <script lang="ts">
   import type { Attachment } from "svelte/attachments";
-  import type { GradientField } from "../core/Behavior";
+  import type { GradientField, GradientStop } from "../core/Behavior";
   import { evalGradientAt } from "../adjustments/gradientmap/gradientmap";
   import NumericalInput from "./NumericalInput.svelte";
+  import { hexToRGBA, RGBAToHex } from "../core/util";
 
   interface Props {
     gradientField: GradientField;
     onUpdateGradient: (newGradient: GradientField) => void;
   }
+
   const { gradientField, onUpdateGradient }: Props = $props();
 
   const gradientAttachment: Attachment<HTMLCanvasElement> = (
     element: HTMLCanvasElement
   ) => {
-    if (!gradientField) return;
-
     const ctx = element.getContext("2d");
     if (ctx) {
+      ctx.clearRect(0, 0, element.width, element.height);
       for (let i = 0; i < element.width; i++) {
         const currentColor = evalGradientAt(gradientField, i / element.width);
-        ctx.fillStyle = currentColor;
+        const [r, g, b, a] = hexToRGBA(currentColor);
+        ctx.fillStyle = `rgba(${r},${g},${b},${a / 255})`;
         ctx.fillRect(i, 0, 1, element.height);
       }
     }
@@ -64,7 +66,6 @@
   };
 
   function addStop() {
-    if (!gradientField) return;
     const newGradient: GradientField = {
       ...gradientField,
       stops: [...gradientField.stops, { position: 1, color: "#ffffff" }],
@@ -73,7 +74,7 @@
   }
 
   function removeStop(idx: number) {
-    if (!gradientField || gradientField.stops.length <= 1) return;
+    if (gradientField.stops.length <= 1) return;
     const newGradient: GradientField = {
       ...gradientField,
       stops: gradientField.stops.filter((_, i) => i !== idx),
@@ -82,7 +83,6 @@
   }
 
   function updateStopPosition(idx: number, newPosition: number) {
-    if (!gradientField) return;
     const newStops = [...gradientField.stops];
     newStops[idx] = { ...newStops[idx], position: newPosition };
     const newGradient: GradientField = {
@@ -93,15 +93,45 @@
   }
 
   function updateStopColor(idx: number, newColor: string) {
-    if (!gradientField) return;
     const newStops = [...gradientField.stops];
-    newStops[idx] = { ...newStops[idx], color: newColor };
+    const [newR, newG, newB] = hexToRGBA(newColor);
+
+    newStops.map((stop, stopIdx) => {
+      if (idx === stopIdx) {
+        const [_r, _g, _b, currentA] = hexToRGBA(stop.color);
+        const newColor = [newR, newG, newB, currentA];
+        return { ...stop, color: newColor };
+      }
+      return stop;
+    });
+
     const newGradient: GradientField = {
       ...gradientField,
       stops: newStops,
     };
     onUpdateGradient(newGradient);
   }
+
+  const updateStopOpacity = (idx: number, opacity: number) => {
+    const newStops = gradientField.stops.map((stop, stopIdx): GradientStop => {
+      if (stopIdx === idx) {
+        const [currentR, currentG, currentB] = hexToRGBA(stop.color);
+        const newColor = RGBAToHex(currentR, currentG, currentB, opacity);
+        console.log(newColor);
+        return {
+          ...stop,
+          color: newColor,
+        };
+      }
+      return stop;
+    });
+
+    const newGradient: GradientField = {
+      ...gradientField,
+      stops: newStops,
+    };
+    onUpdateGradient(newGradient);
+  };
 </script>
 
 {#if gradientField}
@@ -144,6 +174,16 @@
               updateStopColor(idx, inputEvent.currentTarget.value)}
           />
           <p>{stop.color}</p>
+          <NumericalInput
+            min={0}
+            max={255}
+            step={1}
+            value={255}
+            name={`alpha-${idx}`}
+            handleValueChanged={(newOpacity: number) => {
+              updateStopOpacity(idx, newOpacity);
+            }}
+          ></NumericalInput>
           {#if gradientField.stops.length > 1}
             <button
               class="text-xs"

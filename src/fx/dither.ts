@@ -16,7 +16,7 @@ import {
 } from "../core/ProcessingUnit";
 import {
   getRGBA,
-  hexToRgb,
+  hexToRGBA,
   inImageBounds,
   perceptualLuminance,
   setRGBA,
@@ -128,7 +128,8 @@ export const DitherStepFunctionFactory: StepFunctionFactory = async (
 
       const currentBrightness = perceptualLuminance(r, g, b);
       const currentColor = evalGradientAt(currentGradient, currentBrightness);
-      return hexToRgb(currentColor);
+      const [rClamped, gClamped, bClamped] = hexToRGBA(currentColor);
+      return [rClamped, gClamped, bClamped];
     } else {
       const numColors =
         behaviorSnapshot.fields.colorMapping.switchFields.byNumColors.numColors

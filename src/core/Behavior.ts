@@ -24,9 +24,14 @@ export const newNumericalField = (
   };
 };
 
+export interface GradientStop {
+  position: number;
+  color: string;
+}
+
 export interface GradientField {
   type: "GradientMap";
-  stops: { position: number; color: string }[];
+  stops: GradientStop[];
   easing: "Linear" | "Constant";
 }
 
@@ -66,8 +71,8 @@ export const newSelectionField = (
 
 export const newGradient = (
   stops: { position: number; color: string }[] = [
-    { position: 0, color: "#000000" },
-    { position: 1, color: "#ffffff" },
+    { position: 0, color: "#000000ff" },
+    { position: 1, color: "#ffffffff" },
   ],
   easing: "Linear" | "Constant" = "Linear"
 ): GradientField => {
@@ -85,7 +90,7 @@ export const newGradient = (
   };
 };
 
-type BehaviorField =
+export type BehaviorField =
   | NumericalField
   | GradientField
   | SelectionField

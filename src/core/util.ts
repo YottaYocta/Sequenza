@@ -114,14 +114,44 @@ export const perceptualLuminance = (
 /**
  * Helper function to parse hex color string to RGB
  */
-export const hexToRgb = (hex: string): [number, number, number] => {
-  // Remove # if present
+export const hexToRGBA = (hex: string): [number, number, number, number] => {
   const cleanHex = hex.replace(/^#/, "");
 
-  // Parse hex values
   const r = parseInt(cleanHex.substring(0, 2), 16);
   const g = parseInt(cleanHex.substring(2, 4), 16);
   const b = parseInt(cleanHex.substring(4, 6), 16);
+  const a = parseInt(cleanHex.substring(6, 8), 16);
 
-  return [r, g, b];
+  return [r, g, b, Number.isNaN(a) ? 255 : a];
+};
+
+const toHex = (n: number) => {
+  const clamped = Math.max(0, Math.min(255, Math.round(n)));
+  return clamped.toString(16).padStart(2, "0");
+};
+
+/**
+ * Helper function to convert RGB to hex string
+ */
+export const RGBAToHex = (r: number, g: number, b: number, a = 255): string => {
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}${toHex(a)}`;
+};
+
+/**
+ * Helper function to linearly interpolate between two colors
+ */
+export const interpolateColors = (
+  color1: string,
+  color2: string,
+  t: number
+): string => {
+  const [r1, g1, b1, a1] = hexToRGBA(color1);
+  const [r2, g2, b2, a2] = hexToRGBA(color2);
+
+  const r = r1 + (r2 - r1) * t;
+  const g = g1 + (g2 - g1) * t;
+  const b = b1 + (b2 - b1) * t;
+  const a = a1 + (a2 - a1) * t;
+
+  return RGBAToHex(r, g, b, a);
 };

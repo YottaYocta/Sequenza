@@ -1,8 +1,8 @@
 <script lang="ts">
-  import type { Behavior } from "../core/Behavior";
+  import type { Behavior, BehaviorField } from "../core/Behavior";
   import { cloneBehavior } from "../core/Behavior";
   import CustomInput from "./CustomInput.svelte";
-  import GradientInputNode from "./GradientInputNode.svelte";
+  import GradientInput from "./GradientInput.svelte";
   import OptionInput from "./OptionInput.svelte";
   import SwitchInput from "./SwitchInput.svelte";
 
@@ -13,14 +13,10 @@
 
   const { behavior, onUpdateBehavior }: Props = $props();
 
-  function updateField(fieldName: string, value: number) {
+  function updateField(fieldName: string, value: BehaviorField) {
     const updatedBehavior = cloneBehavior(behavior);
     if (fieldName in updatedBehavior.fields) {
-      const field = updatedBehavior.fields[fieldName];
-      if (field.type === "Numerical") {
-        field.value = value;
-        field.default = value;
-      }
+      updatedBehavior.fields[fieldName] = value;
     }
     onUpdateBehavior(updatedBehavior);
   }
@@ -49,10 +45,17 @@
         step={numField.step}
         value={numField.default}
         defaultValue={numField.default}
-        handleUpdate={(v) => updateField(fieldName, v)}
+        handleUpdate={(v) =>
+          updateField(fieldName, {
+            ...numField,
+            value: v,
+          })}
       />
     {:else if field.type === "GradientMap"}
-      <GradientInputNode {behavior} {onUpdateBehavior} />
+      <GradientInput
+        gradientField={field}
+        onUpdateGradient={(newGradient) => updateField(fieldName, newGradient)}
+      ></GradientInput>
     {:else if field.type === "SelectionField"}
       {@const SelectionField = field}
       <OptionInput
@@ -63,12 +66,7 @@
       />
     {:else if field.type === "SwitchField"}
       {@const switchField = field}
-      <SwitchInput
-        {fieldName}
-        {switchField}
-        {behavior}
-        {onUpdateBehavior}
-      />
+      <SwitchInput {fieldName} {switchField} {behavior} {onUpdateBehavior} />
     {/if}
   {/each}
 </div>

@@ -9,7 +9,7 @@ import {
   type StepFunction,
   type StepFunctionFactory,
 } from "../../core/ProcessingUnit";
-import { generateChunks } from "../../core/util";
+import { generateChunks, hexToRGBA, interpolateColors } from "../../core/util";
 import { cloneBehavior } from "../../core/Behavior";
 import gradientMapFragSource from "./gradientmap.frag?raw";
 
@@ -22,8 +22,8 @@ interface GradientMapBehavior extends Behavior {
 
 export const createNewGradientMapBehavior = (
   stops: { position: number; color: string }[] = [
-    { position: 0, color: "#000000" },
-    { position: 1, color: "#ffffff" },
+    { position: 0, color: "#000000ff" },
+    { position: 1, color: "#ffffffff" },
   ],
   easing: "Linear" | "Constant" = "Linear"
 ): GradientMapBehavior => {
@@ -36,50 +36,6 @@ export const createNewGradientMapBehavior = (
 };
 
 /**
- * Helper function to parse hex color string to RGB
- */
-const hexToRgb = (hex: string): [number, number, number] => {
-  // Remove # if present
-  const cleanHex = hex.replace(/^#/, "");
-
-  // Parse hex values
-  const r = parseInt(cleanHex.substring(0, 2), 16);
-  const g = parseInt(cleanHex.substring(2, 4), 16);
-  const b = parseInt(cleanHex.substring(4, 6), 16);
-
-  return [r, g, b];
-};
-
-/**
- * Helper function to convert RGB to hex string
- */
-const rgbToHex = (r: number, g: number, b: number): string => {
-  const toHex = (n: number) => {
-    const clamped = Math.max(0, Math.min(255, Math.round(n)));
-    return clamped.toString(16).padStart(2, "0");
-  };
-  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-};
-
-/**
- * Helper function to linearly interpolate between two colors
- */
-const interpolateColors = (
-  color1: string,
-  color2: string,
-  t: number
-): string => {
-  const [r1, g1, b1] = hexToRgb(color1);
-  const [r2, g2, b2] = hexToRgb(color2);
-
-  const r = r1 + (r2 - r1) * t;
-  const g = g1 + (g2 - g1) * t;
-  const b = b1 + (b2 - b1) * t;
-
-  return rgbToHex(r, g, b);
-};
-
-/**
  * Evaluates the gradient at a given progress value (0-1)
  */
 export const evalGradientAt = (
@@ -88,13 +44,11 @@ export const evalGradientAt = (
 ): string => {
   const { stops, easing } = gradient;
 
-  // Clamp progress to 0-1
   const clampedProgress = Math.max(0, Math.min(1, progress));
 
-  // Sort stops by position (in case they're not sorted)
   const sortedStops = [...stops].sort((a, b) => a.position - b.position);
 
-  // Handle edge cases
+  // edge cases
   if (sortedStops.length === 0) {
     return "#000000"; // Default to black if no stops
   }
@@ -102,12 +56,11 @@ export const evalGradientAt = (
     return sortedStops[0].color;
   }
 
-  // If progress is before first stop
+  // return if to left/right of edge color
   if (clampedProgress <= sortedStops[0].position) {
     return sortedStops[0].color;
   }
 
-  // If progress is after last stop
   if (clampedProgress >= sortedStops[sortedStops.length - 1].position) {
     return sortedStops[sortedStops.length - 1].color;
   }
@@ -127,17 +80,13 @@ export const evalGradientAt = (
     }
   }
 
-  // Calculate local t value between the two stops
   const range = upperStop.position - lowerStop.position;
   const localT =
     range === 0 ? 0 : (clampedProgress - lowerStop.position) / range;
 
-  // Apply interpolation type
   if (easing === "Constant") {
-    // Constant interpolation: use the lower stop's color
     return lowerStop.color;
   } else {
-    // Linear interpolation
     return interpolateColors(lowerStop.color, upperStop.color, localT);
   }
 };
@@ -257,7 +206,7 @@ const GradientMapStepFunctionFactory: StepFunctionFactory = async (
       for (let i = 0; i < gradientSize; i++) {
         const t = i / (gradientSize - 1);
         const color = evalGradientAt(gradient, t);
-        const [r, g, b] = hexToRgb(color);
+        const [r, g, b] = hexToRGBA(color);
         gradientData[i * 4] = r;
         gradientData[i * 4 + 1] = g;
         gradientData[i * 4 + 2] = b;
@@ -287,7 +236,10 @@ const GradientMapStepFunctionFactory: StepFunctionFactory = async (
       const textureLocation = gl.getUniformLocation(program, "u_texture");
       gl.uniform1i(textureLocation, 0);
 
-      const gradientTextureLocation = gl.getUniformLocation(program, "u_gradientTexture");
+      const gradientTextureLocation = gl.getUniformLocation(
+        program,
+        "u_gradientTexture"
+      );
       gl.uniform1i(gradientTextureLocation, 1);
 
       gl.viewport(0, 0, canvas.width, canvas.height);
@@ -358,7 +310,7 @@ const GradientMapStepFunctionFactory: StepFunctionFactory = async (
         const gradientColor = evalGradientAt(gradient, brightness);
 
         // Parse the gradient color
-        const [newR, newG, newB] = hexToRgb(gradientColor);
+        const [newR, newG, newB] = hexToRGBA(gradientColor);
 
         // Write the mapped color to output
         outputData[index] = newR;
