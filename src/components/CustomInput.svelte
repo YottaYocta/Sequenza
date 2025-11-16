@@ -44,7 +44,7 @@
     const track = thumb.parentElement as HTMLDivElement;
     const handleMouseDown = (e: MouseEvent) => {
       e.preventDefault();
-      startDrag(track, e); // ✅ pass event
+      startDrag(track, e);
     };
     thumb.addEventListener("mousedown", handleMouseDown);
     return () => thumb.removeEventListener("mousedown", handleMouseDown);
@@ -73,8 +73,11 @@
   ></NumericalInput>
 
   <div
-    class="relative w-48 min-w-36 h-3 border border-black cursor-pointer border-l-4 border-r-4 bg-white"
+    class="relative w-56 min-w-16 h-3 border border-black cursor-pointer border-l-2 border-r-2 bg-white"
     onmousedown={handleTrackMouseDown}
+    role="slider"
+    aria-valuenow={value}
+    tabindex="0"
   >
     <div
       {@attach thumbDrag}

@@ -4,6 +4,7 @@
   import { evalGradientAt } from "../adjustments/gradientmap/gradientmap";
   import NumericalInput from "./NumericalInput.svelte";
   import { hexToRGBA, RGBAToHex } from "../core/util";
+  import CustomInput from "./CustomInput.svelte";
 
   interface Props {
     gradientField: GradientField;
@@ -93,13 +94,12 @@
   }
 
   function updateStopColor(idx: number, newColor: string) {
-    const newStops = [...gradientField.stops];
     const [newR, newG, newB] = hexToRGBA(newColor);
 
-    newStops.map((stop, stopIdx) => {
+    const newStops = gradientField.stops.map((stop, stopIdx): GradientStop => {
       if (idx === stopIdx) {
         const [_r, _g, _b, currentA] = hexToRGBA(stop.color);
-        const newColor = [newR, newG, newB, currentA];
+        const newColor = RGBAToHex(newR, newG, newB, currentA);
         return { ...stop, color: newColor };
       }
       return stop;
@@ -155,7 +155,8 @@
     </div>
     <div class="flex flex-col gap-0 w-full h-min">
       {#each gradientField.stops as stop, idx}
-        <div class="w-full flex gap-2 items-center h-min">
+        {@const [_r, _g, _b, alpha] = hexToRGBA(stop.color)}
+        <div class="w-full flex gap-2 items-center h-4">
           <NumericalInput
             min={0}
             max={1}
@@ -167,22 +168,25 @@
           <input
             type="color"
             aria-label={`open-color-picker-for-stop-${idx}`}
-            class="w-4 h-4 border"
+            class="min-w-6 h-4 border"
             value={stop.color}
             onchange={(inputEvent) =>
               updateStopColor(idx, inputEvent.currentTarget.value)}
           />
-          <p>{stop.color}</p>
-          <NumericalInput
-            min={0}
-            max={255}
-            step={1}
-            value={255}
-            name={`alpha-${idx}`}
-            handleValueChanged={(newOpacity: number) => {
-              updateStopOpacity(idx, newOpacity);
-            }}
-          ></NumericalInput>
+          <div class="w-48">
+            <CustomInput
+              min={0}
+              max={255}
+              step={1}
+              value={alpha}
+              label={`A:`}
+              defaultValue={255}
+              handleUpdate={(newOpacity: number) => {
+                updateStopOpacity(idx, newOpacity);
+              }}
+            ></CustomInput>
+          </div>
+
           {#if gradientField.stops.length > 1}
             <button
               class="text-xs"
