@@ -20,7 +20,7 @@
   import ConnectionLines from "./components/ConnectionLines.svelte";
   import { createNewHSLBehavior } from "./adjustments/hsl/hsl";
 
-  // Initialize editor state with placeholder
+  // placeholder
   let editorState: EditorState = $state<EditorState>(
     newEditorState({
       type: "image",
@@ -28,13 +28,11 @@
     })
   );
 
-  // Initialize with RGB and Dot behaviors
   (async () => {
     await pushUnit(editorState, createNewHSLBehavior());
     await pushUnit(editorState, createNewDotBehavior());
   })();
 
-  // Boolean trigger for re-rendering
   let renderTrigger = $state(false);
 
   async function handleSourceImageLoad(imageData: ImageData) {
@@ -72,7 +70,6 @@
       animationFrameId = requestAnimationFrame(processFrame);
     }
 
-    // Cleanup function
     return () => {
       if (animationFrameId !== null) {
         cancelAnimationFrame(animationFrameId);

@@ -43,7 +43,7 @@
         min={numField.min}
         max={numField.max}
         step={numField.step}
-        value={numField.default}
+        value={numField.value}
         defaultValue={numField.default}
         handleUpdate={(v) =>
           updateField(fieldName, {
