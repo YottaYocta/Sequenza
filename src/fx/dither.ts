@@ -1,7 +1,6 @@
 import {
   newGradient,
   newNumericalField,
-  newSelectionField,
   type Behavior,
   type GradientField,
   type NumericalField,
@@ -117,19 +116,19 @@ export const DitherStepFunctionFactory: StepFunctionFactory = async (
   const pixelsPerStep = 10000;
   const rowStep = Math.floor(pixelsPerStep / width);
 
-  const getNearestRGB = (
+  const getNearestRGBA = (
     r: number,
     g: number,
-    b: number
-  ): [number, number, number] => {
+    b: number,
+    a = 255
+  ): [number, number, number, number] => {
     if (behaviorSnapshot.fields.colorMapping.currentField === "byGradient") {
       const currentGradient =
         behaviorSnapshot.fields.colorMapping.switchFields.byGradient.gradient;
 
       const currentBrightness = perceptualLuminance(r, g, b);
       const currentColor = evalGradientAt(currentGradient, currentBrightness);
-      const [rClamped, gClamped, bClamped] = hexToRGBA(currentColor);
-      return [rClamped, gClamped, bClamped];
+      return hexToRGBA(currentColor);
     } else {
       const numColors =
         behaviorSnapshot.fields.colorMapping.switchFields.byNumColors.numColors
@@ -138,7 +137,8 @@ export const DitherStepFunctionFactory: StepFunctionFactory = async (
       const baseR = Math.round(r / baseIncrement) * baseIncrement;
       const baseG = Math.round(g / baseIncrement) * baseIncrement;
       const baseB = Math.round(b / baseIncrement) * baseIncrement;
-      return [baseR, baseG, baseB];
+      const baseA = Math.round(a / baseIncrement) * baseIncrement;
+      return [baseR, baseG, baseB, baseA];
     }
   };
 
@@ -152,10 +152,10 @@ export const DitherStepFunctionFactory: StepFunctionFactory = async (
       ) {
         for (let x = 0; x < width; x += ditherSize) {
           const [r, g, b, a] = getRGBA(outputImageData, x, currentRow);
-          const targetRGB = getNearestRGB(r, g, b);
+          const [tr, tg, tb, ta] = getNearestRGBA(r, g, b);
           const targetRGBDifference = computeRGBDifference(
             [r, g, b],
-            targetRGB
+            [tr, tg, tb]
           );
 
           for (let i = 1; i <= 4; i++) {
@@ -177,19 +177,14 @@ export const DitherStepFunctionFactory: StepFunctionFactory = async (
                 targetRGBDifference[0] * errorMultFactor + rO,
                 targetRGBDifference[1] * errorMultFactor + gO,
                 targetRGBDifference[2] * errorMultFactor + bO,
-                aO,
+                ta,
               ]);
             }
           }
 
           for (let i = 0; i < ditherSize && x + i < width; i++) {
             for (let j = 0; j < ditherSize && currentRow + j < height; j++) {
-              setRGBA(outputImageData, x + i, currentRow + j, [
-                targetRGB[0],
-                targetRGB[1],
-                targetRGB[2],
-                a,
-              ]);
+              setRGBA(outputImageData, x + i, currentRow + j, [tr, tb, tg, ta]);
             }
           }
         }
@@ -307,7 +302,7 @@ export const DitherStepFunctionFactory: StepFunctionFactory = async (
           const adjustedG = g + (threshold - 0.5) * 255;
           const adjustedB = b + (threshold - 0.5) * 255;
 
-          const targetRGB = getNearestRGB(adjustedR, adjustedG, adjustedB);
+          const targetRGB = getNearestRGBA(adjustedR, adjustedG, adjustedB);
 
           // quantize color
           for (let i = 0; i < ditherSize && x + i < width; i++) {
@@ -316,7 +311,7 @@ export const DitherStepFunctionFactory: StepFunctionFactory = async (
                 targetRGB[0],
                 targetRGB[1],
                 targetRGB[2],
-                a,
+                targetRGB[3],
               ]);
             }
           }
