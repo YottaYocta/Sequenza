@@ -11,6 +11,7 @@ import {
   type StepFunctionFactory,
 } from "../core/ProcessingUnit";
 import { cloneBehavior } from "../core/Behavior";
+import { perceptualLuminance } from "../core/util";
 
 interface DotBehavior extends Behavior {
   type: "dot";
@@ -114,24 +115,19 @@ const DotStepFunctionFactory: StepFunctionFactory = async (
     );
   }
 
-  // Convert input to ImageData
   const inputImageData = await outputToImageData(input);
 
-  // Deep clone the behavior
   const behaviorSnapshot = cloneBehavior(behavior) as DotBehavior;
 
-  // Extract parameters
   const horizontalCount = Math.floor(
-    behaviorSnapshot.fields.horizontalCount.default
+    behaviorSnapshot.fields.horizontalCount.value
   );
-  const verticalCount = Math.floor(
-    behaviorSnapshot.fields.verticalCount.default
-  );
-  const dotRadius = behaviorSnapshot.fields.dotRadius.default;
-  const borderRadius = behaviorSnapshot.fields.borderRadius.default;
-  const rotation = behaviorSnapshot.fields.rotation.default;
-  const filterLow = behaviorSnapshot.fields.filterLow.default;
-  const filterHigh = behaviorSnapshot.fields.filterHigh.default;
+  const verticalCount = Math.floor(behaviorSnapshot.fields.verticalCount.value);
+  const dotRadius = behaviorSnapshot.fields.dotRadius.value;
+  const borderRadius = behaviorSnapshot.fields.borderRadius.value;
+  const rotation = behaviorSnapshot.fields.rotation.value;
+  const filterLow = behaviorSnapshot.fields.filterLow.value;
+  const filterHigh = behaviorSnapshot.fields.filterHigh.value;
 
   // Create output SVG
   const outputSvg: SvgOutput = {
@@ -154,14 +150,12 @@ const DotStepFunctionFactory: StepFunctionFactory = async (
 
   let currentRow = 0;
 
-  // Return the step function closure
   return (): [number, Output] => {
     if (currentRow >= verticalCount) {
       // All rows processed, return final output
       return [1, { type: "svg", data: outputSvg }];
     }
 
-    // Process current row of dots
     let rowSVG = "";
 
     for (let col = 0; col < horizontalCount; col++) {
@@ -169,7 +163,6 @@ const DotStepFunctionFactory: StepFunctionFactory = async (
       const centerX = Math.floor(col * cellWidth + cellWidth / 2);
       const centerY = Math.floor(currentRow * cellHeight + cellHeight / 2);
 
-      // Ensure we're within image bounds
       if (centerX < 0 || centerX >= width || centerY < 0 || centerY >= height) {
         continue;
       }
@@ -181,8 +174,7 @@ const DotStepFunctionFactory: StepFunctionFactory = async (
       const b = data[index + 2];
       const a = data[index + 3] / 255;
 
-      // Calculate brightness (value in HSV) for filtering
-      const brightness = (r + g + b) / (3 * 255);
+      const brightness = perceptualLuminance(r, g, b);
 
       // Apply midpass filter - skip pixels outside the value range
       const clampedLow = Math.max(0, Math.min(1, filterLow));
