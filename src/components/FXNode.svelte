@@ -92,8 +92,7 @@
   }
 </script>
 
-<div class="flex flex-col min-w-64 w-min text-sm">
-  <!-- Tab Header -->
+<div class="flex flex-col w-84 text-sm">
   <div class="flex flex-wrap gap-1 pb-8 relative w-64">
     {#each fxOptions as option}
       <button
@@ -126,7 +125,6 @@
     {/if}
   </div>
 
-  <!-- Content Area -->
   <div class="border-b border-t py-4 relative" bind:this={body}>
     <span class="absolute top-0 left-0 -translate-1/2 w-2 h-2 bg-black"> </span>
     <span
