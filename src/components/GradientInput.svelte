@@ -117,7 +117,6 @@
       if (stopIdx === idx) {
         const [currentR, currentG, currentB] = hexToRGBA(stop.color);
         const newColor = RGBAToHex(currentR, currentG, currentB, opacity);
-        console.log(newColor);
         return {
           ...stop,
           color: newColor,
