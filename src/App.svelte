@@ -125,6 +125,7 @@
             <AdjustmentNode
               nodeIndex={idx * 2 + 1}
               behavior={unit.behavior}
+              {handleDelete}
               onUpdateBehavior={handleUpdateBehavior}
             />
           {:else}

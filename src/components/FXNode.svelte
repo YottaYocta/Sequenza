@@ -96,7 +96,7 @@
 
 <div class="flex flex-col w-84 text-sm">
   <button
-    class="button-1 w-min absolute top-0 right-0 opacity-30 hover:opacity-100"
+    class="button-1 w-min absolute top-0 right-0 opacity-30 hover:opacity-100 z-10"
     onclick={() => handleDelete(nodeIndex)}>Delete</button
   >
   <div class="flex flex-wrap gap-1 pb-8 relative w-64">
