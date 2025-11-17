@@ -24,9 +24,11 @@ export const newNumericalField = (
   };
 };
 
+export type Color = string;
+
 export interface GradientStop {
   position: number;
-  color: string;
+  color: Color;
 }
 
 export interface GradientField {
@@ -35,27 +37,24 @@ export interface GradientField {
   easing: "Linear" | "Constant";
 }
 
+export interface ColorField {
+  type: "ColorField";
+  source: Color;
+  target: Color;
+}
+
 export interface SelectionField {
   type: "SelectionField";
   options: string[];
   value: string;
 }
 
-export type SwitchFieldType = Record<
-  string,
-  Record<string, GradientField | SelectionField | NumericalField | SwitchField>
->;
+export type FieldCollection = Record<string, BehaviorField>;
 
 export interface SwitchField {
   type: "SwitchField";
   currentField: string;
-  switchFields: Record<
-    string,
-    Record<
-      string,
-      GradientField | SelectionField | NumericalField | SwitchField
-    >
-  >;
+  switchFields: Record<string, FieldCollection>; // maps switch option name to list of fields associated with that field
 }
 
 export const newSelectionField = (
@@ -94,6 +93,7 @@ export type BehaviorField =
   | NumericalField
   | GradientField
   | SelectionField
+  | ColorField
   | SwitchField;
 
 export interface Behavior {
@@ -104,9 +104,7 @@ export interface Behavior {
 /**
  * Deep clones a BehaviorField, handling all field types recursively.
  */
-const cloneField = (
-  field: GradientField | SelectionField | NumericalField | SwitchField
-): GradientField | SelectionField | NumericalField | SwitchField => {
+const cloneField = (field: BehaviorField): BehaviorField => {
   if (field.type === "Numerical") {
     return {
       type: field.type,
@@ -132,13 +130,7 @@ const cloneField = (
       value: field.value,
     };
   } else if (field.type === "SwitchField") {
-    const clonedSwitchFields: Record<
-      string,
-      Record<
-        string,
-        GradientField | SelectionField | NumericalField | SwitchField
-      >
-    > = {};
+    const clonedSwitchFields: Record<string, FieldCollection> = {};
 
     for (const [switchKey, switchOptions] of Object.entries(
       field.switchFields
