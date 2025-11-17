@@ -14,6 +14,5 @@ void main() {
   // Use brightness as horizontal coordinate, 0.5 as vertical (1D gradient stored as 2D texture)
   vec4 gradientColor = texture2D(u_gradientTexture, vec2(brightness, 0.5));
 
-  // Apply gradient color, preserve alpha
-  gl_FragColor = vec4(gradientColor.rgb, color.a);
+  gl_FragColor = gradientColor.rgba;
 }

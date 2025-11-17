@@ -206,11 +206,11 @@ const GradientMapStepFunctionFactory: StepFunctionFactory = async (
       for (let i = 0; i < gradientSize; i++) {
         const t = i / (gradientSize - 1);
         const color = evalGradientAt(gradient, t);
-        const [r, g, b] = hexToRGBA(color);
+        const [r, g, b, a] = hexToRGBA(color);
         gradientData[i * 4] = r;
         gradientData[i * 4 + 1] = g;
         gradientData[i * 4 + 2] = b;
-        gradientData[i * 4 + 3] = 255;
+        gradientData[i * 4 + 3] = a;
       }
 
       const gradientTexture = gl.createTexture();
