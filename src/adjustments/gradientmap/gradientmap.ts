@@ -232,7 +232,6 @@ const GradientMapStepFunctionFactory: StepFunctionFactory = async (
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
-      // Set uniforms
       const textureLocation = gl.getUniformLocation(program, "u_texture");
       gl.uniform1i(textureLocation, 0);
 

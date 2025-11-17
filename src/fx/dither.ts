@@ -152,7 +152,7 @@ export const DitherStepFunctionFactory: StepFunctionFactory = async (
       ) {
         for (let x = 0; x < width; x += ditherSize) {
           const [r, g, b, a] = getRGBA(outputImageData, x, currentRow);
-          const [tr, tg, tb, ta] = getNearestRGBA(r, g, b);
+          const [tr, tg, tb, ta] = getNearestRGBA(r, g, b, a);
           const targetRGBDifference = computeRGBDifference(
             [r, g, b],
             [tr, tg, tb]
@@ -177,14 +177,14 @@ export const DitherStepFunctionFactory: StepFunctionFactory = async (
                 targetRGBDifference[0] * errorMultFactor + rO,
                 targetRGBDifference[1] * errorMultFactor + gO,
                 targetRGBDifference[2] * errorMultFactor + bO,
-                ta,
+                aO,
               ]);
             }
           }
 
           for (let i = 0; i < ditherSize && x + i < width; i++) {
             for (let j = 0; j < ditherSize && currentRow + j < height; j++) {
-              setRGBA(outputImageData, x + i, currentRow + j, [tr, tb, tg, ta]);
+              setRGBA(outputImageData, x + i, currentRow + j, [tr, tg, tb, ta]);
             }
           }
         }
