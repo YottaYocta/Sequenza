@@ -23,19 +23,18 @@ export const outputToImageData = async (output: Output): Promise<ImageData> => {
   }
 
   // get source data + canvas
-  const svg = output.data;
-  const canvas = new OffscreenCanvas(svg.viewBox.width, svg.viewBox.height);
+  const svgData = output.data;
+  const canvas = new OffscreenCanvas(
+    svgData.viewBox.width,
+    svgData.viewBox.height
+  );
   const ctx = canvas.getContext("2d");
   if (!ctx) {
     throw new Error("Failed to get 2D context from OffscreenCanvas");
   }
 
   // create svg image url
-  const svgString = `<svg viewBox="${svg.viewBox.x} ${svg.viewBox.y} ${
-    svg.viewBox.width
-  } ${
-    svg.viewBox.height
-  }" xmlns="http://www.w3.org/2000/svg">${svg.children.join("")}</svg>`;
+  const svgString = svgOutputToString(svgData);
   const svgBlob = new Blob([svgString], { type: "image/svg+xml" });
   const url = URL.createObjectURL(svgBlob);
 
@@ -43,7 +42,7 @@ export const outputToImageData = async (output: Output): Promise<ImageData> => {
   const img = new Image();
   await new Promise<void>((resolve, reject) => {
     img.onload = () => {
-      ctx.drawImage(img, 0, 0, svg.viewBox.width, svg.viewBox.height);
+      ctx.drawImage(img, 0, 0, svgData.viewBox.width, svgData.viewBox.height);
       URL.revokeObjectURL(url);
       resolve();
     };
@@ -54,5 +53,15 @@ export const outputToImageData = async (output: Output): Promise<ImageData> => {
     img.src = url;
   });
 
-  return ctx.getImageData(0, 0, svg.viewBox.width, svg.viewBox.height);
+  return ctx.getImageData(0, 0, svgData.viewBox.width, svgData.viewBox.height);
+};
+
+/**
+ * Converts SvgOutput to complete SVG string
+ */
+export const svgOutputToString = (svg: SvgOutput): string => {
+  const { viewBox, children } = svg;
+  return `<svg viewBox="${viewBox.x} ${viewBox.y} ${viewBox.width} ${
+    viewBox.height
+  }" xmlns="http://www.w3.org/2000/svg">${children.join("")}</svg>`;
 };

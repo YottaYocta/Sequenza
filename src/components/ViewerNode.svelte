@@ -1,7 +1,10 @@
 <script lang="ts">
   import type { Attachment } from "svelte/attachments";
-  import type { Output } from "../ProcessingNode";
-  import { getImageData, getSvgData } from "../ProcessingNode";
+  import {
+    type Output,
+    outputToImageData,
+    svgOutputToString,
+  } from "../core/Output";
   import Endpoint from "./Endpoint.svelte";
 
   interface Props {
@@ -35,7 +38,7 @@
     } else if (output && output.type === "svg") {
       // Convert SVG to canvas for image export functionality
       (async () => {
-        const imageData = await getImageData(output);
+        const imageData = await outputToImageData(output);
         canvas.width = imageData.width;
         canvas.height = imageData.height;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -63,14 +66,14 @@
   async function copySvgToClipboard() {
     if (!output) return;
 
-    const svgData = getSvgData(output);
-    if (!svgData) {
+    const svgData = output.type === "svg" ? output.data : null;
+    if (svgData === null) {
       console.error("No SVG data available");
       return;
     }
 
     try {
-      await navigator.clipboard.writeText(svgData);
+      await navigator.clipboard.writeText(svgOutputToString(svgData));
     } catch (err) {
       console.error("Failed to copy SVG:", err);
     }
@@ -94,13 +97,19 @@
   function saveSvgFile() {
     if (!output) return;
 
-    const svgData = getSvgData(output);
+    const svgData = output.type === "svg" ? output.data : null;
+    if (svgData === null) {
+      console.error("No SVG data available");
+      return;
+    }
     if (!svgData) {
       console.error("No SVG data available");
       return;
     }
 
-    const blob = new Blob([svgData], { type: "image/svg+xml" });
+    const blob = new Blob([svgOutputToString(svgData)], {
+      type: "image/svg+xml",
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -136,7 +145,7 @@
     <div class="h-full w-full flex items-center justify-center">
       <canvas
         {@attach renderCanvas}
-        class="max-w-48 h-auto max-h-48 hover:outline [image-rendering:pixelated] [image-rendering:crisp-edges]"
+        class="max-w-48 h-auto max-h-48 hover:outline [image-rendering:pixelated]"
       ></canvas>
     </div>
   {:else if output.type === "svg"}

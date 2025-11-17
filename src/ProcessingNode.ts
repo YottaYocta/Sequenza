@@ -152,7 +152,11 @@ export const updateProcessingNode = <T extends FX | Adjustment>(
   // Determine if FX or Adjustment and dispatch to appropriate handler
   if ("type" in behavior) {
     // Check if it's an Adjustment type
-    if (behavior.type === "RGB" || behavior.type === "HSL" || behavior.type === "GRADMAP") {
+    if (
+      behavior.type === "RGB" ||
+      behavior.type === "HSL" ||
+      behavior.type === "GRADMAP"
+    ) {
       const adjustment = behavior as Adjustment;
 
       switch (adjustment.type) {
