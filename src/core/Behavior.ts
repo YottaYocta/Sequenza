@@ -89,12 +89,13 @@ export const newGradient = (
   };
 };
 
-export type BehaviorField =
+export type ValueField =
   | NumericalField
   | GradientField
   | SelectionField
-  | ColorField
-  | SwitchField;
+  | ColorField;
+
+export type BehaviorField = ValueField | SwitchField;
 
 export interface Behavior {
   type: string;

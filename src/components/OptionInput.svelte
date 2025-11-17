@@ -3,10 +3,10 @@
     label: string;
     options: string[];
     value: string;
-    handleUpdate: (newValue: string) => void;
+    handleSelectionUpdated: (newValue: string) => void;
   }
 
-  const { label, options, value, handleUpdate }: Props = $props();
+  const { label, options, value, handleSelectionUpdated }: Props = $props();
 </script>
 
 <div class="flex items-center gap-2">
@@ -17,7 +17,7 @@
     name={label}
     class="w-48 min-w-36 border border-black bg-white px-2 cursor-pointer"
     {value}
-    onchange={(e) => handleUpdate(e.currentTarget.value)}
+    onchange={(e) => handleSelectionUpdated(e.currentTarget.value)}
   >
     {#each options as option}
       <option value={option}>{option}</option>
