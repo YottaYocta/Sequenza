@@ -8,6 +8,7 @@
     pollUnprocessedUnits,
     updateBehaviorAt,
     processTaskStep,
+    removeUnitAt,
   } from "./core/EditorState";
   import { createNewDotBehavior } from "./fx/dots";
   import { untrack } from "svelte";
@@ -90,6 +91,15 @@
       behavior.type === "gradientmap"
     );
   }
+
+  async function handleDelete(nodeIndex: number) {
+    const realNodeIndex = Math.floor(nodeIndex / 2);
+    if (
+      realNodeIndex >= 0 &&
+      realNodeIndex < editorState.processingUnits.length
+    )
+      removeUnitAt(editorState, realNodeIndex);
+  }
 </script>
 
 <header class="w-full border-b p-4 flex items-center justify-center">
@@ -121,6 +131,7 @@
             <FXNode
               nodeIndex={idx * 2 + 1}
               behavior={unit.behavior}
+              {handleDelete}
               onUpdateBehavior={handleUpdateBehavior}
             />
           {/if}

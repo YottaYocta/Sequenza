@@ -13,9 +13,11 @@
     nodeIndex: number;
     behavior: Behavior;
     onUpdateBehavior: (nodeIndex: number, behavior: Behavior) => any;
+    handleDelete: (nodeIndex: number) => any;
   }
 
-  const { nodeIndex, behavior, onUpdateBehavior }: Props = $props();
+  const { nodeIndex, behavior, onUpdateBehavior, handleDelete }: Props =
+    $props();
 
   let body = $state<HTMLDivElement | null>(null);
   let lineParams: {
@@ -93,6 +95,10 @@
 </script>
 
 <div class="flex flex-col w-84 text-sm">
+  <button
+    class="button-1 w-min absolute top-0 right-0 opacity-30 hover:opacity-100"
+    onclick={() => handleDelete(nodeIndex)}>Delete</button
+  >
   <div class="flex flex-wrap gap-1 pb-8 relative w-64">
     {#each fxOptions as option}
       <button

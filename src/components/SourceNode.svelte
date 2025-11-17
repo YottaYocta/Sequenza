@@ -68,6 +68,37 @@
   function triggerFileInput() {
     fileInputRef?.click();
   }
+
+  async function pasteFromClipboard() {
+    try {
+      const clipboardItems = await navigator.clipboard.read();
+
+      for (const item of clipboardItems) {
+        const imageType = item.types.find(type => type.startsWith('image/'));
+
+        if (imageType) {
+          const blob = await item.getType(imageType);
+          const reader = new FileReader();
+
+          reader.onload = (e) => {
+            const url = e.target?.result as string;
+            if (url && canvasCtx) {
+              loadImageFromUrl(canvasCtx, url, (imageData) => {
+                currentImageData = imageData;
+                onImageLoad(imageData);
+              });
+            }
+          };
+
+          reader.readAsDataURL(blob);
+          break;
+        }
+      }
+    } catch (err) {
+      console.error('Failed to read from clipboard:', err);
+      alert('Failed to paste from clipboard. Make sure you have copied an image.');
+    }
+  }
 </script>
 
 <div class="flex items-center gap-2 py-3">
@@ -106,6 +137,12 @@
       class="button-1 outline hover:bg-neutral-200 relative"
     >
       {currentImageData ? "Change Image" : "Upload Image"}
+    </button>
+    <button
+      onclick={pasteFromClipboard}
+      class="button-1 outline hover:bg-neutral-200 relative"
+    >
+      Paste from Clipboard
     </button>
   </div>
 </div>
