@@ -39,8 +39,7 @@ export interface GradientField {
 
 export interface ColorField {
   type: "ColorField";
-  source: Color;
-  target: Color;
+  value: Color;
 }
 
 export interface SelectionField {
@@ -147,6 +146,11 @@ const cloneField = (field: BehaviorField): BehaviorField => {
       currentField: field.currentField,
       switchFields: clonedSwitchFields,
     };
+  } else if (field.type === "ColorField") {
+    return {
+      type: "ColorField",
+      value: field.value,
+    };
   }
   throw new Error(`Unknown field type: ${(field as any).type}`);
 };
@@ -158,7 +162,6 @@ const cloneField = (field: BehaviorField): BehaviorField => {
  * @returns A deep clone of the behavior
  */
 export const cloneBehavior = <T extends Behavior>(behavior: T): T => {
-  // Create a plain object by manually copying all properties
   const cloned: Behavior = {
     type: behavior.type,
     fields: {},

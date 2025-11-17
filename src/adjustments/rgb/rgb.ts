@@ -44,19 +44,15 @@ const RGBStepFunctionFactory: StepFunctionFactory = async (
     );
   }
 
-  // Convert input to ImageData
   const inputImageData = await outputToImageData(input);
 
-  // Deep clone the behavior
   const behaviorSnapshot = cloneBehavior(behavior) as RGBBehavior;
 
-  // Create output ImageData
   const outputImageData = new ImageData(
     inputImageData.width,
     inputImageData.height
   );
 
-  // Extract RGB adjustment values
   const rAdjust = behaviorSnapshot.fields.r.value;
   const gAdjust = behaviorSnapshot.fields.g.value;
   const bAdjust = behaviorSnapshot.fields.b.value;

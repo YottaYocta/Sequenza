@@ -88,7 +88,8 @@
     return (
       behavior.type === "hsl" ||
       behavior.type === "rgb" ||
-      behavior.type === "gradientmap"
+      behavior.type === "gradientmap" ||
+      behavior.type === "chromakey"
     );
   }
 

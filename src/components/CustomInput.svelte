@@ -10,6 +10,7 @@
     handleUpdate = () => {},
     value,
     label,
+    labelWidth,
   }: {
     min?: number;
     max?: number;
@@ -18,6 +19,7 @@
     handleUpdate: (newValue: number) => void;
     value: number;
     label: string;
+    labelWidth?: number;
   } = $props();
 
   function startDrag(track: HTMLDivElement, e: MouseEvent) {
@@ -61,7 +63,11 @@
 </script>
 
 <div class="flex items-center gap-2">
-  <label class="w-full text-right text-nowrap" for={label}>{label}</label>
+  <label
+    class="text-right text-nowrap"
+    style={`width: ${labelWidth !== undefined ? `${labelWidth}px` : "100%"}`}
+    for={label}>{label}</label
+  >
 
   <NumericalInput
     name={label}
@@ -73,7 +79,7 @@
   ></NumericalInput>
 
   <div
-    class="relative w-56 min-w-16 h-3 border border-black cursor-pointer border-l-2 border-r-2 bg-white"
+    class="relative max-w-56 w-full min-w-16 h-3 border border-black cursor-pointer border-l-2 border-r-2 bg-white"
     onmousedown={handleTrackMouseDown}
     role="slider"
     aria-valuenow={value}

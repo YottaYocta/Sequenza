@@ -5,6 +5,7 @@
   import NumericalInput from "./NumericalInput.svelte";
   import { hexToRGBA, RGBAToHex } from "../core/util";
   import CustomInput from "./CustomInput.svelte";
+  import ColorInput from "./ColorInput.svelte";
 
   interface Props {
     gradientField: GradientField;
@@ -111,26 +112,6 @@
     };
     onUpdateGradient(newGradient);
   }
-
-  const updateStopOpacity = (idx: number, opacity: number) => {
-    const newStops = gradientField.stops.map((stop, stopIdx): GradientStop => {
-      if (stopIdx === idx) {
-        const [currentR, currentG, currentB] = hexToRGBA(stop.color);
-        const newColor = RGBAToHex(currentR, currentG, currentB, opacity);
-        return {
-          ...stop,
-          color: newColor,
-        };
-      }
-      return stop;
-    });
-
-    const newGradient: GradientField = {
-      ...gradientField,
-      stops: newStops,
-    };
-    onUpdateGradient(newGradient);
-  };
 </script>
 
 {#if gradientField}
@@ -165,27 +146,10 @@
             name={`stop-${idx}`}
             handleValueChanged={(newValue) => updateStopPosition(idx, newValue)}
           ></NumericalInput>
-          <input
-            type="color"
-            aria-label={`open-color-picker-for-stop-${idx}`}
-            class="min-w-6 h-4 border"
-            value={stop.color}
-            onchange={(inputEvent) =>
-              updateStopColor(idx, inputEvent.currentTarget.value)}
+          <ColorInput
+            color={stop.color}
+            handleColorChange={(newColor) => updateStopColor(idx, newColor)}
           />
-          <div class="w-48">
-            <CustomInput
-              min={0}
-              max={255}
-              step={1}
-              value={alpha}
-              label={`A:`}
-              defaultValue={255}
-              handleUpdate={(newOpacity: number) => {
-                updateStopOpacity(idx, newOpacity);
-              }}
-            ></CustomInput>
-          </div>
 
           {#if gradientField.stops.length > 1}
             <button

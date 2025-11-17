@@ -8,6 +8,7 @@
   import type { Attachment } from "svelte/attachments";
   import Endpoint from "./Endpoint.svelte";
   import { untrack } from "svelte";
+  import { createChromaKeyBehavior } from "../adjustments/chromakey/chromakey";
 
   interface Props {
     nodeIndex: number;
@@ -58,7 +59,7 @@
   };
 
   type AdjustmentOption = {
-    type: "hsl" | "rgb" | "gradientmap";
+    type: "hsl" | "rgb" | "gradientmap" | "chromakey";
     label: string;
     disabled?: boolean;
   };
@@ -67,9 +68,10 @@
     { type: "hsl", label: "HSL" },
     { type: "rgb", label: "RGB" },
     { type: "gradientmap", label: "GRADIENTMAP" },
+    { type: "chromakey", label: "CHROMAKEY" },
   ];
 
-  function switchToType(type: "hsl" | "rgb" | "gradientmap") {
+  function switchToType(type: "hsl" | "rgb" | "gradientmap" | "chromakey") {
     if (behavior.type !== type) {
       let newBehavior: Behavior;
       switch (type) {
@@ -81,6 +83,9 @@
           break;
         case "gradientmap":
           newBehavior = createNewGradientMapBehavior();
+          break;
+        case "chromakey":
+          newBehavior = createChromaKeyBehavior();
           break;
       }
       onUpdateBehavior(nodeIndex, newBehavior);

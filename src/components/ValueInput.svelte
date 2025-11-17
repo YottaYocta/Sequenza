@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { ValueField } from "../core/Behavior";
+  import ColorInput from "./ColorInput.svelte";
   import CustomInput from "./CustomInput.svelte";
   import GradientInput from "./GradientInput.svelte";
   import OptionInput from "./OptionInput.svelte";
@@ -44,4 +45,15 @@
       });
     }}
   />
+{:else if field.type === "ColorField"}
+  <ColorInput
+    {label}
+    color={field.value}
+    handleColorChange={(newColor) => {
+      handleUpdateField({
+        ...field,
+        value: newColor,
+      });
+    }}
+  ></ColorInput>
 {/if}
