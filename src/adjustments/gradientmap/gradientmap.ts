@@ -14,6 +14,7 @@ import {
   generateChunks,
   hexToRGBA,
   interpolateColors,
+  runWithGLContext,
   STANDARD_VERTEX_SHADER,
 } from "../../core/util";
 import { cloneBehavior } from "../../core/Behavior";
@@ -120,70 +121,7 @@ const GradientMapStepFunctionFactory: StepFunctionFactory = async (
   const gl = canvas.getContext("webgl");
 
   if (gl) {
-    try {
-      const vertexShaderSource = STANDARD_VERTEX_SHADER;
-
-      const fragmentShaderSource = gradientMapFragSource;
-
-      const vertexShader = gl.createShader(gl.VERTEX_SHADER)!;
-      gl.shaderSource(vertexShader, vertexShaderSource);
-      gl.compileShader(vertexShader);
-
-      const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER)!;
-      gl.shaderSource(fragmentShader, fragmentShaderSource);
-      gl.compileShader(fragmentShader);
-
-      // Create program
-      const program = gl.createProgram()!;
-      gl.attachShader(program, vertexShader);
-      gl.attachShader(program, fragmentShader);
-      gl.linkProgram(program);
-      gl.useProgram(program);
-
-      gl.detachShader(program, vertexShader);
-      gl.detachShader(program, fragmentShader);
-      gl.deleteShader(vertexShader);
-      gl.deleteShader(fragmentShader);
-
-      const positions = new Float32Array([
-        -1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1,
-      ]);
-
-      const texCoords = new Float32Array([0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1]);
-
-      const positionBuffer = gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-      gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
-
-      const positionLocation = gl.getAttribLocation(program, "a_position");
-      gl.enableVertexAttribArray(positionLocation);
-      gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
-
-      const texCoordBuffer = gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
-      gl.bufferData(gl.ARRAY_BUFFER, texCoords, gl.STATIC_DRAW);
-
-      const texCoordLocation = gl.getAttribLocation(program, "a_texCoord");
-      gl.enableVertexAttribArray(texCoordLocation);
-      gl.vertexAttribPointer(texCoordLocation, 2, gl.FLOAT, false, 0, 0);
-
-      // Create main texture
-      const texture = gl.createTexture();
-      gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, texture);
-      gl.texImage2D(
-        gl.TEXTURE_2D,
-        0,
-        gl.RGBA,
-        gl.RGBA,
-        gl.UNSIGNED_BYTE,
-        inputImageData
-      );
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-
+    const processStep = (program: WebGLProgram) => {
       // Create gradient lookup texture (1D gradient stored as 2D texture)
       const gradientSize = 256;
       const gradientData = new Uint8Array(gradientSize * 4);
@@ -238,20 +176,18 @@ const GradientMapStepFunctionFactory: StepFunctionFactory = async (
         gl.UNSIGNED_BYTE,
         outputImageData.data
       );
+    };
 
-      gl.deleteBuffer(positionBuffer);
-      gl.deleteBuffer(texCoordBuffer);
-      gl.deleteTexture(texture);
-      gl.deleteTexture(gradientTexture);
-      gl.deleteProgram(program);
-
-      return (): [number, Output] => {
-        return [1, { type: "image", data: outputImageData }];
-      };
-    } catch (error) {
-      // WebGL failed, fall through to CPU path
-      console.warn("WebGL rendering failed, falling back to CPU:", error);
-    }
+    runWithGLContext(
+      gl,
+      STANDARD_VERTEX_SHADER,
+      gradientMapFragSource,
+      inputImageData,
+      processStep
+    );
+    return (): [number, Output] => {
+      return [1, { type: "image", data: outputImageData }];
+    };
   }
 
   // CPU fallback path

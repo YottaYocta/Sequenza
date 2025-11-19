@@ -206,4 +206,4 @@ const DotStepFunctionFactory: StepFunctionFactory = async (
   };
 };
 
-GlobalStepFunctionFactoryRegistry.set("dot", DotStepFunctionFactory);
+GlobalStepFunctionFactoryRegistry.set("dots", DotStepFunctionFactory);
