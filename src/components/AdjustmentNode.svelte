@@ -9,6 +9,7 @@
   import Endpoint from "./Endpoint.svelte";
   import { untrack } from "svelte";
   import { createChromaKeyBehavior } from "../adjustments/chromakey/chromakey";
+  import { newScaleBehavior } from "../adjustments/scale/scale";
 
   interface Props {
     nodeIndex: number;
@@ -59,7 +60,7 @@
   };
 
   type AdjustmentOption = {
-    type: "hsl" | "rgb" | "gradientmap" | "chromakey";
+    type: string;
     label: string;
     disabled?: boolean;
   };
@@ -69,26 +70,30 @@
     { type: "rgb", label: "RGB" },
     { type: "gradientmap", label: "GRADIENTMAP" },
     { type: "chromakey", label: "CHROMAKEY" },
+    { type: "scale", label: "SCALE" },
   ];
 
-  function switchToType(type: "hsl" | "rgb" | "gradientmap" | "chromakey") {
+  function switchToType(type: string) {
     if (behavior.type !== type) {
-      let newBehavior: Behavior;
+      const handleUpdate = (newBehavior: Behavior) =>
+        onUpdateBehavior(nodeIndex, newBehavior);
       switch (type) {
         case "hsl":
-          newBehavior = createNewHSLBehavior();
+          handleUpdate(createNewHSLBehavior());
           break;
         case "rgb":
-          newBehavior = createNewRGBBehavior();
+          handleUpdate(createNewRGBBehavior());
           break;
         case "gradientmap":
-          newBehavior = createNewGradientMapBehavior();
+          handleUpdate(createNewGradientMapBehavior());
           break;
         case "chromakey":
-          newBehavior = createChromaKeyBehavior();
+          handleUpdate(createChromaKeyBehavior());
+          break;
+        case "scale":
+          handleUpdate(newScaleBehavior());
           break;
       }
-      onUpdateBehavior(nodeIndex, newBehavior);
     }
   }
 </script>

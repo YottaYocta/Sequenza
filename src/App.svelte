@@ -89,7 +89,8 @@
       behavior.type === "hsl" ||
       behavior.type === "rgb" ||
       behavior.type === "gradientmap" ||
-      behavior.type === "chromakey"
+      behavior.type === "chromakey" ||
+      behavior.type === "scale"
     );
   }
 

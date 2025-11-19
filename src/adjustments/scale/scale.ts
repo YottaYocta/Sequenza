@@ -126,7 +126,7 @@ const ScaleBehaviorStepFunctionFactory: StepFunctionFactory = async (
         processStep
       );
 
-      return [1, input];
+      return [1, { type: "image", data: outputImageData }];
     };
 
     return stepFunction;
