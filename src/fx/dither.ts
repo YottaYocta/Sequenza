@@ -301,9 +301,9 @@ export const DitherStepFunctionFactory: StepFunctionFactory = async (
           const bayerY = Math.floor(currentRow / ditherSize) % matrixSize;
           const threshold = (bayerMatrix[bayerY][bayerX] + 0.5) / maxThreshold;
 
-          const adjustedR = r + (threshold - 0.5) * 255;
-          const adjustedG = g + (threshold - 0.5) * 255;
-          const adjustedB = b + (threshold - 0.5) * 255;
+          const adjustedR = r + (threshold - 0.5) * 64;
+          const adjustedG = g + (threshold - 0.5) * 64;
+          const adjustedB = b + (threshold - 0.5) * 64;
 
           const targetRGB = getNearestRGBA(adjustedR, adjustedG, adjustedB);
 
@@ -314,7 +314,7 @@ export const DitherStepFunctionFactory: StepFunctionFactory = async (
                 targetRGB[0],
                 targetRGB[1],
                 targetRGB[2],
-                targetRGB[3],
+                a,
               ]);
             }
           }
