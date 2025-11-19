@@ -98,12 +98,12 @@
   }
 </script>
 
-<div class="flex flex-col min-w-64 w-min text-sm">
+<div class="flex flex-col min-w-64 text-sm w-84">
   <button
     class="button-1 w-min absolute top-0 right-0 opacity-30 hover:opacity-100 z-10 translate-x-full"
     onclick={() => handleDelete(nodeIndex)}>Delete</button
   >
-  <div class="flex flex-wrap gap-1 pb-8 relative">
+  <div class="flex flex-wrap gap-1 pb-8 relative w-64">
     {#each adjustmentOptions as option}
       <button
         class="text-sm {option.disabled

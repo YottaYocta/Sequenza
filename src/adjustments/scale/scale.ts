@@ -87,6 +87,7 @@ const ScaleBehaviorStepFunctionFactory: StepFunctionFactory = async (
     behaviorSnapshot.fields.mode.switchFields.freeform.width.value;
   const freeformHeight =
     behaviorSnapshot.fields.mode.switchFields.freeform.height.value;
+  const interpolation = behaviorSnapshot.fields.interpolation.value;
 
   const outputImageData =
     currentMode === "uniform"
@@ -104,6 +105,10 @@ const ScaleBehaviorStepFunctionFactory: StepFunctionFactory = async (
   if (gl !== null) {
     const stepFunction: StepFunction = () => {
       const processStep = () => {
+        if (interpolation === "crisp") {
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        }
         gl.viewport(0, 0, canvas.width, canvas.height);
         gl.drawArrays(gl.TRIANGLES, 0, 6);
         gl.finish();
