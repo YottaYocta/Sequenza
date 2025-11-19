@@ -170,6 +170,17 @@ export const interpolateColors = (
   return RGBAToHex(r, g, b, a);
 };
 
+export const getGLContext = (
+  width: number,
+  height: number
+): [HTMLCanvasElement, WebGLRenderingContext | null] => {
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const gl = canvas.getContext("webgl");
+  return [canvas, gl];
+};
+
 export const runWithGLContext = (
   gl: WebGLRenderingContext,
   vertexShaderSource: string,

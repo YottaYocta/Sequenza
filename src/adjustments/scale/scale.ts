@@ -8,12 +8,18 @@ import {
   type SelectionField,
   type SwitchField,
 } from "../../core/Behavior";
-import type { Output } from "../../core/Output";
+import { outputToImageData, type Output } from "../../core/Output";
 import {
   GlobalStepFunctionFactoryRegistry,
   type StepFunction,
   type StepFunctionFactory,
 } from "../../core/ProcessingUnit";
+import {
+  getGLContext,
+  runWithGLContext,
+  STANDARD_VERTEX_SHADER,
+} from "../../core/util";
+import fragmentShaderSource from "./scale.frag?raw";
 
 interface ScaleSelectionField extends SelectionField {
   value: "crisp" | "smooth";
@@ -72,12 +78,61 @@ const ScaleBehaviorStepFunctionFactory: StepFunctionFactory = async (
 ): Promise<StepFunction> => {
   assertBehavior(behavior, "scale");
   const behaviorSnapshot = cloneBehavior(behavior) as ScaleBehavior;
+  const inputImageData = await outputToImageData(input);
 
-  const stepFunction: StepFunction = () => {
-    return [1, input];
-  };
+  const currentMode = behaviorSnapshot.fields.mode.currentField;
+  const uniformScaleValue =
+    behaviorSnapshot.fields.mode.switchFields.uniform.factor.value;
+  const freeformWidth =
+    behaviorSnapshot.fields.mode.switchFields.freeform.width.value;
+  const freeformHeight =
+    behaviorSnapshot.fields.mode.switchFields.freeform.height.value;
 
-  return stepFunction;
+  const outputImageData =
+    currentMode === "uniform"
+      ? new ImageData(
+          inputImageData.width * uniformScaleValue,
+          inputImageData.height * uniformScaleValue
+        )
+      : new ImageData(freeformWidth, freeformHeight);
+
+  const [canvas, gl] = getGLContext(
+    outputImageData.width,
+    outputImageData.height
+  );
+
+  if (gl !== null) {
+    const stepFunction: StepFunction = () => {
+      const processStep = () => {
+        gl.viewport(0, 0, canvas.width, canvas.height);
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+        gl.finish();
+        gl.readPixels(
+          0,
+          0,
+          outputImageData.width,
+          outputImageData.height,
+          gl.RGBA,
+          gl.UNSIGNED_BYTE,
+          outputImageData.data
+        );
+      };
+
+      runWithGLContext(
+        gl,
+        STANDARD_VERTEX_SHADER,
+        fragmentShaderSource,
+        inputImageData,
+        processStep
+      );
+
+      return [1, input];
+    };
+
+    return stepFunction;
+  }
+
+  throw new Error("CPU rendering not implemented!");
 };
 
 GlobalStepFunctionFactoryRegistry.set(

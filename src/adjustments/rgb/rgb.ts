@@ -12,6 +12,7 @@ import {
 } from "../../core/ProcessingUnit";
 import {
   generateChunks,
+  getGLContext,
   runWithGLContext,
   STANDARD_VERTEX_SHADER,
 } from "../../core/util";
@@ -57,10 +58,10 @@ const RGBStepFunctionFactory: StepFunctionFactory = async (
   const bAdjust = behaviorSnapshot.fields.b.value;
 
   // Try WebGL rendering
-  const canvas = document.createElement("canvas");
-  canvas.width = inputImageData.width;
-  canvas.height = inputImageData.height;
-  const gl = canvas.getContext("webgl");
+  const [canvas, gl] = getGLContext(
+    outputImageData.width,
+    outputImageData.height
+  );
 
   if (gl) {
     const fragmentShaderSource = rgbFragSource;
@@ -75,8 +76,8 @@ const RGBStepFunctionFactory: StepFunctionFactory = async (
       gl.readPixels(
         0,
         0,
-        canvas.width,
-        canvas.height,
+        outputImageData.width,
+        outputImageData.height,
         gl.RGBA,
         gl.UNSIGNED_BYTE,
         outputImageData.data
