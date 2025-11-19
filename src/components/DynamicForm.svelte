@@ -25,6 +25,7 @@
     {#if field.type === "SwitchField"}
       {@const switchField = field}
       <SwitchInput
+        label={fieldName}
         {switchField}
         handleUpdateField={(updatedSwitchField) =>
           updateField(fieldName, updatedSwitchField)}

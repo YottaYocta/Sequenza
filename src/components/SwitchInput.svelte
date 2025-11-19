@@ -1,19 +1,16 @@
 <script lang="ts">
-  import {
-    cloneBehavior,
-    type BehaviorField,
-    type SwitchField,
-  } from "../core/Behavior";
+  import { type BehaviorField, type SwitchField } from "../core/Behavior";
   import OptionInput from "./OptionInput.svelte";
   import SwitchInput from "./SwitchInput.svelte";
   import ValueInput from "./ValueInput.svelte";
 
   export interface Props {
+    label?: string;
     switchField: SwitchField;
     handleUpdateField: (updatedField: SwitchField) => void;
   }
 
-  const { switchField, handleUpdateField }: Props = $props();
+  const { label, switchField, handleUpdateField }: Props = $props();
 
   const currentField = $derived(switchField.currentField);
 
@@ -46,7 +43,7 @@
 
 <div class="flex flex-col gap-2 border-l-2 border-black pl-2">
   <OptionInput
-    label={currentField.toUpperCase()}
+    label={label ?? ":)"}
     options={switchOptions}
     value={switchField.currentField}
     handleSelectionUpdated={updateSelectedOption}
