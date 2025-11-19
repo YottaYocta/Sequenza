@@ -12,7 +12,7 @@ import {
   type StepFunction,
   type StepFunctionFactory,
 } from "../../core/ProcessingUnit";
-import { hexToRGBA } from "../../core/util";
+import { hexToRGBA, STANDARD_VERTEX_SHADER } from "../../core/util";
 
 import chromaFragShader from "./chromakey.frag?raw";
 
@@ -68,23 +68,13 @@ const ChromaKeyStepFunctionFactory: StepFunctionFactory = async (
   const stepFunction: StepFunction = () => {
     const gl = canvas.getContext("webgl");
     if (gl != null) {
-      const vertexShaderSource = `
-        attribute vec2 a_position;
-        attribute vec2 a_texCoord;
-        varying vec2 v_texCoord;
-
-        void main() {
-          gl_Position = vec4(a_position, 0.0, 1.0);
-          v_texCoord = a_texCoord;
-        }
-      `;
       const fragSource = chromaFragShader;
 
       try {
         const vertexShader = gl.createShader(gl.VERTEX_SHADER)!;
         const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER)!;
 
-        gl.shaderSource(vertexShader, vertexShaderSource);
+        gl.shaderSource(vertexShader, STANDARD_VERTEX_SHADER);
         gl.shaderSource(fragmentShader, fragSource);
 
         gl.compileShader(vertexShader);

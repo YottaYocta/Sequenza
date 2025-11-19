@@ -10,7 +10,7 @@ import {
   type StepFunction,
   type StepFunctionFactory,
 } from "../../core/ProcessingUnit";
-import { generateChunks } from "../../core/util";
+import { generateChunks, STANDARD_VERTEX_SHADER } from "../../core/util";
 import { cloneBehavior } from "../../core/Behavior";
 import rgbFragSource from "./rgb.frag?raw";
 
@@ -60,21 +60,10 @@ const RGBStepFunctionFactory: StepFunctionFactory = async (
 
   if (gl) {
     try {
-      const vertexShaderSource = `
-        attribute vec2 a_position;
-        attribute vec2 a_texCoord;
-        varying vec2 v_texCoord;
-
-        void main() {
-          gl_Position = vec4(a_position, 0.0, 1.0);
-          v_texCoord = a_texCoord;
-        }
-      `;
-
       const fragmentShaderSource = rgbFragSource;
 
       const vertexShader = gl.createShader(gl.VERTEX_SHADER)!;
-      gl.shaderSource(vertexShader, vertexShaderSource);
+      gl.shaderSource(vertexShader, STANDARD_VERTEX_SHADER);
       gl.compileShader(vertexShader);
 
       const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER)!;
