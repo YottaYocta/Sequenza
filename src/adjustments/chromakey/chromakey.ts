@@ -54,8 +54,6 @@ const ChromaKeyStepFunctionFactory: StepFunctionFactory = async (
   behavior: Behavior
 ): Promise<StepFunction> => {
   assertBehavior(behavior, "chromakey");
-  const behaviorSnapshot = cloneBehavior(behavior) as ChromaKeyBehavior;
-
   const chromaKeyBehavior = cloneBehavior<ChromaKeyBehavior>(
     behavior as ChromaKeyBehavior
   );
