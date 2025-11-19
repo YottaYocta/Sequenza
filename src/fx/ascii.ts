@@ -1,6 +1,7 @@
 import {
   type Behavior,
   type NumericalField,
+  assertBehavior,
   newNumericalField,
 } from "../core/Behavior";
 import { type Output, outputToImageData } from "../core/Output";
@@ -53,17 +54,10 @@ const AsciiStepFunctionFactory: StepFunctionFactory = async (
   input: Output,
   behavior: Behavior
 ): Promise<StepFunction> => {
-  // Assert behavior is ascii type
-  if (behavior.type !== "ascii") {
-    throw new Error(
-      `Ascii factory requires behavior type "ascii", got "${behavior.type}"`
-    );
-  }
+  assertBehavior(behavior, "ascii");
 
-  // Convert input to ImageData
   const inputImageData = await outputToImageData(input);
 
-  // Deep clone the behavior
   const behaviorSnapshot = cloneBehavior(behavior) as AsciiBehavior;
 
   // Extract parameters

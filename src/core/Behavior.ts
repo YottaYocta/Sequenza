@@ -182,21 +182,13 @@ export const cloneBehavior = <T extends Behavior>(behavior: T): T => {
  * @param type type to ensure that behavior is
  * @returns true if behavior's type matches type specified
  */
-export const assertBehavior = <T extends Behavior>(
+export const assertBehavior = (
   behavior: Behavior,
   type: string
-): behavior is T => {
+): void | never => {
   if (behavior.type !== type) {
-    return false;
+    throw new Error(
+      `Step function expected behavior of type ${type} but got ${behavior.type}`
+    );
   }
-  return true;
-};
-
-export const throwStepFunctionFactoryError = (
-  expectedType: string,
-  receivedType: string
-): never => {
-  throw new Error(
-    `step function expected behavior of type ${expectedType} but got ${receivedType}`
-  );
 };

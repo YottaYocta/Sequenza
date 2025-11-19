@@ -1,4 +1,5 @@
 import {
+  assertBehavior,
   cloneBehavior,
   newNumericalField,
   type Behavior,
@@ -48,12 +49,8 @@ const ChromaKeyStepFunctionFactory: StepFunctionFactory = async (
   input: Output,
   behavior: Behavior
 ): Promise<StepFunction> => {
-  if (behavior.type !== "chromakey") {
-    throw new Error(
-      "ChromaKey step function requires behavior of type Chromakey. got" +
-        behavior.type
-    );
-  }
+  assertBehavior(behavior, "chromakey");
+  const behaviorSnapshot = cloneBehavior(behavior) as ChromaKeyBehavior;
 
   const chromaKeyBehavior = cloneBehavior<ChromaKeyBehavior>(
     behavior as ChromaKeyBehavior

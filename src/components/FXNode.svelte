@@ -59,37 +59,32 @@
   };
 
   type FXOption = {
-    type: "dot" | "ascii" | "dither" | null;
+    type: string;
     label: string;
     disabled?: boolean;
   };
 
   const fxOptions: FXOption[] = [
-    { type: "dot", label: "DOTS" },
+    { type: "dots", label: "DOTS" },
     { type: "ascii", label: "ASCII" },
     { type: "dither", label: "DITHER" },
-    { type: null, label: "BARS", disabled: true },
-    { type: null, label: "MIX", disabled: true },
-    { type: null, label: "ERODE", disabled: true },
-    { type: null, label: "HALFTONE", disabled: true },
-    { type: null, label: "MITOSIS", disabled: true },
-    { type: null, label: "EDGEDETECT", disabled: true },
+    { type: "bars", label: "BARS", disabled: true },
   ];
 
-  function switchToType(type: "dot" | "ascii" | "dither") {
+  function switchToType(type: string) {
     if (behavior.type !== type) {
-      let newBehavior: Behavior;
+      const handleUpdate = (newBehavior: Behavior) =>
+        onUpdateBehavior(nodeIndex, newBehavior);
       switch (type) {
-        case "dot":
-          newBehavior = createNewDotBehavior();
+        case "dots":
+          handleUpdate(createNewDotBehavior());
           break;
         case "ascii":
-          newBehavior = createNewAsciiBehavior();
+          handleUpdate(createNewAsciiBehavior());
           break;
         case "dither":
-          newBehavior = createDitherBehavior();
+          handleUpdate(createDitherBehavior());
       }
-      onUpdateBehavior(nodeIndex, newBehavior);
     }
   }
 </script>

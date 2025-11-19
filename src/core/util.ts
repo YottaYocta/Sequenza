@@ -138,6 +138,20 @@ export const RGBAToHex = (r: number, g: number, b: number, a = 255): string => {
 };
 
 /**
+ * Standard vertex shader for WebGL rendering
+ */
+export const STANDARD_VERTEX_SHADER = `
+  attribute vec2 a_position;
+  attribute vec2 a_texCoord;
+  varying vec2 v_texCoord;
+
+  void main() {
+    gl_Position = vec4(a_position, 0.0, 1.0);
+    v_texCoord = a_texCoord;
+  }
+`;
+
+/**
  * Helper function to linearly interpolate between two colors
  */
 export const interpolateColors = (

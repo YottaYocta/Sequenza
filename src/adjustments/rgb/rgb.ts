@@ -1,6 +1,7 @@
 import {
   type Behavior,
   type NumericalField,
+  assertBehavior,
   newNumericalField,
 } from "../../core/Behavior";
 import { type Output, outputToImageData } from "../../core/Output";
@@ -37,16 +38,10 @@ const RGBStepFunctionFactory: StepFunctionFactory = async (
   input: Output,
   behavior: Behavior
 ): Promise<StepFunction> => {
-  // Assert behavior is RGB type
-  if (behavior.type !== "rgb") {
-    throw new Error(
-      `RGB factory requires behavior type "rgb", got "${behavior.type}"`
-    );
-  }
+  assertBehavior(behavior, "rgb");
+  const behaviorSnapshot = cloneBehavior(behavior) as RGBBehavior;
 
   const inputImageData = await outputToImageData(input);
-
-  const behaviorSnapshot = cloneBehavior(behavior) as RGBBehavior;
 
   const outputImageData = new ImageData(
     inputImageData.width,

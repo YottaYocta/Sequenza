@@ -1,4 +1,5 @@
 import {
+  assertBehavior,
   newGradient,
   newNumericalField,
   type Behavior,
@@ -101,6 +102,8 @@ export const DitherStepFunctionFactory: StepFunctionFactory = async (
   input: Output,
   behavior: Behavior
 ): Promise<StepFunction> => {
+  assertBehavior(behavior, "dither");
+
   const inputImageData = await outputToImageData(input);
   const { width, height } = inputImageData;
   const behaviorSnapshot = cloneBehavior(behavior) as DitherBehavior;

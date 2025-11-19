@@ -1,6 +1,7 @@
 import {
   type Behavior,
   type NumericalField,
+  assertBehavior,
   newNumericalField,
 } from "../core/Behavior";
 import { type Output, outputToImageData } from "../core/Output";
@@ -13,7 +14,7 @@ import {
 import { cloneBehavior } from "../core/Behavior";
 
 interface BarBehavior extends Behavior {
-  type: "bar";
+  type: "bars";
   fields: {
     direction: NumericalField; // 0 = horizontal, 1 = vertical
     numberBars: NumericalField;
@@ -33,7 +34,7 @@ export const createNewBarBehavior = (
   filterHigh = 1
 ): BarBehavior => {
   return {
-    type: "bar",
+    type: "bars",
     fields: {
       direction: newNumericalField(0, 1, direction === "horizontal" ? 0 : 1, 1),
       numberBars: newNumericalField(1, 100, numberBars, 1),
@@ -114,12 +115,7 @@ const BarStepFunctionFactory: StepFunctionFactory = async (
   input: Output,
   behavior: Behavior
 ): Promise<StepFunction> => {
-  // Assert behavior is bar type
-  if (behavior.type !== "bar") {
-    throw new Error(
-      `Bar factory requires behavior type "bar", got "${behavior.type}"`
-    );
-  }
+  assertBehavior(behavior, "bars");
 
   // Convert input to ImageData
   const inputImageData = await outputToImageData(input);

@@ -3,7 +3,6 @@ import {
   cloneBehavior,
   newNumericalField,
   newSelectionField,
-  throwStepFunctionFactoryError,
   type Behavior,
   type NumericalField,
   type SelectionField,
@@ -71,10 +70,8 @@ const ScaleBehaviorStepFunctionFactory: StepFunctionFactory = async (
   input: Output,
   behavior: Behavior
 ): Promise<StepFunction> => {
-  const behaviorSnapshot = cloneBehavior(behavior);
-  if (assertBehavior<ScaleBehavior>(behaviorSnapshot, "scale")) {
-    throwStepFunctionFactoryError("scale", behavior.type);
-  }
+  assertBehavior(behavior, "scale");
+  const behaviorSnapshot = cloneBehavior(behavior) as ScaleBehavior;
 
   const stepFunction: StepFunction = () => {
     return [1, input];

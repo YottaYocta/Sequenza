@@ -1,6 +1,7 @@
 import {
   type Behavior,
   type GradientField,
+  assertBehavior,
   newGradient,
 } from "../../core/Behavior";
 import { type Output, outputToImageData } from "../../core/Output";
@@ -9,7 +10,12 @@ import {
   type StepFunction,
   type StepFunctionFactory,
 } from "../../core/ProcessingUnit";
-import { generateChunks, hexToRGBA, interpolateColors } from "../../core/util";
+import {
+  generateChunks,
+  hexToRGBA,
+  interpolateColors,
+  STANDARD_VERTEX_SHADER,
+} from "../../core/util";
 import { cloneBehavior } from "../../core/Behavior";
 import gradientMapFragSource from "./gradientmap.frag?raw";
 
@@ -95,28 +101,16 @@ const GradientMapStepFunctionFactory: StepFunctionFactory = async (
   input: Output,
   behavior: Behavior
 ): Promise<StepFunction> => {
-  // Assert behavior is gradient map type
-  if (behavior.type !== "gradientmap") {
-    throw new Error(
-      `GradientMap factory requires behavior type "gradientmap", got "${behavior.type}"`
-    );
-  }
+  assertBehavior(behavior, "gradientmap");
+  const behaviorSnapshot = cloneBehavior(behavior) as GradientMapBehavior;
 
-  // Convert input to ImageData
   const inputImageData = await outputToImageData(input);
 
-  // Deep clone the behavior
-  const behaviorSnapshot = cloneBehavior<GradientMapBehavior>(
-    behavior as GradientMapBehavior
-  );
-
-  // Create output ImageData
   const outputImageData = new ImageData(
     inputImageData.width,
     inputImageData.height
   );
 
-  // Extract gradient
   const gradient = behaviorSnapshot.fields.gradient;
 
   // Try WebGL rendering
@@ -127,16 +121,7 @@ const GradientMapStepFunctionFactory: StepFunctionFactory = async (
 
   if (gl) {
     try {
-      const vertexShaderSource = `
-        attribute vec2 a_position;
-        attribute vec2 a_texCoord;
-        varying vec2 v_texCoord;
-
-        void main() {
-          gl_Position = vec4(a_position, 0.0, 1.0);
-          v_texCoord = a_texCoord;
-        }
-      `;
+      const vertexShaderSource = STANDARD_VERTEX_SHADER;
 
       const fragmentShaderSource = gradientMapFragSource;
 

@@ -1,6 +1,7 @@
 import {
   type Behavior,
   type NumericalField,
+  assertBehavior,
   newNumericalField,
 } from "../core/Behavior";
 import { type Output, outputToImageData } from "../core/Output";
@@ -14,7 +15,7 @@ import { cloneBehavior } from "../core/Behavior";
 import { perceptualLuminance } from "../core/util";
 
 interface DotBehavior extends Behavior {
-  type: "dot";
+  type: "dots";
   fields: {
     horizontalCount: NumericalField;
     verticalCount: NumericalField;
@@ -36,7 +37,7 @@ export const createNewDotBehavior = (
   filterHigh = 1
 ): DotBehavior => {
   return {
-    type: "dot",
+    type: "dots",
     fields: {
       horizontalCount: newNumericalField(1, 100, horizontalCount, 1),
       verticalCount: newNumericalField(1, 100, verticalCount, 1),
@@ -108,13 +109,7 @@ const DotStepFunctionFactory: StepFunctionFactory = async (
   input: Output,
   behavior: Behavior
 ): Promise<StepFunction> => {
-  // Assert behavior is dot type
-  if (behavior.type !== "dot") {
-    throw new Error(
-      `Dot factory requires behavior type "dot", got "${behavior.type}"`
-    );
-  }
-
+  assertBehavior(behavior, "dots");
   const inputImageData = await outputToImageData(input);
 
   const behaviorSnapshot = cloneBehavior(behavior) as DotBehavior;

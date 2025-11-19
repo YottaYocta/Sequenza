@@ -1,6 +1,7 @@
 import {
   type Behavior,
   type NumericalField,
+  assertBehavior,
   newNumericalField,
 } from "../../core/Behavior";
 import { type Output, outputToImageData } from "../../core/Output";
@@ -9,7 +10,7 @@ import {
   type StepFunction,
   type StepFunctionFactory,
 } from "../../core/ProcessingUnit";
-import { generateChunks } from "../../core/util";
+import { generateChunks, STANDARD_VERTEX_SHADER } from "../../core/util";
 import { cloneBehavior } from "../../core/Behavior";
 import hslFragSource from "./hsl.frag?raw";
 
@@ -110,26 +111,16 @@ const HSLStepFunctionFactory: StepFunctionFactory = async (
   input: Output,
   behavior: Behavior
 ): Promise<StepFunction> => {
-  // Assert behavior is HSL type
-  if (behavior.type !== "hsl") {
-    throw new Error(
-      `HSL factory requires behavior type "hsl", got "${behavior.type}"`
-    );
-  }
+  assertBehavior(behavior, "hsl");
+  const behaviorSnapshot = cloneBehavior(behavior) as HSLBehavior;
 
-  // Convert input to ImageData
   const inputImageData = await outputToImageData(input);
 
-  // Deep clone the behavior
-  const behaviorSnapshot = cloneBehavior<HSLBehavior>(behavior as HSLBehavior);
-
-  // Create output ImageData
   const outputImageData = new ImageData(
     inputImageData.width,
     inputImageData.height
   );
 
-  // Extract HSL adjustment values
   const hAdjust = behaviorSnapshot.fields.h.value;
   const sAdjust = behaviorSnapshot.fields.s.value;
   const lAdjust = behaviorSnapshot.fields.l.value;
@@ -142,16 +133,7 @@ const HSLStepFunctionFactory: StepFunctionFactory = async (
 
   if (gl) {
     try {
-      const vertexShaderSource = `
-        attribute vec2 a_position;
-        attribute vec2 a_texCoord;
-        varying vec2 v_texCoord;
-
-        void main() {
-          gl_Position = vec4(a_position, 0.0, 1.0);
-          v_texCoord = a_texCoord;
-        }
-      `;
+      const vertexShaderSource = STANDARD_VERTEX_SHADER;
 
       const fragmentShaderSource = hslFragSource;
 
