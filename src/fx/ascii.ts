@@ -60,13 +60,12 @@ const AsciiStepFunctionFactory: StepFunctionFactory = async (
 
   const behaviorSnapshot = cloneBehavior(behavior) as AsciiBehavior;
 
-  // Extract parameters
-  const charSize = Math.floor(behaviorSnapshot.fields.charSize.default);
+  const charSize = Math.floor(behaviorSnapshot.fields.charSize.value);
   const resolutionMultiplier = Math.floor(
-    behaviorSnapshot.fields.resolutionMultiplier.default
+    behaviorSnapshot.fields.resolutionMultiplier.value
   );
-  const filterLow = behaviorSnapshot.fields.filterLow.default;
-  const filterHigh = behaviorSnapshot.fields.filterHigh.default;
+  const filterLow = behaviorSnapshot.fields.filterLow.value;
+  const filterHigh = behaviorSnapshot.fields.filterHigh.value;
 
   const width = inputImageData.width;
   const height = inputImageData.height;
