@@ -86,6 +86,7 @@
           break;
         case "dither":
           handleUpdate(createDitherBehavior());
+          break;
         case "lines":
           handleUpdate(createLinesBehavior());
       }
