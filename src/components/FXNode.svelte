@@ -8,6 +8,7 @@
   import { untrack } from "svelte";
   import Endpoint from "./Endpoint.svelte";
   import { createDitherBehavior } from "../fx/dither";
+  import { createLinesBehavior } from "../fx/lines/lines";
 
   interface Props {
     nodeIndex: number;
@@ -68,6 +69,7 @@
     { type: "dots", label: "DOTS" },
     { type: "ascii", label: "ASCII" },
     { type: "dither", label: "DITHER" },
+    { type: "lines", label: "LINES" },
     { type: "bars", label: "BARS", disabled: true },
   ];
 
@@ -84,6 +86,8 @@
           break;
         case "dither":
           handleUpdate(createDitherBehavior());
+        case "lines":
+          handleUpdate(createLinesBehavior());
       }
     }
   }
