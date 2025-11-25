@@ -48,7 +48,7 @@ export const createLinesBehavior = (): LinesBehavior => {
       density: newNumericalField(1, 100, 10, 1, 10),
       colorMode: {
         type: "SwitchField",
-        currentField: "dynamicColor",
+        currentField: "singleColor",
         switchFields: {
           dynamicColor: {},
           singleColor: {
