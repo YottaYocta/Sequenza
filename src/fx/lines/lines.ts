@@ -35,6 +35,7 @@ interface LinesBehavior extends Behavior {
   type: "lines";
   fields: {
     rotation: NumericalField;
+    threshold: NumericalField; // [0, 1], clamps effect
     density: NumericalField; // higher density = more lines
     colorMode: LinesSwitchBehavior;
   };
@@ -44,11 +45,12 @@ export const createLinesBehavior = (): LinesBehavior => {
   return {
     type: "lines",
     fields: {
-      rotation: newNumericalField(0, 360, 0, 1, 0),
-      density: newNumericalField(1, 100, 10, 1, 10),
+      rotation: newNumericalField(0, 360, 45, 1, 45),
+      threshold: newNumericalField(0, 1, 0.5, 0.01, 0.5),
+      density: newNumericalField(1, 100, 30, 1, 30),
       colorMode: {
         type: "SwitchField",
-        currentField: "dynamicColor",
+        currentField: "singleColor",
         switchFields: {
           dynamicColor: {},
           singleColor: {
@@ -98,7 +100,7 @@ const linesBehaviorStepFunctionFactory: StepFunctionFactory = async (
     const processStep = (program: WebGLProgram) => {
       // Set uniforms
       const rotationLocation = gl.getUniformLocation(program, "u_rotation");
-      gl.uniform1f(rotationLocation, rotation);
+      gl.uniform1f(rotationLocation, (rotation / 180) * Math.PI);
 
       const densityLocation = gl.getUniformLocation(program, "u_density");
       gl.uniform1f(densityLocation, density);
@@ -118,6 +120,9 @@ const linesBehaviorStepFunctionFactory: StepFunctionFactory = async (
         singleColorLocation,
         hexToRGBA(singleColor).map((channel) => channel / 255)
       );
+
+      const thresholdLocation = gl.getUniformLocation(program, "u_threshold");
+      gl.uniform1f(thresholdLocation, behaviorSnapshot.fields.threshold.value);
 
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.drawArrays(gl.TRIANGLES, 0, 6);
