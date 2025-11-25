@@ -4,6 +4,7 @@ uniform sampler2D u_texture;
 uniform float u_rotation;     // rotation in radians
 uniform float u_density;      // line frequency
 uniform float u_colorMode;    // 0.0 = dynamicColor, 1.0 = singleColor
+uniform float u_threshold;
 uniform vec4 u_singleColor;
 
 varying vec2 v_texCoord;
@@ -41,7 +42,7 @@ void main() {
     vec4 targetColor = texture2D(u_texture, targetInCart);
 
     float targetLum = dot(targetColor.rgb, vec3(0.299, 0.587, 0.114));
-    float solidMask = clamp(targetLum, 0.0, 0.45) < distanceFromTargetInRot * u_density ? 1.0 : 0.0; // 1.0 is solid; should be shaded. 0.0 should be white space
+    float solidMask = clamp(targetLum, 0.0, u_threshold) < distanceFromTargetInRot * u_density ? 1.0 : 0.0; // 1.0 is solid; should be shaded. 0.0 should be white space
 
     vec4 lineColor;
     if (u_colorMode < 0.5) {
