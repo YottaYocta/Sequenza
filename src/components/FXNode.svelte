@@ -9,6 +9,7 @@
   import Endpoint from "./Endpoint.svelte";
   import { createDitherBehavior } from "../fx/dither";
   import { createLinesBehavior } from "../fx/lines/lines";
+  import { createBlurBehavior } from "../fx/blur/blur";
 
   interface Props {
     nodeIndex: number;
@@ -70,6 +71,7 @@
     { type: "ascii", label: "ASCII" },
     { type: "dither", label: "DITHER" },
     { type: "lines", label: "LINES" },
+    { type: "blur", label: "BLUR" },
     { type: "bars", label: "BARS", disabled: true },
   ];
 
@@ -89,6 +91,10 @@
           break;
         case "lines":
           handleUpdate(createLinesBehavior());
+          break;
+        case "blur":
+          handleUpdate(createBlurBehavior());
+          break;
       }
     }
   }
