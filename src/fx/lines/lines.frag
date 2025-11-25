@@ -19,23 +19,33 @@ vec2 rotate(vec2 uv, float angle) {
     return mat2(c, -s, s, c) * uv;
 }
 
+vec2 rotateCenter(vec2 uv, float angle) {
+    return rotate(uv - vec2(.5), u_rotation) + vec2(.5);
+}
+
 void main() {
-    vec4 color = texture2D(u_texture, v_texCoord);
+    // uv coordinate after rotation by center
+    float transformed = v_texCoord.x * u_density + 0.5;
+    float targetX = floor(transformed) / u_density;
+    vec2 flooredColorUV = vec2(targetX, v_texCoord.y);
+    vec2 offsetFromRealUV = vec2(targetX - v_texCoord.x, 0);
+    vec2 rotatedOffset = rotate(offsetFromRealUV, u_rotation);
+    vec2 rotatedColorUV = v_texCoord + rotatedOffset;
+
+    vec2 uvRot = rotate(v_texCoord - vec2(.5), u_rotation) + vec2(.5);
+
+    // vec4 color = texture2D(u_texture, vec2(floor(uvRot.x * u_density + 0.5) / u_density, uvRot.y));
+    vec4 color = texture2D(u_texture, rotatedColorUV);
 
     float lum = dot(color.rgb, vec3(0.299, 0.587, 0.144));
 
-    vec2 uvRot = rotate(v_texCoord, u_rotation);
 
-    float pos = uvRot.x * u_density;
-    float distToCenter = abs(fract(pos) - 0.5);
+    // float pos = uvRot.x * u_density;
+    // float distToCenter = abs(fract(pos) - 0.5);
 
-    float thickness = clamp(1.0 - lum, 0.1, 1.0) * 0.5;
+    // float thickness = clamp(1.0 - lum, 0.1, 1.0) * 0.5;
 
-    float lineMask = distToCenter < thickness ? 0.0 : 1.0;
+    // float lineMask = distToCenter < thickness ? 0.0 : 1.0;
 
-    if(u_colorMode < 0.5) {
-        gl_FragColor = vec4(color.rgb * (1.-lineMask), 1.-lineMask);
-    } else {
-        gl_FragColor = lineMask < 0.5 ? u_singleColor : vec4(1.);
-    }
+    gl_FragColor = vec4(vec3(lum), 1.0);
 }
