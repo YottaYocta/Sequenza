@@ -30,7 +30,6 @@ vec2 rotateCenter(vec2 uv, float angle) {
 }
 
 void main() {
-    // uv coordinate after rotation by center
     vec2 uvInRotatedSpace = invRotate(v_texCoord, u_rotation);
 
     vec2 targetPixInRot = vec2(floor(uvInRotatedSpace.x * u_density + 0.5)/u_density, uvInRotatedSpace.y);
@@ -41,10 +40,18 @@ void main() {
     vec2 targetInCart = invRotate(targetPixInRot, -u_rotation);
     vec4 targetColor = texture2D(u_texture, targetInCart);
 
-    float targetLum = dot(targetColor.rgb, vec3(0.299, 0.587, 0.114));    
-    
-    if (clamp(targetLum, 0.0, 0.45) < distanceFromTargetInRot * u_density) {
-        gl_FragColor = vec4(vec3(0.0), 1.0);
+    float targetLum = dot(targetColor.rgb, vec3(0.299, 0.587, 0.114));
+    float solidMask = clamp(targetLum, 0.0, 0.45) < distanceFromTargetInRot * u_density ? 1.0 : 0.0; // 1.0 is solid; should be shaded. 0.0 should be white space
+
+    vec4 lineColor;
+    if (u_colorMode < 0.5) {
+        lineColor = targetColor;
+    } else {
+        lineColor = u_singleColor;
+    }
+
+    if (solidMask > 0.5) {
+        gl_FragColor = lineColor;
     } else {
         gl_FragColor = vec4(1.0);
     }
