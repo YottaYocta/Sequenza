@@ -98,7 +98,7 @@ const linesBehaviorStepFunctionFactory: StepFunctionFactory = async (
     const processStep = (program: WebGLProgram) => {
       // Set uniforms
       const rotationLocation = gl.getUniformLocation(program, "u_rotation");
-      gl.uniform1f(rotationLocation, rotation);
+      gl.uniform1f(rotationLocation, (rotation / 180) * Math.PI);
 
       const densityLocation = gl.getUniformLocation(program, "u_density");
       gl.uniform1f(densityLocation, density);
