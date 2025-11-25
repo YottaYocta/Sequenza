@@ -19,33 +19,33 @@ vec2 rotate(vec2 uv, float angle) {
     return mat2(c, -s, s, c) * uv;
 }
 
+vec2 invRotate(vec2 uv, float angle) {
+    float c = cos(angle);
+    float s = sin(angle);
+    return mat2(c, s, -s, c) * uv;
+}
+
 vec2 rotateCenter(vec2 uv, float angle) {
     return rotate(uv - vec2(.5), u_rotation) + vec2(.5);
 }
 
 void main() {
     // uv coordinate after rotation by center
-    float transformed = v_texCoord.x * u_density + 0.5;
-    float targetX = floor(transformed) / u_density;
-    vec2 flooredColorUV = vec2(targetX, v_texCoord.y);
-    vec2 offsetFromRealUV = vec2(targetX - v_texCoord.x, 0);
-    vec2 rotatedOffset = rotate(offsetFromRealUV, u_rotation);
-    vec2 rotatedColorUV = v_texCoord + rotatedOffset;
+    vec2 uvInRotatedSpace = invRotate(v_texCoord, u_rotation);
 
-    vec2 uvRot = rotate(v_texCoord - vec2(.5), u_rotation) + vec2(.5);
+    vec2 targetPixInRot = vec2(floor(uvInRotatedSpace.x * u_density + 0.5)/u_density, uvInRotatedSpace.y);
 
-    // vec4 color = texture2D(u_texture, vec2(floor(uvRot.x * u_density + 0.5) / u_density, uvRot.y));
-    vec4 color = texture2D(u_texture, rotatedColorUV);
+    float distanceFromTargetInRot = abs(targetPixInRot.x - uvInRotatedSpace.x);
+    float maxDist = 1.0 / u_density;
 
-    float lum = dot(color.rgb, vec3(0.299, 0.587, 0.144));
+    vec2 targetInCart = invRotate(targetPixInRot, -u_rotation);
+    vec4 targetColor = texture2D(u_texture, targetInCart);
 
-
-    // float pos = uvRot.x * u_density;
-    // float distToCenter = abs(fract(pos) - 0.5);
-
-    // float thickness = clamp(1.0 - lum, 0.1, 1.0) * 0.5;
-
-    // float lineMask = distToCenter < thickness ? 0.0 : 1.0;
-
-    gl_FragColor = vec4(vec3(lum), 1.0);
+    float targetLum = dot(targetColor.rgb, vec3(0.299, 0.587, 0.114));    
+    
+    if (clamp(targetLum, 0.0, 0.45) < distanceFromTargetInRot * u_density) {
+        gl_FragColor = vec4(vec3(0.0), 1.0);
+    } else {
+        gl_FragColor = vec4(1.0);
+    }
 }
