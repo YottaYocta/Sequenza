@@ -102,11 +102,6 @@
 	}
 </script>
 
-<header class="w-full border-b p-4 flex items-center justify-center">
-	<div class="w-full max-w-4xl px-6">
-		<h1 class="text-3xl tracking-[-0.25rem] font-medium">BRUTALFX</h1>
-	</div>
-</header>
 <main class="w-full min-h-96 p-4 py-8 flex flexcitems-center justify-center font-work-sans">
 	<div class="w-full h-10 max-w-4xl relative">
 		<DraggableContainer>
