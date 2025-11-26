@@ -7,21 +7,21 @@ import {
   type NumericalField,
   type SelectionField,
   type SwitchField,
-} from "../core/Behavior";
-import { outputToImageData, type Output } from "../core/Output";
+} from "../Behavior";
+import { outputToImageData, type Output } from "../Output";
 import {
   GlobalStepFunctionFactoryRegistry,
   type StepFunction,
   type StepFunctionFactory,
-} from "../core/ProcessingUnit";
+} from "../ProcessingUnit";
 import {
   getRGBA,
   hexToRGBA,
   inImageBounds,
   perceptualLuminance,
   setRGBA,
-} from "../core/util";
-import { cloneBehavior } from "../core/Behavior";
+} from "../util";
+import { cloneBehavior } from "../Behavior";
 import { evalGradientAt } from "../adjustments/gradientmap/gradientmap";
 
 interface BehaviorSwitchField extends SwitchField {

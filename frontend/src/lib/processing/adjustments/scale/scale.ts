@@ -7,18 +7,18 @@ import {
   type NumericalField,
   type SelectionField,
   type SwitchField,
-} from "../../core/Behavior";
-import { outputToImageData, type Output } from "../../core/Output";
+} from "../../Behavior";
+import { outputToImageData, type Output } from "../../Output";
 import {
   GlobalStepFunctionFactoryRegistry,
   type StepFunction,
   type StepFunctionFactory,
-} from "../../core/ProcessingUnit";
+} from "../../ProcessingUnit";
 import {
   getGLContext,
   runWithGLContext,
   STANDARD_VERTEX_SHADER,
-} from "../../core/util";
+} from "../../util";
 import fragmentShaderSource from "./scale.frag?raw";
 
 interface ScaleSelectionField extends SelectionField {

@@ -1,6 +1,6 @@
 <script lang="ts">
-	import type { Behavior } from '$lib/core/Behavior';
-	import type { EditorState } from '$lib/core/EditorState';
+	import type { Behavior } from '$lib/processing/Behavior';
+	import type { EditorState } from '$lib/processing/EditorState';
 	import {
 		newEditorState,
 		setSource,
@@ -9,9 +9,9 @@
 		updateBehaviorAt,
 		processTaskStep,
 		removeUnitAt
-	} from '$lib/core/EditorState';
+	} from '$lib/processing/EditorState';
 
-	import { createNewDotBehavior } from '$lib/fx/dots';
+	import { createNewDotBehavior } from '$lib/processing/fx/dots';
 	import { untrack } from 'svelte';
 	import AdjustmentNode from '$lib/components/AdjustmentNode.svelte';
 	import FXNode from '$lib/components/FXNode.svelte';
@@ -20,7 +20,7 @@
 	import SourceNode from '$lib/components/SourceNode.svelte';
 	import DefaultImg from '$lib/assets/headset.jpg';
 	import ConnectionLines from '$lib/components/ConnectionLines.svelte';
-	import { createNewHSLBehavior } from '$lib/adjustments/hsl/hsl';
+	import { createNewHSLBehavior } from '$lib/processing/adjustments/hsl/hsl';
 
 	// placeholder
 	let editorState: EditorState = $state<EditorState>(

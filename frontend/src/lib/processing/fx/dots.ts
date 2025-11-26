@@ -3,16 +3,16 @@ import {
   type NumericalField,
   assertBehavior,
   newNumericalField,
-} from "../core/Behavior";
-import { type Output, outputToImageData } from "../core/Output";
-import type { SvgOutput } from "../core/Output";
+} from "../Behavior";
+import { type Output, outputToImageData } from "../Output";
+import type { SvgOutput } from "../Output";
 import {
   GlobalStepFunctionFactoryRegistry,
   type StepFunction,
   type StepFunctionFactory,
-} from "../core/ProcessingUnit";
-import { cloneBehavior } from "../core/Behavior";
-import { perceptualLuminance } from "../core/util";
+} from "../ProcessingUnit";
+import { cloneBehavior } from "../Behavior";
+import { perceptualLuminance } from "../util";
 
 interface DotBehavior extends Behavior {
   type: "dots";

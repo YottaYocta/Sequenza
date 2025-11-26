@@ -1,9 +1,9 @@
 <script lang="ts">
   import type { Attachment } from "svelte/attachments";
-  import type { GradientField, GradientStop } from "../core/Behavior";
-  import { evalGradientAt } from "../adjustments/gradientmap/gradientmap";
+  import type { GradientField, GradientStop } from "../processing/Behavior";
+  import { evalGradientAt } from "../processing/adjustments/gradientmap/gradientmap";
   import NumericalInput from "./NumericalInput.svelte";
-  import { hexToRGBA, RGBAToHex } from "../core/util";
+  import { hexToRGBA, RGBAToHex } from "../processing/util";
   import CustomInput from "./CustomInput.svelte";
   import ColorInput from "./ColorInput.svelte";
 

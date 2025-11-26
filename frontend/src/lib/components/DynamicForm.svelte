@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { Behavior, BehaviorField } from "../core/Behavior";
-  import { cloneBehavior } from "../core/Behavior";
+  import type { Behavior, BehaviorField } from "../processing/Behavior";
+  import { cloneBehavior } from "../processing/Behavior";
   import SwitchInput from "./SwitchInput.svelte";
   import ValueInput from "./ValueInput.svelte";
 

@@ -1,15 +1,15 @@
 <script lang="ts">
-	import type { Behavior } from '../core/Behavior';
-	import { createNewDotBehavior } from '../fx/dots';
-	import { createNewAsciiBehavior } from '../fx/ascii';
+	import type { Behavior } from '../processing/Behavior';
+	import { createNewDotBehavior } from '../processing/fx/dots';
+	import { createNewAsciiBehavior } from '../processing/fx/ascii';
 	import DynamicForm from './DynamicForm.svelte';
 	import Line from './Line.svelte';
 	import type { Attachment } from 'svelte/attachments';
 	import { untrack } from 'svelte';
 	import Endpoint from './endpoint/Endpoint.svelte';
-	import { createDitherBehavior } from '../fx/dither';
-	import { createLinesBehavior } from '../fx/lines/lines';
-	import { createBlurBehavior } from '../fx/blur/blur';
+	import { createDitherBehavior } from '../processing/fx/dither';
+	import { createLinesBehavior } from '../processing/fx/lines/lines';
+	import { createBlurBehavior } from '../processing/fx/blur/blur';
 
 	interface Props {
 		nodeIndex: number;
