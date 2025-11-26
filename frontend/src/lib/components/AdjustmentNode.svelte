@@ -1,15 +1,15 @@
 <script lang="ts">
-	import type { Behavior } from '../core/Behavior';
-	import { createNewHSLBehavior } from '../adjustments/hsl/hsl';
-	import { createNewRGBBehavior } from '../adjustments/rgb/rgb';
-	import { createNewGradientMapBehavior } from '../adjustments/gradientmap/gradientmap';
+	import type { Behavior } from '../processing/Behavior';
+	import { createNewHSLBehavior } from '../processing/adjustments/hsl/hsl';
+	import { createNewRGBBehavior } from '../processing/adjustments/rgb/rgb';
+	import { createNewGradientMapBehavior } from '../processing/adjustments/gradientmap/gradientmap';
 	import DynamicForm from './DynamicForm.svelte';
 	import Line from './Line.svelte';
 	import type { Attachment } from 'svelte/attachments';
 	import Endpoint from './endpoint/Endpoint.svelte';
 	import { untrack } from 'svelte';
-	import { createChromaKeyBehavior } from '../adjustments/chromakey/chromakey';
-	import { newScaleBehavior } from '../adjustments/scale/scale';
+	import { createChromaKeyBehavior } from '../processing/adjustments/chromakey/chromakey';
+	import { newScaleBehavior } from '../processing/adjustments/scale/scale';
 
 	interface Props {
 		nodeIndex: number;

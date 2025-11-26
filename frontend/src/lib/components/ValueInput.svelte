@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { ValueField } from "../core/Behavior";
+  import type { ValueField } from "../processing/Behavior";
   import ColorInput from "./ColorInput.svelte";
   import CustomInput from "./CustomInput.svelte";
   import GradientInput from "./GradientInput.svelte";

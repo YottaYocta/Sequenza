@@ -2,19 +2,19 @@ import type {
   Behavior,
   NumericalField,
   SwitchField,
-} from "../../core/Behavior";
+} from "../../Behavior";
 import {
   assertBehavior,
   cloneBehavior,
   newNumericalField,
-} from "../../core/Behavior";
-import { outputToImageData, type Output } from "../../core/Output";
+} from "../../Behavior";
+import { outputToImageData, type Output } from "../../Output";
 import {
   GlobalStepFunctionFactoryRegistry,
   type StepFunction,
   type StepFunctionFactory,
-} from "../../core/ProcessingUnit";
-import { runWithGLContext, STANDARD_VERTEX_SHADER } from "../../core/util";
+} from "../../ProcessingUnit";
+import { runWithGLContext, STANDARD_VERTEX_SHADER } from "../../util";
 import gaussianFragSource from "./gaussian.frag?raw";
 import linearFragSource from "./linear.frag?raw";
 

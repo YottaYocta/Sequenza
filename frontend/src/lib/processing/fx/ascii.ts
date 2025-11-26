@@ -3,14 +3,14 @@ import {
   type NumericalField,
   assertBehavior,
   newNumericalField,
-} from "../core/Behavior";
-import { type Output, outputToImageData } from "../core/Output";
+} from "../Behavior";
+import { type Output, outputToImageData } from "../Output";
 import {
   GlobalStepFunctionFactoryRegistry,
   type StepFunction,
   type StepFunctionFactory,
-} from "../core/ProcessingUnit";
-import { cloneBehavior } from "../core/Behavior";
+} from "../ProcessingUnit";
+import { cloneBehavior } from "../Behavior";
 
 interface AsciiBehavior extends Behavior {
   type: "ascii";

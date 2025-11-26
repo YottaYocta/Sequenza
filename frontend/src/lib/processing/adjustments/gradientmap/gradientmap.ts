@@ -3,21 +3,21 @@ import {
   type GradientField,
   assertBehavior,
   newGradient,
-} from "../../core/Behavior";
-import { type Output, outputToImageData } from "../../core/Output";
+} from "../../Behavior";
+import { type Output, outputToImageData } from "../../Output";
 import {
   GlobalStepFunctionFactoryRegistry,
   type StepFunction,
   type StepFunctionFactory,
-} from "../../core/ProcessingUnit";
+} from "../../ProcessingUnit";
 import {
   generateChunks,
   hexToRGBA,
   interpolateColors,
   runWithGLContext,
   STANDARD_VERTEX_SHADER,
-} from "../../core/util";
-import { cloneBehavior } from "../../core/Behavior";
+} from "../../util";
+import { cloneBehavior } from "../../Behavior";
 import gradientMapFragSource from "./gradientmap.frag?raw";
 
 interface GradientMapBehavior extends Behavior {

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { hexToRGBA, RGBAToHex } from "../core/util";
+  import { hexToRGBA, RGBAToHex } from "../processing/util";
   import CustomInput from "./CustomInput.svelte";
 
   interface Props {

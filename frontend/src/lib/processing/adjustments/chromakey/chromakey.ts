@@ -5,18 +5,18 @@ import {
   type Behavior,
   type ColorField,
   type NumericalField,
-} from "../../core/Behavior";
-import { outputToImageData, type Output } from "../../core/Output";
+} from "../../Behavior";
+import { outputToImageData, type Output } from "../../Output";
 import {
   GlobalStepFunctionFactoryRegistry,
   type StepFunction,
   type StepFunctionFactory,
-} from "../../core/ProcessingUnit";
+} from "../../ProcessingUnit";
 import {
   hexToRGBA,
   runWithGLContext,
   STANDARD_VERTEX_SHADER,
-} from "../../core/util";
+} from "../../util";
 
 import chromaFragShader from "./chromakey.frag?raw";
 

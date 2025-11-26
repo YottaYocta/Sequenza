@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { type BehaviorField, type SwitchField } from "../core/Behavior";
+  import { type BehaviorField, type SwitchField } from "../processing/Behavior";
   import OptionInput from "./OptionInput.svelte";
   import SwitchInput from "./SwitchInput.svelte";
   import ValueInput from "./ValueInput.svelte";

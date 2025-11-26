@@ -3,20 +3,20 @@ import {
   type NumericalField,
   assertBehavior,
   newNumericalField,
-} from "../../core/Behavior";
-import { type Output, outputToImageData } from "../../core/Output";
+} from "../../Behavior";
+import { type Output, outputToImageData } from "../../Output";
 import {
   GlobalStepFunctionFactoryRegistry,
   type StepFunction,
   type StepFunctionFactory,
-} from "../../core/ProcessingUnit";
+} from "../../ProcessingUnit";
 import {
   generateChunks,
   getGLContext,
   runWithGLContext,
   STANDARD_VERTEX_SHADER,
-} from "../../core/util";
-import { cloneBehavior } from "../../core/Behavior";
+} from "../../util";
+import { cloneBehavior } from "../../Behavior";
 import rgbFragSource from "./rgb.frag?raw";
 
 interface RGBBehavior extends Behavior {

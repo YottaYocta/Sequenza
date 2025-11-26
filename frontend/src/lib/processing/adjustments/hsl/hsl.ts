@@ -3,19 +3,19 @@ import {
   type NumericalField,
   assertBehavior,
   newNumericalField,
-} from "../../core/Behavior";
-import { type Output, outputToImageData } from "../../core/Output";
+} from "../../Behavior";
+import { type Output, outputToImageData } from "../../Output";
 import {
   GlobalStepFunctionFactoryRegistry,
   type StepFunction,
   type StepFunctionFactory,
-} from "../../core/ProcessingUnit";
+} from "../../ProcessingUnit";
 import {
   generateChunks,
   runWithGLContext,
   STANDARD_VERTEX_SHADER,
-} from "../../core/util";
-import { cloneBehavior } from "../../core/Behavior";
+} from "../../util";
+import { cloneBehavior } from "../../Behavior";
 import hslFragSource from "./hsl.frag?raw";
 
 interface HSLBehavior extends Behavior {

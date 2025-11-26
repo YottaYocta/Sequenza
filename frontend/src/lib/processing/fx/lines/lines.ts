@@ -3,23 +3,23 @@ import type {
   ColorField,
   NumericalField,
   SwitchField,
-} from "../../core/Behavior";
+} from "../../Behavior";
 import {
   assertBehavior,
   cloneBehavior,
   newNumericalField,
-} from "../../core/Behavior";
-import { outputToImageData, type Output } from "../../core/Output";
+} from "../../Behavior";
+import { outputToImageData, type Output } from "../../Output";
 import {
   GlobalStepFunctionFactoryRegistry,
   type StepFunction,
   type StepFunctionFactory,
-} from "../../core/ProcessingUnit";
+} from "../../ProcessingUnit";
 import {
   hexToRGBA,
   runWithGLContext,
   STANDARD_VERTEX_SHADER,
-} from "../../core/util";
+} from "../../util";
 import linesFragSource from "./lines.frag?raw";
 
 interface LinesSwitchBehavior extends SwitchField {

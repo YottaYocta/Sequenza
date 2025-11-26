@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Attachment } from 'svelte/attachments';
-	import { type Output, outputToImageData, svgOutputToString } from '../core/Output';
+	import { type Output, outputToImageData, svgOutputToString } from '../processing/Output';
 	import Endpoint from './endpoint/Endpoint.svelte';
 
 	interface Props {
