@@ -1,5 +1,5 @@
 {
-	"name": "frontend",
+	"name": "sequenza",
 	"private": true,
 	"version": "0.0.1",
 	"type": "module",
@@ -30,5 +30,9 @@
 		"onlyBuiltDependencies": [
 			"esbuild"
 		]
+	},
+	"dependencies": {
+		"bcryptjs": "^3.0.3",
+		"mongoose": "^9.0.0"
 	}
 }
