@@ -33,6 +33,7 @@
 	},
 	"dependencies": {
 		"bcryptjs": "^3.0.3",
-		"mongoose": "^9.0.0"
+		"mongoose": "^9.0.0",
+		"zod": "^4.1.13"
 	}
 }
