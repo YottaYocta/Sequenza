@@ -22,6 +22,15 @@
 		color: #fff;
 	}
 
+	.input-1 {
+		outline: none;
+		border: 1px solid #000;
+	}
+	.input-1:focus {
+		background-color: #000;
+		color: #fff;
+	}
+
 	.no-spin-buttons::-webkit-outer-spin-button,
 	.no-spin-buttons::-webkit-inner-spin-button {
 		-webkit-appearance: none;
