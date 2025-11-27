@@ -1,8 +1,10 @@
 <script lang="ts">
 	import './global.css';
 	import favicon from '$lib/assets/favicon.svg';
+	import type { LayoutProps } from './$types';
 
-	let { children } = $props();
+	let { data, children }: LayoutProps = $props();
+	console.log(data);
 </script>
 
 <svelte:head>
@@ -21,12 +23,18 @@
 				<li>
 					<a href="/explore" class="button-1">Explore</a>
 				</li>
-				<li>
-					<a href="/signup" class="button-1">Sign Up</a>
-				</li>
-				<li>
-					<a href="/login" class="button-1">Login</a>
-				</li>
+				{#if !data.authenticated}
+					<li>
+						<a href="/signup" class="button-1">Sign Up</a>
+					</li>
+					<li>
+						<a href="/login" class="button-1">Login</a>
+					</li>
+				{:else}
+					<li>
+						<a href="/login" class="button-1">Logout</a>
+					</li>
+				{/if}
 			</span>
 		</ul>
 	</nav>
