@@ -49,10 +49,5 @@
 				Create Account
 			</button>
 		</form>
-
-		<p class="text-sm text-center mt-6">
-			Already have an account?
-			<a href="/login" class="button-1">Login</a>
-		</p>
 	</div>
 </div>
