@@ -4,7 +4,6 @@
 	import type { LayoutProps } from './$types';
 
 	let { data, children }: LayoutProps = $props();
-	console.log(data);
 </script>
 
 <svelte:head>
