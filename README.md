@@ -1,4 +1,4 @@
-# BrutalFX
+# Sequenza
 
 # Contributing
 
