@@ -1,7 +1,12 @@
+import { dev } from '$app/environment';
 import { connectDB } from '$lib/server/db';
-import { User } from '$lib/server/models/User';
+import { Session } from '$lib/server/models/Session';
+import { User, type IUser } from '$lib/server/models/User';
+import { registerSessionToken } from '$lib/server/util';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import bcrypt from 'bcryptjs';
+import type { ObjectId } from 'mongoose';
+import type { Document } from 'mongoose';
 import z from 'zod';
 
 const loginSchema = z.object({
@@ -10,7 +15,7 @@ const loginSchema = z.object({
 });
 
 export const actions = {
-	default: async ({ request }) => {
+	default: async ({ request, cookies }) => {
 		await connectDB();
 		const formData = await request.formData();
 		const data = {
@@ -27,18 +32,31 @@ export const actions = {
 			});
 		}
 
-		const matchingUser = await User.findOne({ email: result.data.email });
-		if (matchingUser) {
-			const res = await bcrypt.compare(result.data.password, matchingUser.password);
-			if (!res) {
-				return fail(401, {
-					messages: ['Incorrect Password'],
-					email: result.data.email
+		try {
+			const matchingUser: (IUser & { _id: ObjectId }) | null = await User.findOne({
+				email: result.data.email
+			});
+
+			if (matchingUser) {
+				const res = await bcrypt.compare(result.data.password, matchingUser.password);
+				if (!res) {
+					return fail(401, {
+						messages: ['Incorrect Password'],
+						email: result.data.email
+					});
+				}
+			} else {
+				return fail(400, {
+					messages: ['No users found with this email'],
+					email: ''
 				});
 			}
-		} else {
-			return fail(400, {
-				messages: ['No users found with this email'],
+
+			await registerSessionToken(matchingUser._id, cookies);
+		} catch (error) {
+			console.error('Login error:', error);
+			return fail(500, {
+				messages: ['Something went wrong. Please try again'],
 				email: ''
 			});
 		}
