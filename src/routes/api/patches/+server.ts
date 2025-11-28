@@ -1,10 +1,9 @@
-import { json, error, redirect } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { PatchModel } from '$lib/server/models/PatchModel';
-import { Session } from '$lib/server/models/Session';
+import { PatchModel, type PatchObject } from '$lib/server/models/PatchModel';
+import { refreshSessionToken } from '$lib/server/util';
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
-	// Check for session cookie
 	const sessionToken = cookies.get('session');
 
 	if (!sessionToken) {
@@ -12,15 +11,13 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		return redirect(303, '/login');
 	}
 
-	// Verify session
-	const session = await Session.findOne({ sessionToken });
+	const validatedUser = await refreshSessionToken(sessionToken, cookies);
 
-	if (!session || session.expiresAt < new Date()) {
-		// Invalid or expired session
-		cookies.delete('session', { path: '/' });
+	if (validatedUser === null) {
 		return redirect(303, '/login');
 	}
 
+	let patch: PatchObject;
 	try {
 		const { name, jsonData } = await request.json();
 
@@ -29,19 +26,15 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		}
 
 		// Create new patch
-		const patch = await PatchModel.create({
-			userId: session.userId,
+		patch = await PatchModel.create({
+			userId: validatedUser._id,
 			name,
 			jsonData
-		});
-
-		return json({
-			success: true,
-			patchId: patch._id.toString(),
-			message: 'Patch saved successfully'
 		});
 	} catch (err) {
 		console.error('Error saving patch:', err);
 		return error(500, 'Failed to save patch');
 	}
+
+	return redirect(303, `patch/${patch._id.toString()}`);
 };
