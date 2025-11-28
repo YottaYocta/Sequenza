@@ -5,7 +5,7 @@
 		const patchJson = JSON.stringify($state.snapshot(patch));
 
 		try {
-			const response = await fetch('/api/patches', {
+			const response = await fetch('/api/patch', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'

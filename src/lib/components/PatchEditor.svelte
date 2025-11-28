@@ -50,7 +50,6 @@
 	onMount(async () => {
 		if (initialPatch) {
 			await loadPatchIntoState(editorState, initialPatch);
-			console.log('Loaded initial patch:', initialPatch);
 		} else {
 			// Initialize with defaults
 			await initializeDefaultPatch();
