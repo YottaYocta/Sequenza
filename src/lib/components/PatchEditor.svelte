@@ -10,7 +10,8 @@
 		updateBehaviorAt,
 		processTaskStep,
 		removeUnitAt,
-		loadPatchIntoState
+		loadPatchIntoState,
+		patchFromEditorState
 	} from '$lib/processing/EditorState';
 
 	import { createNewDotBehavior } from '$lib/processing/fx/dots';
@@ -23,7 +24,6 @@
 	import DefaultImg from '$lib/assets/headset.jpg';
 	import ConnectionLines from '$lib/components/ConnectionLines.svelte';
 	import { createNewHSLBehavior } from '$lib/processing/adjustments/hsl/hsl';
-	import SavePatchComponent from '$lib/components/SavePatchComponent.svelte';
 
 	const {
 		initialPatch,
@@ -165,23 +165,30 @@
 		<!-- Save Patch Component -->
 		<DraggableContainer startX={800} startY={50}>
 			{#snippet children()}
-				<SavePatchComponent {editorState} />
+				<div class="flex flex-col items-start">
+					<button
+						class="button-1"
+						onclick={() => {
+							pushUnit(editorState, createNewHSLBehavior());
+						}}>Add Adjustment</button
+					>
+					<button
+						class="button-1"
+						onclick={() => {
+							pushUnit(editorState, createNewDotBehavior());
+						}}>Add FX</button
+					>
+					<button
+						class="button-1"
+						onclick={() => {
+							if (handleSavePatch) {
+								const editorStateSnapshot = $state.snapshot(editorState) as EditorState;
+								handleSavePatch(patchFromEditorState(editorStateSnapshot));
+							}
+						}}>Save Patch</button
+					>
+				</div>
 			{/snippet}
 		</DraggableContainer>
-
-		<div class="right-8 fixed bottom-2 flex items-center justify-center gap-8 text-nowrap">
-			<button
-				class="button-1"
-				onclick={() => {
-					pushUnit(editorState, createNewHSLBehavior());
-				}}>Add Adjustment</button
-			>
-			<button
-				class="button-1"
-				onclick={() => {
-					pushUnit(editorState, createNewDotBehavior());
-				}}>Add FX</button
-			>
-		</div>
 	</div>
 </main>

@@ -14,10 +14,13 @@ export interface EditorState {
 	currentTask: ProcessingTask | null;
 }
 
-export const serializeEditorState = (state: EditorState, name: string = 'Untitled Patch'): Patch => {
+export const patchFromEditorState = (
+	state: EditorState,
+	name: string = 'Untitled Patch'
+): Patch => {
 	return {
 		name,
-		behaviors: state.processingUnits.map(unit => unit.behavior)
+		behaviors: state.processingUnits.map((unit) => unit.behavior)
 	};
 };
 
