@@ -8,11 +8,13 @@
 		pollUnprocessedUnits,
 		updateBehaviorAt,
 		processTaskStep,
-		removeUnitAt
+		removeUnitAt,
+		loadPatchIntoState
 	} from '$lib/processing/EditorState';
 
+	import { deserializePatch } from '$lib/processing/Patch';
 	import { createNewDotBehavior } from '$lib/processing/fx/dots';
-	import { untrack } from 'svelte';
+	import { untrack, onMount } from 'svelte';
 	import AdjustmentNode from '$lib/components/AdjustmentNode.svelte';
 	import FXNode from '$lib/components/FXNode.svelte';
 	import DraggableContainer from '$lib/components/DraggableContainer.svelte';
@@ -21,6 +23,9 @@
 	import DefaultImg from '$lib/assets/headset.jpg';
 	import ConnectionLines from '$lib/components/ConnectionLines.svelte';
 	import { createNewHSLBehavior } from '$lib/processing/adjustments/hsl/hsl';
+	import SavePatchComponent from '$lib/components/SavePatchComponent.svelte';
+
+	const STORAGE_KEY = 'sequenza-patch';
 
 	// placeholder
 	let editorState: EditorState = $state<EditorState>(
@@ -30,10 +35,30 @@
 		})
 	);
 
-	(async () => {
+	const initializeDefaultPatch = async () => {
 		await pushUnit(editorState, createNewHSLBehavior());
 		await pushUnit(editorState, createNewDotBehavior());
-	})();
+	};
+
+	// Load patch from localStorage on mount
+	onMount(() => {
+		const savedPatchJson = localStorage.getItem(STORAGE_KEY);
+
+		if (savedPatchJson) {
+			try {
+				const patch = deserializePatch(savedPatchJson);
+				loadPatchIntoState(editorState, patch);
+				console.log('Loaded patch from localStorage:', patch);
+			} catch (error) {
+				console.error('Failed to load patch from localStorage:', error);
+				// Fall back to default initialization
+				initializeDefaultPatch();
+			}
+		} else {
+			// No saved patch, initialize with defaults
+			initializeDefaultPatch();
+		}
+	});
 
 	let renderTrigger = $state(false);
 
@@ -139,6 +164,14 @@
 
 		<!-- Connection lines SVG -->
 		<ConnectionLines />
+
+		<!-- Save Patch Component -->
+		<DraggableContainer startX={800} startY={50}>
+			{#snippet children()}
+				<SavePatchComponent {editorState} />
+			{/snippet}
+		</DraggableContainer>
+
 		<div class="right-8 fixed bottom-2 flex items-center justify-center gap-8 text-nowrap">
 			<button
 				class="button-1"
