@@ -4,15 +4,9 @@
 
 	const { editorState }: { editorState: EditorState } = $props();
 
-	const STORAGE_KEY = 'sequenza-patch';
-
 	const handleSavePatch = async () => {
 		const patch = serializeEditorState(editorState);
 		const patchJson = JSON.stringify($state.snapshot(patch));
-
-		// Save to localStorage
-		localStorage.setItem(STORAGE_KEY, patchJson);
-		console.log('Patch saved to localStorage:', $state.snapshot(patch));
 
 		// Save to database via API
 		try {
@@ -39,6 +33,7 @@
 
 			const result = await response.json();
 			console.log('Patch saved to database:', result);
+			alert('Patch saved successfully!');
 		} catch (error) {
 			console.error('Error saving patch to server:', error);
 			alert('Failed to save patch to server. Check console for details.');
