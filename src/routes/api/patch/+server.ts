@@ -36,5 +36,5 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		return error(500, 'Failed to save patch');
 	}
 
-	return redirect(303, `patch/${patch._id.toString()}`);
+	return redirect(303, `/patch/${patch._id.toString()}`);
 };
