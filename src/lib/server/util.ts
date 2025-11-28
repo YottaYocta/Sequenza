@@ -45,9 +45,40 @@ export const validateSessionToken = async (sessionToken: string): Promise<boolea
 			return false;
 		}
 	} catch (error) {
-		console.error('Error in main layout:', error);
+		console.error('Validate Token Error:', error);
 		return false;
 	}
 
 	return true;
+};
+
+export const refreshSessionToken = async (sessionToken: string, cookies: Cookies) => {
+	if (await validateSessionToken(sessionToken)) {
+		await Session.updateOne(
+			{ sessionToken },
+			{ expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) }
+		);
+		return true;
+	} else {
+		cookies.delete('session', { path: '/' });
+		return false;
+	}
+};
+
+export const invalidateSessionToken = async (sessionToken: string): Promise<boolean> => {
+	try {
+		await connectDB();
+		const matchingSessionToken = await Session.findOne({ sessionToken: sessionToken }).lean();
+
+		// session not found
+		if (matchingSessionToken === null) {
+			return true;
+		}
+
+		await Session.deleteOne({ sessionToken });
+		return true;
+	} catch (error) {
+		console.error('Logout Error:', error);
+		return false;
+	}
 };

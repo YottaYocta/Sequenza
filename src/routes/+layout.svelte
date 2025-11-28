@@ -31,7 +31,9 @@
 					</li>
 				{:else}
 					<li>
-						<a href="/login" class="button-1">Logout</a>
+						<form method="POST" action="/logout" class="inline">
+							<button class="button-1" type="submit">Logout</button>
+						</form>
 					</li>
 				{/if}
 			</span>
