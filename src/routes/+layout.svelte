@@ -19,10 +19,10 @@
 				</a>
 			</li>
 			<span class="flex justify-start items-baseline gap-8">
-				<li>
-					<a href="/explore" class="button-1">Explore</a>
-				</li>
-				{#if !data.authenticated}
+				{#if data.userId === null}
+					<li>
+						<a href="/explore" class="button-1">Explore</a>
+					</li>
 					<li>
 						<a href="/signup" class="button-1">Sign Up</a>
 					</li>
@@ -30,6 +30,11 @@
 						<a href="/login" class="button-1">Login</a>
 					</li>
 				{:else}
+					<li><a href={`/patches/${data.userId}`} class="button-1">My Patches</a></li>
+					<li>
+						<a href="/explore" class="button-1">Explore</a>
+					</li>
+
 					<li>
 						<form method="POST" action="/logout" class="inline">
 							<button class="button-1" type="submit">Logout</button>

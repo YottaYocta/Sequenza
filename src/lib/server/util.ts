@@ -3,13 +3,15 @@ import { Session } from './models/Session';
 import { dev } from '$app/environment';
 import type { ObjectId } from 'mongoose';
 import { connectDB } from './db';
+import { User, type UserObject } from './models/User';
+
+const TOKEN_EXP_TIME = 2 * 24 * 60 * 60 * 1000; // two days
 
 export const registerSessionToken = async (userID: ObjectId, cookies: Cookies): Promise<void> => {
 	await connectDB();
 	const sessionToken = crypto.randomUUID();
 
-	const maxAge = 1 * 1 * 5 * 60 * 1000; // five minutes
-	const expiresAt = new Date(Date.now() + maxAge); // five minutes
+	const expiresAt = new Date(Date.now() + TOKEN_EXP_TIME);
 
 	await Session.create({
 		userId: userID,
@@ -22,18 +24,18 @@ export const registerSessionToken = async (userID: ObjectId, cookies: Cookies): 
 		httpOnly: true,
 		sameSite: 'strict',
 		secure: !dev,
-		maxAge: maxAge
+		maxAge: TOKEN_EXP_TIME
 	});
 };
 
-export const validateSessionToken = async (sessionToken: string): Promise<boolean> => {
+export const validateSessionToken = async (sessionToken: string): Promise<UserObject | null> => {
 	try {
 		await connectDB();
 		const matchingSessionToken = await Session.findOne({ sessionToken: sessionToken }).lean();
 
 		// session not found
 		if (matchingSessionToken === null) {
-			return false;
+			return null;
 		}
 
 		// session found
@@ -42,26 +44,29 @@ export const validateSessionToken = async (sessionToken: string): Promise<boolea
 		if (matchingSessionToken.expiresAt.getTime() < Date.now()) {
 			await Session.deleteOne({ sessionToken: sessionToken });
 
-			return false;
+			return null;
 		}
+
+		const authenticatedUser = await User.findById(matchingSessionToken.userId).lean();
+
+		return authenticatedUser;
 	} catch (error) {
 		console.error('Validate Token Error:', error);
-		return false;
+		return null;
 	}
-
-	return true;
 };
 
-export const refreshSessionToken = async (sessionToken: string, cookies: Cookies) => {
-	if (await validateSessionToken(sessionToken)) {
-		await Session.updateOne(
-			{ sessionToken },
-			{ expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) }
-		);
-		return true;
+export const refreshSessionToken = async (
+	sessionToken: string,
+	cookies: Cookies
+): Promise<UserObject | null> => {
+	const res = await validateSessionToken(sessionToken);
+	if (res) {
+		await Session.updateOne({ sessionToken }, { expiresAt: new Date(Date.now() + TOKEN_EXP_TIME) });
+		return res;
 	} else {
 		cookies.delete('session', { path: '/' });
-		return false;
+		return null;
 	}
 };
 
