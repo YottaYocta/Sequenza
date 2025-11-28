@@ -1,5 +1,7 @@
 <script lang="ts">
-	const { data } = $props();
+	import type { PageProps, PageServerData } from './$types';
+
+	const { data }: PageProps = $props();
 </script>
 
 <div class="flex items-center justify-center p-4">
@@ -9,7 +11,7 @@
 		<ul>
 			{#each data.users as user}
 				<li>
-					<p>{user}</p>
+					<a href={`patches/${user.id}`} class="button-1">{user.name}</a>
 				</li>
 			{/each}
 		</ul>
