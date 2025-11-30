@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { MONGODB_URI } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 
 let isConnected = false;
 
@@ -10,7 +10,8 @@ export const connectDB = async () => {
 	}
 
 	try {
-		const db = await mongoose.connect(MONGODB_URI);
+		console.log('Trying to connect to' + env.MONGODB_URI);
+		const db = await mongoose.connect(env.MONGODB_URI);
 		isConnected = db.connections[0].readyState === 1;
 		console.log('MongoDB connected successfully');
 	} catch (error) {
