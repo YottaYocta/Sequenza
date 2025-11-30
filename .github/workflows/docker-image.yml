@@ -22,7 +22,7 @@ jobs:
 
       - name: Build the Docker image
         run: |
-          IMAGE_NAME=ghcr.io/${{ github.repository }}/sequenza:$(date +%s)
+          IMAGE_NAME=ghcr.io/sequenza/sequenza:$(date +%s)
           docker build . --file Dockerfile --tag $IMAGE_NAME
 
       - name: Push the Docker image
