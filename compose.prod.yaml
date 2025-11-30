@@ -20,12 +20,12 @@ services:
     container_name: sequenza-app-prod
     restart: unless-stopped
     ports:
-      - '127.0.0.1:4000:4000'
+      - '127.0.0.1:${PORT:-4000}:${PORT:-4000}'
     environment:
       NODE_ENV: production
-      PORT: 4000
+      PORT: ${PORT:-4000}
       MONGODB_URI: mongodb://${MONGO_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD}@mongodb:27017/${MONGO_DATABASE:-sequenza}?authSource=admin
-      ORIGIN: https://YOUR_HOSTNAME_HERE
+      ORIGIN: ${ORIGIN}
       SESSION_SECRET: ${SESSION_SECRET}
     depends_on:
       - mongodb
