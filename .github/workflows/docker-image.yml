@@ -9,6 +9,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - uses: actions/checkout@v4
@@ -20,11 +23,8 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build the Docker image
+      - name: Build the Docker image & push
         run: |
           IMAGE_NAME=ghcr.io/yottayocta/sequenza:latest
           docker build . --file Dockerfile --tag $IMAGE_NAME
-      - name: Push the Docker image
-        run: | 
-          IMAGE_NAME=ghcr.io/yottayocta/sequenza:latest
           docker push $IMAGE_NAME
