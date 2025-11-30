@@ -26,5 +26,5 @@ jobs:
           docker build . --file Dockerfile --tag $IMAGE_NAME
       - name: Push the Docker image
         run: | 
-          IMAGE_NAME=ghcr.io/YottaYocta/Sequenza:latest
+          IMAGE_NAME=ghcr.io/yottayocta/sequenza:latest
           docker push $IMAGE_NAME
