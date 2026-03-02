@@ -27,6 +27,7 @@ void main() {
 
 /**
  * requires: patch has no disconnected graph nodes
+ *
  */
 export class Renderer {
 	private programs: twgl.ProgramInfo[] = [];
@@ -71,7 +72,7 @@ export class Renderer {
 				.push({ input: connection.input, from: connection.from });
 		}
 
-		const queue = inDegree.entries().reduce((prev: number[], [to, count]) => {
+		const queue = [...inDegree.entries()].reduce((prev: number[], [to, count]) => {
 			if (count === 0) return [...prev, to];
 			else return prev;
 		}, []);

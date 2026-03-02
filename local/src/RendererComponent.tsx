@@ -1,6 +1,6 @@
 'use client';
-import { FC, RefObject, useEffect, useRef } from 'react';
-import { Patch, Renderer, Uniforms } from '../(lib)/renderer';
+import { type FC, type RefObject, useEffect, useRef } from 'react';
+import { type Patch, Renderer, type Uniforms } from './renderer';
 
 interface RendererComponentProps {
 	patch: Patch;
