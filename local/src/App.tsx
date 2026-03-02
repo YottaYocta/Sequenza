@@ -1,13 +1,22 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { Shader } from './renderer';
+import { io } from 'socket.io-client';
 
 function App() {
 	const [shaderMap, setShaderMap] = useState<Record<string, Shader>>({});
 
-	import.meta.hot?.on('shaders-found', (payload) => {
-		console.log('found: ', payload);
-		setShaderMap(payload);
-	});
+	useEffect(() => {
+		console.log('[CONNECT]');
+		const socket = io('http://localhost:3001');
+		socket.on('shaders-found', (data: Record<string, string>) => {
+			console.log('data received: ', data);
+			setShaderMap(data);
+		});
+		() => {
+			console.log('[DISCONNECT]');
+			socket.disconnect();
+		};
+	}, []);
 
 	return (
 		<main>
