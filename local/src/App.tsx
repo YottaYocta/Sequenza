@@ -4,13 +4,9 @@ import type { Shader } from './renderer';
 function App() {
 	const [shaderMap, setShaderMap] = useState<Record<string, Shader>>({});
 
-	import.meta.hot?.on('shader-updated', (payload) => {
-		setShaderMap((prev) => {
-			return {
-				...prev,
-				[payload.path]: payload.source
-			};
-		});
+	import.meta.hot?.on('shaders-found', (payload) => {
+		console.log('found: ', payload);
+		setShaderMap(payload);
 	});
 
 	return (
