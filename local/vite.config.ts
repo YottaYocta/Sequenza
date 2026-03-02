@@ -12,6 +12,8 @@ export default defineConfig({
 			name: 'sequenza-dev-app',
 			configureServer(server) {
 				const watcher = server.watcher;
+
+				watcher.removeAllListeners();
 				watcher.add('**/*.frag');
 				watcher.on('change', (path) => {
 					const source = readFileSync(path, 'utf-8');
