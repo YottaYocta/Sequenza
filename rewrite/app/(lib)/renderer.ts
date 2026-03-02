@@ -1,11 +1,11 @@
 import * as twgl from 'twgl.js';
 
-type Uniforms = Record<string, any>;
-type Shader = string;
+export type Uniforms = Record<string, any>;
+export type Shader = string;
 
-type Connection = { from: number; to: number; input: number };
+export type Connection = { from: number; to: number; input: number };
 
-type Patch = {
+export type Patch = {
 	shaders: Shader[];
 	connections: Connection[];
 };
@@ -28,7 +28,7 @@ void main() {
 /**
  * requires: patch has no disconnected graph nodes
  */
-class Renderer {
+export class Renderer {
 	private programs: twgl.ProgramInfo[] = [];
 	private fbos: twgl.FramebufferInfo[] = [];
 	private renderOrder: number[] = [];
