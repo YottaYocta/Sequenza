@@ -10,27 +10,21 @@ type Field =
 	| {
 			name: string;
 			type: 'float';
-			min: number;
-			max: number;
-			default: number;
 			value: number;
 	  }
 	| {
 			name: string;
 			type: 'vec2';
-			default: [number, number];
 			value: [number, number];
 	  }
 	| {
 			name: string;
 			type: 'vec3';
-			default: [number, number, number];
 			value: [number, number, number];
 	  }
 	| {
 			name: string;
 			type: 'vec4';
-			default: [number, number, number, number];
 			value: [number, number, number, number];
 	  };
 
@@ -38,10 +32,10 @@ type Field =
  * Parses shader source for uniform declarations with metadata comments.
  *
  * Supported formats:
- *   uniform float var;           // [min, max, default]
- *   uniform vec2 var;            // [[x,y]]
- *   uniform vec3 var;            // [[r,g,b]]
- *   uniform vec4 var;            // [[r,g,b,a]]
+ *   uniform float var;
+ *   uniform vec2 var;
+ *   uniform vec3 var;
+ *   uniform vec4 var;
  */
 const createFields = (shader: Shader): Field[] => {
 	const fields: Field[] = [];
@@ -50,37 +44,26 @@ const createFields = (shader: Shader): Field[] => {
 	for (const line of lines) {
 		const trimmed = line.trim();
 
-		const floatMatch = trimmed.match(/^uniform\s+float\s+(\w+)\s*;.*\/\/\s*\[([^\]]+)\]/);
+		const floatMatch = trimmed.match(/^uniform\s+float\s+(\w+)\s*;/);
 		if (floatMatch) {
 			const name = floatMatch[1];
-			const parts = floatMatch[2].split(',').map((s) => parseFloat(s.trim()));
-			if (parts.length === 3 && parts.every((n) => !isNaN(n))) {
-				const [min, max, def] = parts;
-				fields.push({ name, type: 'float', min, max, default: def, value: def });
+			if (name) {
+				fields.push({ name, type: 'float', value: 0 });
 			}
 			continue;
 		}
 
-		const vecMatch = trimmed.match(/^uniform\s+(vec[234])\s+(\w+)\s*;.*\/\/\s*\[(\[[^\]]+\])\]/);
+		const vecMatch = trimmed.match(/^uniform\s+(vec[234])\s+(\w+)\s*;/);
 		if (vecMatch) {
 			const vecType = vecMatch[1] as 'vec2' | 'vec3' | 'vec4';
 			const name = vecMatch[2];
 			try {
-				const parsed = JSON.parse(vecMatch[3]) as number[];
-				if (vecType === 'vec2' && parsed.length === 2) {
-					const def: [number, number] = [parsed[0], parsed[1]];
-					fields.push({ name, type: 'vec2', default: def, value: [...def] });
-				} else if (vecType === 'vec3' && parsed.length === 3) {
-					const def: [number, number, number] = [parsed[0], parsed[1], parsed[2]];
-					fields.push({ name, type: 'vec3', default: def, value: [...def] });
-				} else if (vecType === 'vec4' && parsed.length === 4) {
-					const def: [number, number, number, number] = [
-						parsed[0],
-						parsed[1],
-						parsed[2],
-						parsed[3]
-					];
-					fields.push({ name, type: 'vec4', default: def, value: [...def] });
+				if (vecType === 'vec2') {
+					fields.push({ name, type: 'vec2', value: [0, 0] });
+				} else if (vecType === 'vec3') {
+					fields.push({ name, type: 'vec3', value: [0, 0, 0] });
+				} else if (vecType === 'vec4') {
+					fields.push({ name, type: 'vec4', value: [0, 0, 0, 0] });
 				}
 			} catch {
 				// malformed comment — skip
@@ -161,34 +144,18 @@ const Scrubber: FC<ScrubberProps> = ({
 		? value.toFixed(1)
 		: value.toFixed(3).replace(/0+$/, '');
 
-	const hasBounds = isFinite(min) && isFinite(max);
-	const fillPct = hasBounds
-		? Math.max(0, Math.min(100, ((value - min) / (max - min)) * 100))
-		: null;
-
 	return (
 		<div className="flex items-center gap-1">
-			{label && (
-				<span className="text-[10px] font-mono text-neutral-500 w-3 text-right shrink-0">
-					{label}
-				</span>
-			)}
+			{label && <span className="text-[10px] font-mono w-3 text-right shrink-0">{label}</span>}
 			<div
 				onMouseDown={onMouseDown}
 				onDoubleClick={onDoubleClick}
 				className={[
 					'relative inline-flex items-center justify-center',
-					'min-w- h-5.5 rounded overflow-hidden select-none',
-					'bg-neutral-900 border border-neutral-700',
+					'min-w-16 h-5.5 rounded overflow-hidden select-none',
 					isEditing ? 'cursor-text' : 'cursor-ew-resize'
 				].join(' ')}
 			>
-				{fillPct !== null && (
-					<div
-						className="absolute inset-y-0 left-0 bg-blue-400/10 pointer-events-none"
-						style={{ width: `${fillPct}%` }}
-					/>
-				)}
 				{isEditing ? (
 					<input
 						ref={inputRef}
@@ -199,10 +166,10 @@ const Scrubber: FC<ScrubberProps> = ({
 							if (e.key === 'Enter') commitEdit();
 							if (e.key === 'Escape') setIsEditing(false);
 						}}
-						className="bg-transparent border-none outline-none text-neutral-200 text-[11px] font-mono w-full text-center px-1"
+						className="bg-transparent outline-none text-neutral-500 text-[11px] font-mono w-full text-center px-1"
 					/>
 				) : (
-					<span className="text-[11px] font-mono text-neutral-300 px-1.5 pointer-events-none">
+					<span className="text-[11px] font-mono text-neutral-500 px-1.5 pointer-events-none border-neutral-900 border">
 						{displayValue}
 					</span>
 				)}
@@ -215,16 +182,13 @@ const FloatFieldComponent: FC<{
 	data: Field & { type: 'float' };
 	handleUpdateField: (updatedField: Field & { type: 'float' }) => void;
 }> = ({ data, handleUpdateField }) => (
-	<div className="flex items-center gap-2 px-2 py-1.5 border-b border-neutral-800">
+	<div className="flex items-center gap-2 px-2 py-1.5">
 		<FieldLabel name={data.name} type="float" />
 		<Scrubber
 			value={data.value}
-			min={data.min}
-			max={data.max}
-			step={(data.max - data.min) / 200}
+			step={0.01}
 			onChange={(v) => handleUpdateField({ ...data, value: v })}
 		/>
-		<ResetButton onClick={() => handleUpdateField({ ...data, value: data.default })} />
 	</div>
 );
 
@@ -238,16 +202,13 @@ const Vec2FieldComponent: FC<{
 		handleUpdateField({ ...data, value: next });
 	};
 	return (
-		<div className="flex items-center gap-2 px-2 py-1.5 border-b border-neutral-800">
+		<div className="flex items-center gap-2 px-2 py-1.5">
 			<FieldLabel name={data.name} type="vec2" />
 			<div className="flex gap-1 flex-wrap">
 				{(['x', 'y'] as const).map((axis, i) => (
 					<Scrubber key={axis} label={axis} value={data.value[i]} onChange={(v) => update(i, v)} />
 				))}
 			</div>
-			<ResetButton
-				onClick={() => handleUpdateField({ ...data, value: [...data.default] as [number, number] })}
-			/>
 		</div>
 	);
 };
@@ -262,18 +223,13 @@ const Vec3FieldComponent: FC<{
 		handleUpdateField({ ...data, value: next });
 	};
 	return (
-		<div className="flex items-center gap-2 px-2 py-1.5 border-b border-neutral-800">
+		<div className="flex items-center gap-2 px-2 py-1.5">
 			<FieldLabel name={data.name} type="vec3" />
 			<div className="flex gap-1 flex-wrap">
 				{(['x', 'y', 'z'] as const).map((axis, i) => (
 					<Scrubber key={axis} label={axis} value={data.value[i]} onChange={(v) => update(i, v)} />
 				))}
 			</div>
-			<ResetButton
-				onClick={() =>
-					handleUpdateField({ ...data, value: [...data.default] as [number, number, number] })
-				}
-			/>
 		</div>
 	);
 };
@@ -288,40 +244,22 @@ const Vec4FieldComponent: FC<{
 		handleUpdateField({ ...data, value: next });
 	};
 	return (
-		<div className="flex items-center gap-2 px-2 py-1.5 border-b border-neutral-800">
+		<div className="flex items-center gap-2 px-2 py-1.5">
 			<FieldLabel name={data.name} type="vec4" />
 			<div className="flex gap-1 flex-wrap">
 				{(['x', 'y', 'z', 'w'] as const).map((axis, i) => (
 					<Scrubber key={axis} label={axis} value={data.value[i]} onChange={(v) => update(i, v)} />
 				))}
 			</div>
-			<ResetButton
-				onClick={() =>
-					handleUpdateField({
-						...data,
-						value: [...data.default] as [number, number, number, number]
-					})
-				}
-			/>
 		</div>
 	);
 };
 
 const FieldLabel: FC<{ name: string; type: string }> = ({ name, type }) => (
 	<div className="min-w-30 flex flex-col gap-0.5">
-		<span className="font-mono text-xs text-neutral-200">{name}</span>
+		<span className="font-mono text-xs text-neutral-900 font-black">{name}</span>
 		<span className="font-mono text-[10px] text-neutral-600">{type}</span>
 	</div>
-);
-
-const ResetButton: FC<{ onClick: () => void }> = ({ onClick }) => (
-	<button
-		onClick={onClick}
-		title="Reset to default"
-		className="text-[10px] text-neutral-600 border border-neutral-800 rounded px-1.5 py-0.5 leading-none cursor-pointer hover:text-neutral-400 hover:border-neutral-600 transition-colors bg-transparent"
-	>
-		↺
-	</button>
 );
 
 const UniformForm: FC<UniformFormProps> = ({ shader, handleUpdateUniform }) => {
@@ -349,18 +287,17 @@ const UniformForm: FC<UniformFormProps> = ({ shader, handleUpdateUniform }) => {
 
 	if (fields.length === 0) {
 		return (
-			<p className="px-2 py-3 font-mono text-[11px] text-neutral-600">
+			<p className="px-2 py-3 font-mono text-[11px]">
 				No uniforms found.{' '}
 				<span>
-					Add <code className="text-neutral-500">// [min, max, default]</code> comments to float
-					uniforms.
+					Add <code className="">// [min, max, default]</code> comments to float uniforms.
 				</span>
 			</p>
 		);
 	}
 
 	return (
-		<div className="bg-neutral-950 rounded border border-neutral-800 overflow-hidden">
+		<div className="rounded border border-neutral-800 overflow-hidden">
 			{fields.map((field, i) => {
 				const key = `${field.name}-${field.type}`;
 				switch (field.type) {

@@ -14,7 +14,7 @@ interface RendererComponentProps {
 export const RendererComponent: FC<RendererComponentProps> = ({
 	patch,
 	uniforms,
-	className = '',
+	className,
 	width = 100,
 	height = 100,
 	animate = false
