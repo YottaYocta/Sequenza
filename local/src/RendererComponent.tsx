@@ -5,19 +5,19 @@ import { type Patch, Renderer, type Uniforms } from './renderer';
 interface RendererComponentProps {
 	patch: Patch;
 	uniforms: RefObject<Uniforms[]>;
-	className: string;
-	width: number;
-	height: number;
-	animate: boolean;
+	className?: string;
+	width?: number;
+	height?: number;
+	animate?: boolean;
 }
 
 export const RendererComponent: FC<RendererComponentProps> = ({
 	patch,
 	uniforms,
-	className,
-	width,
-	height,
-	animate
+	className = '',
+	width = 100,
+	height = 100,
+	animate = false
 }) => {
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
