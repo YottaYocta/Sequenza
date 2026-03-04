@@ -82,6 +82,7 @@ export const Editor: FC<EditorProps> = ({ shaders }) => {
 	return (
 		<div className="w-full h-full">
 			<ReactFlow
+				panOnScroll={true}
 				proOptions={{ hideAttribution: true }}
 				nodes={nodes}
 				nodeTypes={{ shader: ShaderNode }}
