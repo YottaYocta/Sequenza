@@ -19,6 +19,31 @@ export const ShaderNode = ({ data }: NodeProps<ShaderNode>) => {
 		return Array.from(matches, (m) => m[1]);
 	}, [data.shader.source]);
 
+	const content = useMemo(() => {
+		return (
+			<>
+				<div>
+					<p>{data.shader.id}</p>
+					<UniformForm
+						shader={data.shader}
+						handleUpdateUniform={(newUniforms) => {
+							data.handleUpdateUnforms(newUniforms);
+						}}
+					></UniformForm>
+				</div>
+				<div className="flex justify-center items-center ">
+					<RendererComponent
+						animate
+						width={200}
+						height={200}
+						patch={patches[data.shader.id]}
+						uniforms={uniforms}
+					></RendererComponent>
+				</div>
+			</>
+		);
+	}, [patches]);
+
 	return (
 		<div className="flex gap-2 bg-white border p-4">
 			{textureInputs.map((input) => (
@@ -26,24 +51,7 @@ export const ShaderNode = ({ data }: NodeProps<ShaderNode>) => {
 					{input}
 				</Handle>
 			))}
-			<div>
-				<p>{data.shader.id}</p>
-				<UniformForm
-					shader={data.shader}
-					handleUpdateUniform={(newUniforms) => {
-						data.handleUpdateUnforms(newUniforms);
-					}}
-				></UniformForm>
-			</div>
-			<div className="flex justify-center items-center ">
-				<RendererComponent
-					animate
-					width={200}
-					height={200}
-					patch={patches[data.shader.id]}
-					uniforms={uniforms}
-				></RendererComponent>
-			</div>
+			{content}
 			<Handle id={'out'} type="source" position={Position.Bottom}>
 				Out Texture
 			</Handle>

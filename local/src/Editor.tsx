@@ -108,9 +108,8 @@ export const Editor: FC<EditorProps> = ({ shaders }) => {
 				}
 			}
 		}
-
 		return patches;
-	}, [nodes, edges, shaders]);
+	}, [nodes.length, edges.length, shaders]);
 
 	return (
 		<div className="w-full h-full">
