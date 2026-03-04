@@ -110,7 +110,6 @@ function App() {
 							<UniformForm
 								shader={source}
 								handleUpdateUniform={(newUniforms) => {
-									console.log(newUniforms);
 									shaderUniforms.current[source.id] = newUniforms;
 								}}
 							></UniformForm>

@@ -11,21 +11,27 @@ type Field =
 			name: string;
 			type: 'float';
 			value: number;
+			min?: number;
+			max?: number;
+			default?: number;
 	  }
 	| {
 			name: string;
 			type: 'vec2';
 			value: [number, number];
+			default?: [number, number];
 	  }
 	| {
 			name: string;
 			type: 'vec3';
 			value: [number, number, number];
+			default?: [number, number, number];
 	  }
 	| {
 			name: string;
 			type: 'vec4';
 			value: [number, number, number, number];
+			default?: [number, number, number, number];
 	  };
 
 /**
@@ -37,6 +43,9 @@ type Field =
  *   uniform vec3 var;
  *   uniform vec4 var;
  */
+const NUM = '([-\\d.]+)';
+const SEP = '\\s*,\\s*';
+
 const createFields = (shader: Shader): Field[] => {
 	const fields: Field[] = [];
 	const lines = shader.source.split('\n');
@@ -44,12 +53,51 @@ const createFields = (shader: Shader): Field[] => {
 	for (const line of lines) {
 		const trimmed = line.trim();
 
+		// uniform float name; // [min, max, default]
+		const floatMeta = trimmed.match(
+			new RegExp(`^uniform\\s+float\\s+(\\w+)\\s*;.*\\/\\/\\s*\\[\\s*${NUM}${SEP}${NUM}${SEP}${NUM}\\s*\\]`)
+		);
+		if (floatMeta?.[1]) {
+			const min = parseFloat(floatMeta[2]);
+			const max = parseFloat(floatMeta[3]);
+			const def = parseFloat(floatMeta[4]);
+			fields.push({ name: floatMeta[1], type: 'float', value: def, min, max, default: def });
+			continue;
+		}
+
 		const floatMatch = trimmed.match(/^uniform\s+float\s+(\w+)\s*;/);
-		if (floatMatch) {
-			const name = floatMatch[1];
-			if (name) {
-				fields.push({ name, type: 'float', value: 0 });
-			}
+		if (floatMatch?.[1]) {
+			fields.push({ name: floatMatch[1], type: 'float', value: 0 });
+			continue;
+		}
+
+		// uniform vec2 name; // [x, y]
+		const vec2Meta = trimmed.match(
+			new RegExp(`^uniform\\s+vec2\\s+(\\w+)\\s*;.*\\/\\/\\s*\\[\\s*${NUM}${SEP}${NUM}\\s*\\]`)
+		);
+		if (vec2Meta?.[1]) {
+			const def: [number, number] = [parseFloat(vec2Meta[2]), parseFloat(vec2Meta[3])];
+			fields.push({ name: vec2Meta[1], type: 'vec2', value: def, default: def });
+			continue;
+		}
+
+		// uniform vec3 name; // [x, y, z]
+		const vec3Meta = trimmed.match(
+			new RegExp(`^uniform\\s+vec3\\s+(\\w+)\\s*;.*\\/\\/\\s*\\[\\s*${NUM}${SEP}${NUM}${SEP}${NUM}\\s*\\]`)
+		);
+		if (vec3Meta?.[1]) {
+			const def: [number, number, number] = [parseFloat(vec3Meta[2]), parseFloat(vec3Meta[3]), parseFloat(vec3Meta[4])];
+			fields.push({ name: vec3Meta[1], type: 'vec3', value: def, default: def });
+			continue;
+		}
+
+		// uniform vec4 name; // [x, y, z, w]
+		const vec4Meta = trimmed.match(
+			new RegExp(`^uniform\\s+vec4\\s+(\\w+)\\s*;.*\\/\\/\\s*\\[\\s*${NUM}${SEP}${NUM}${SEP}${NUM}${SEP}${NUM}\\s*\\]`)
+		);
+		if (vec4Meta?.[1]) {
+			const def: [number, number, number, number] = [parseFloat(vec4Meta[2]), parseFloat(vec4Meta[3]), parseFloat(vec4Meta[4]), parseFloat(vec4Meta[5])];
+			fields.push({ name: vec4Meta[1], type: 'vec4', value: def, default: def });
 			continue;
 		}
 
@@ -57,17 +105,9 @@ const createFields = (shader: Shader): Field[] => {
 		if (vecMatch) {
 			const vecType = vecMatch[1] as 'vec2' | 'vec3' | 'vec4';
 			const name = vecMatch[2];
-			try {
-				if (vecType === 'vec2') {
-					fields.push({ name, type: 'vec2', value: [0, 0] });
-				} else if (vecType === 'vec3') {
-					fields.push({ name, type: 'vec3', value: [0, 0, 0] });
-				} else if (vecType === 'vec4') {
-					fields.push({ name, type: 'vec4', value: [0, 0, 0, 0] });
-				}
-			} catch {
-				// malformed comment — skip
-			}
+			if (vecType === 'vec2') fields.push({ name, type: 'vec2', value: [0, 0] });
+			else if (vecType === 'vec3') fields.push({ name, type: 'vec3', value: [0, 0, 0] });
+			else if (vecType === 'vec4') fields.push({ name, type: 'vec4', value: [0, 0, 0, 0] });
 		}
 	}
 
@@ -178,6 +218,16 @@ const Scrubber: FC<ScrubberProps> = ({
 	);
 };
 
+const ResetButton: FC<{ onClick: () => void }> = ({ onClick }) => (
+	<button
+		onClick={onClick}
+		className="text-[10px] text-neutral-600 hover:text-neutral-400 font-mono leading-none select-none"
+		title="Reset to default"
+	>
+		↺
+	</button>
+);
+
 const FloatFieldComponent: FC<{
 	data: Field & { type: 'float' };
 	handleUpdateField: (updatedField: Field & { type: 'float' }) => void;
@@ -186,9 +236,14 @@ const FloatFieldComponent: FC<{
 		<FieldLabel name={data.name} type="float" />
 		<Scrubber
 			value={data.value}
+			min={data.min}
+			max={data.max}
 			step={0.01}
 			onChange={(v) => handleUpdateField({ ...data, value: v })}
 		/>
+		{data.default !== undefined && (
+			<ResetButton onClick={() => handleUpdateField({ ...data, value: data.default! })} />
+		)}
 	</div>
 );
 
@@ -209,6 +264,9 @@ const Vec2FieldComponent: FC<{
 					<Scrubber key={axis} label={axis} value={data.value[i]} onChange={(v) => update(i, v)} />
 				))}
 			</div>
+			{data.default !== undefined && (
+				<ResetButton onClick={() => handleUpdateField({ ...data, value: data.default! })} />
+			)}
 		</div>
 	);
 };
@@ -230,6 +288,9 @@ const Vec3FieldComponent: FC<{
 					<Scrubber key={axis} label={axis} value={data.value[i]} onChange={(v) => update(i, v)} />
 				))}
 			</div>
+			{data.default !== undefined && (
+				<ResetButton onClick={() => handleUpdateField({ ...data, value: data.default! })} />
+			)}
 		</div>
 	);
 };
@@ -251,6 +312,9 @@ const Vec4FieldComponent: FC<{
 					<Scrubber key={axis} label={axis} value={data.value[i]} onChange={(v) => update(i, v)} />
 				))}
 			</div>
+			{data.default !== undefined && (
+				<ResetButton onClick={() => handleUpdateField({ ...data, value: data.default! })} />
+			)}
 		</div>
 	);
 };
