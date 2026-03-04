@@ -4,11 +4,11 @@ precision highp float;
 in vec2 vUv;
 out vec4 fragColor;
 
-uniform vec2 resolution; // [[100, 100]]
+uniform vec2 resolution; // [100, 100]
 uniform float uTime; // [0, 1, 0.5]
-uniform float modSize; // [1, 100, 50]
-uniform float tileFactor; // [1,  100, 50]
-uniform vec2 uTranslation; // [[0, 0]]
+uniform float modSize; // [0, 2, 1]
+uniform float tileFactor; // [1,  100, 10]
+uniform vec2 uTranslation; // [0,0]
 
 float modSigned(float x, float y) {
     return x - y * sign(x) * floor(abs(x/y));

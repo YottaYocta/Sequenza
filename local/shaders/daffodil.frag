@@ -4,9 +4,9 @@ precision highp float;
 
 
 uniform float uTime;
-uniform vec2 uResolution;
+uniform vec2 uResolution; // [100, 100]
 uniform vec3 uNotes;
-uniform vec2 uMouse;
+uniform vec2 uMouse; 
 uniform float uMouseDown;
 in vec2 vUv;
 out vec4 fragColor;

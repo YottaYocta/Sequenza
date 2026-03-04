@@ -55,7 +55,9 @@ const createFields = (shader: Shader): Field[] => {
 
 		// uniform float name; // [min, max, default]
 		const floatMeta = trimmed.match(
-			new RegExp(`^uniform\\s+float\\s+(\\w+)\\s*;.*\\/\\/\\s*\\[\\s*${NUM}${SEP}${NUM}${SEP}${NUM}\\s*\\]`)
+			new RegExp(
+				`^uniform\\s+float\\s+(\\w+)\\s*;.*\\/\\/\\s*\\[\\s*${NUM}${SEP}${NUM}${SEP}${NUM}\\s*\\]`
+			)
 		);
 		if (floatMeta?.[1]) {
 			const min = parseFloat(floatMeta[2]);
@@ -83,20 +85,33 @@ const createFields = (shader: Shader): Field[] => {
 
 		// uniform vec3 name; // [x, y, z]
 		const vec3Meta = trimmed.match(
-			new RegExp(`^uniform\\s+vec3\\s+(\\w+)\\s*;.*\\/\\/\\s*\\[\\s*${NUM}${SEP}${NUM}${SEP}${NUM}\\s*\\]`)
+			new RegExp(
+				`^uniform\\s+vec3\\s+(\\w+)\\s*;.*\\/\\/\\s*\\[\\s*${NUM}${SEP}${NUM}${SEP}${NUM}\\s*\\]`
+			)
 		);
 		if (vec3Meta?.[1]) {
-			const def: [number, number, number] = [parseFloat(vec3Meta[2]), parseFloat(vec3Meta[3]), parseFloat(vec3Meta[4])];
+			const def: [number, number, number] = [
+				parseFloat(vec3Meta[2]),
+				parseFloat(vec3Meta[3]),
+				parseFloat(vec3Meta[4])
+			];
 			fields.push({ name: vec3Meta[1], type: 'vec3', value: def, default: def });
 			continue;
 		}
 
 		// uniform vec4 name; // [x, y, z, w]
 		const vec4Meta = trimmed.match(
-			new RegExp(`^uniform\\s+vec4\\s+(\\w+)\\s*;.*\\/\\/\\s*\\[\\s*${NUM}${SEP}${NUM}${SEP}${NUM}${SEP}${NUM}\\s*\\]`)
+			new RegExp(
+				`^uniform\\s+vec4\\s+(\\w+)\\s*;.*\\/\\/\\s*\\[\\s*${NUM}${SEP}${NUM}${SEP}${NUM}${SEP}${NUM}\\s*\\]`
+			)
 		);
 		if (vec4Meta?.[1]) {
-			const def: [number, number, number, number] = [parseFloat(vec4Meta[2]), parseFloat(vec4Meta[3]), parseFloat(vec4Meta[4]), parseFloat(vec4Meta[5])];
+			const def: [number, number, number, number] = [
+				parseFloat(vec4Meta[2]),
+				parseFloat(vec4Meta[3]),
+				parseFloat(vec4Meta[4]),
+				parseFloat(vec4Meta[5])
+			];
 			fields.push({ name: vec4Meta[1], type: 'vec4', value: def, default: def });
 			continue;
 		}
@@ -359,6 +374,10 @@ const UniformForm: FC<UniformFormProps> = ({ shader, handleUpdateUniform }) => {
 			</p>
 		);
 	}
+
+	useEffect(() => {
+		updateField();
+	}, [shader]);
 
 	return (
 		<div className="rounded border border-neutral-800 overflow-hidden">
