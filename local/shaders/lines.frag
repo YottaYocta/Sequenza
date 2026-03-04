@@ -2,16 +2,16 @@
 precision highp float;
 
 uniform float uTime;
-uniform vec2 uResolution;
+uniform vec2 uResolution; // [100, 100]
 uniform vec2 uMouse;
 uniform float uAmplitude;
 
-uniform float uRotation;     
-uniform float uDensity;      
+uniform float uRotation; // [0, 6.28, 0]
+uniform float uDensity;  // [10, 50, 30]    
 uniform float uThreshold;
 uniform vec4 uLineColor;
 
-uniform sampler2D tElias;
+uniform sampler2D tInputTex;
 
 
 in vec2 vUv;
@@ -39,7 +39,8 @@ vec2 rotateCenter(vec2 uv, float angle) {
 }
 
 void main() {
-    vec2 uvInRotatedSpace = invRotate(vUv, uRotation);
+    vec2 uv = vec2(vUv.x, 1.0 - vUv.y);
+    vec2 uvInRotatedSpace = invRotate(uv, uRotation);
     vec2 targetPixInRot = vec2(floor(uvInRotatedSpace.x * uDensity + 0.5)/uDensity, uvInRotatedSpace.y);
     vec2 targetPixInRot2 = vec2(floor((uvInRotatedSpace.x) * uDensity + 0.5)/uDensity, uvInRotatedSpace.y  + sin(uMouse) / 20.0);
 
@@ -48,7 +49,7 @@ void main() {
 
     vec2 targetInCart = invRotate(targetPixInRot, -uRotation);
     vec2 targetInCart2 = invRotate(targetPixInRot2, -uRotation);
-    vec4 targetColor = (texture(tElias, targetInCart) + texture(tElias, targetInCart2)) * 0.5;
+    vec4 targetColor = (texture(tInputTex, targetInCart) + texture(tInputTex, targetInCart2)) * 0.5;
 
     float targetLum = pow(dot(targetColor.rgb, vec3(0.299, 0.587, 0.114)), 2.0);
 

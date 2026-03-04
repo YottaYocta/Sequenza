@@ -45,17 +45,7 @@ function App() {
 				return (
 					<div className="flex gap-4 items-start" key={filepath}>
 						<p className="font-bold w-32">{filepath}</p>
-						<div className="flex flex-col gap-2">
-							<p className="text-xs w-96 line-clamp-5 border">{source.source}</p>
-							<UniformForm
-								shader={source}
-								handleUpdateUniform={(newUniforms) => {
-									shaderUniforms.current[source.id] = newUniforms;
-								}}
-							></UniformForm>
-						</div>
 						<RendererComponent
-							animate
 							width={RES}
 							height={RES}
 							patch={{ shaders: [source], connections: [] }}

@@ -1,17 +1,19 @@
 import { Handle, Position, type Node, type NodeProps } from '@xyflow/react';
-import type { Patch, Shader, Uniforms } from './renderer';
-import { useMemo, type RefObject } from 'react';
+import type { Shader, Uniforms } from './renderer';
+import { useContext, useMemo, type RefObject } from 'react';
 import UniformForm from './UniformForm';
 import { RendererComponent } from './RendererComponent';
+import { EditorContext } from './EditorContext';
 
 type ShaderNodeData = {
 	shader: Shader;
-	patch: Patch;
 	uniforms: RefObject<Record<string, Uniforms>>;
 	handleUpdateUnforms: (newUniforms: Uniforms) => void;
 };
 export type ShaderNode = Node<ShaderNodeData, 'shader'>;
 export const ShaderNode = ({ data }: NodeProps<ShaderNode>) => {
+	const { patches, uniforms } = useContext(EditorContext);
+
 	const textureInputs = useMemo<string[]>(() => {
 		const matches = data.shader.source.matchAll(/uniform\s+sampler2D\s+(\w+)\s*;/g);
 		return Array.from(matches, (m) => m[1]);
@@ -38,8 +40,8 @@ export const ShaderNode = ({ data }: NodeProps<ShaderNode>) => {
 					animate
 					width={200}
 					height={200}
-					patch={data.patch}
-					uniforms={data.uniforms}
+					patch={patches[data.shader.id]}
+					uniforms={uniforms}
 				></RendererComponent>
 			</div>
 			<Handle id={'out'} type="source" position={Position.Bottom}>
