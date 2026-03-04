@@ -15,6 +15,7 @@ export const ShaderNode = ({ data }: NodeProps<ShaderNode>) => {
 	return (
 		<div className="flex gap-2 bg-white border p-4">
 			<div>
+				<p>{data.shader.id}</p>
 				<UniformForm
 					shader={data.shader}
 					handleUpdateUniform={(newUniforms) => {

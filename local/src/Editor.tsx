@@ -1,4 +1,4 @@
-import { useCallback, useState, type FC, type RefObject } from 'react';
+import { useCallback, useRef, useState, type FC, type RefObject } from 'react';
 import type { Patch, Shader, Uniforms } from './renderer';
 import {
 	addEdge,
@@ -57,6 +57,8 @@ export const Editor: FC<EditorProps> = ({ shaders }) => {
 		setEdges((edgesSnapshot) => addEdge(params, edgesSnapshot));
 	}, []);
 
+	const uniformRef = useRef<Record<string, Uniforms>>({});
+
 	const handleAddShader = (shader: Shader) => {
 		const newId = `${Math.random() * 100000}`;
 		const newShader: Shader = { ...shader, id: newId };
@@ -66,8 +68,10 @@ export const Editor: FC<EditorProps> = ({ shaders }) => {
 			data: {
 				shader: newShader,
 				patch: { shaders: [newShader], connections: [] },
-				uniforms: { current: {} },
-				handleUpdateUnforms: () => {}
+				uniforms: uniformRef,
+				handleUpdateUnforms: (newUniforms) => {
+					uniformRef.current[newId] = newUniforms;
+				}
 			},
 			type: 'shader'
 		};

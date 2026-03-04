@@ -380,7 +380,7 @@ const UniformForm: FC<UniformFormProps> = ({ shader, handleUpdateUniform }) => {
 	}, [shader]);
 
 	return (
-		<div className="rounded border border-neutral-800 overflow-hidden">
+		<div className="rounded border border-neutral-800 overflow-hidden nodrag">
 			{fields.map((field, i) => {
 				const key = `${field.name}-${field.type}`;
 				switch (field.type) {
