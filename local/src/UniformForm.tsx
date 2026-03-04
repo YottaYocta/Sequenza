@@ -39,7 +39,7 @@ type Field =
  */
 const createFields = (shader: Shader): Field[] => {
 	const fields: Field[] = [];
-	const lines = shader.split('\n');
+	const lines = shader.source.split('\n');
 
 	for (const line of lines) {
 		const trimmed = line.trim();

@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
-import type { Shader } from './renderer';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { Shader, Uniforms } from './renderer';
 import { io } from 'socket.io-client';
 import { RendererComponent } from './RendererComponent';
 import UniformForm from './UniformForm';
@@ -26,6 +26,8 @@ import '@xyflow/react/dist/style.css';
 
 function App() {
 	const [shaderMap, setShaderMap] = useState<Record<string, Shader>>({});
+	const shaderUniforms = useRef<Record<string, Uniforms>>({});
+
 	const [nodes, setNodes] = useState<Node[]>([
 		{
 			id: 'n1',
@@ -53,7 +55,14 @@ function App() {
 		console.log('[CONNECT]');
 		const socket = io('http://localhost:3001');
 		socket.on('shaders-found', (data: Record<string, string>) => {
-			setShaderMap(data);
+			const newShaders: Record<string, Shader> = {};
+			for (const [filepath, name] of Object.entries(data)) {
+				newShaders[filepath] = { id: filepath, source: name };
+				shaderUniforms.current[filepath] = {
+					uResolution: [100, 100]
+				};
+			}
+			setShaderMap(newShaders);
 		});
 		() => {
 			console.log('[DISCONNECT]');
@@ -97,20 +106,14 @@ function App() {
 					<div className="flex gap-4 items-start" key={filepath}>
 						<p className="font-bold w-32">{filepath}</p>
 						<div className="flex flex-col gap-2">
-							<p className="text-xs w-96 line-clamp-5 border">{source}</p>
+							<p className="text-xs w-96 line-clamp-5 border">{source.source}</p>
 							<UniformForm shader={source} handleUpdateUniform={() => {}}></UniformForm>
 						</div>
 						<RendererComponent
 							width={RES}
 							height={RES}
 							patch={{ shaders: [source], connections: [] }}
-							uniforms={{
-								current: [
-									{
-										uResolution: [RES, RES]
-									}
-								]
-							}}
+							uniforms={shaderUniforms}
 						></RendererComponent>
 					</div>
 				);

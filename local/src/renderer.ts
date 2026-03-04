@@ -1,9 +1,9 @@
 import * as twgl from 'twgl.js';
 
 export type Uniforms = Record<string, any>;
-export type Shader = string;
+export type Shader = { id: string; source: string };
 
-export type Connection = { from: number; to: number; input: number };
+export type Connection = { from: string; to: string; input: string };
 
 export type Patch = {
 	shaders: Shader[];
@@ -30,49 +30,55 @@ void main() {
  *
  */
 export class Renderer {
-	private programs: twgl.ProgramInfo[] = [];
-	private fbos: twgl.FramebufferInfo[] = [];
-	private renderOrder: number[] = [];
-	private dependencyMapping: Map<number, { input: number; from: number }[]> = new Map();
+	private programs: Record<string, twgl.ProgramInfo> = {};
+	private fbos: Record<string, twgl.FramebufferInfo> = {};
+	private renderOrder: string[] = []; // corresponds with shader id
+	private dependencyMapping: Record<string, { input: string; from: string }[]> = {};
 	private quad: twgl.BufferInfo;
 
 	readonly patch: Patch;
 	readonly gl: WebGL2RenderingContext;
 
-	uniforms: Uniforms[];
+	uniforms: Record<string, Uniforms>;
 
 	constructor(context: WebGL2RenderingContext, patch: Patch) {
 		this.patch = patch;
 		this.gl = context;
 
 		for (let i = 0; i < patch.shaders.length; i++) {
-			this.programs.push(twgl.createProgramInfo(this.gl, [DefaultVertexShader, patch.shaders[i]]));
-			this.fbos.push(twgl.createFramebufferInfo(this.gl));
+			const currentShader = patch.shaders[i];
+			this.programs[currentShader.id] = twgl.createProgramInfo(this.gl, [
+				DefaultVertexShader,
+				currentShader.source
+			]);
+			this.fbos[currentShader.id] = twgl.createFramebufferInfo(this.gl);
 		}
 
 		this.quad = twgl.primitives.createXYQuadBufferInfo(this.gl);
 
 		// find topological ordering of graph, determine rendering order, then initialize an fbo for each pass
-		const adj = new Map<number, number[]>();
-		const inDegree = new Map<number, number>();
+		const adj: Record<string, string[]> = {};
+		const inDegree: Record<string, number> = {};
 
-		this.uniforms = [];
+		this.uniforms = {};
 		for (let i = 0; i < this.patch.shaders.length; i++) {
-			adj.set(i, []);
-			inDegree.set(i, 0);
-			this.dependencyMapping.set(i, []);
-			this.uniforms.push({});
+			const currentShader = this.patch.shaders[i];
+			adj[currentShader.id] = [];
+			inDegree[currentShader.id] = 0;
+			this.dependencyMapping[currentShader.id] = [];
+			this.uniforms[currentShader.id] = [];
 		}
 
 		for (const connection of this.patch.connections) {
-			adj.get(connection.from)!.push(connection.to);
-			inDegree.set(connection.to, inDegree.get(connection.to)! + 1);
-			this.dependencyMapping
-				.get(connection.to)!
-				.push({ input: connection.input, from: connection.from });
+			adj[connection.from].push(connection.to);
+			inDegree[connection.to] += 1;
+			this.dependencyMapping[connection.to].push({
+				input: connection.input,
+				from: connection.from
+			});
 		}
 
-		const queue = [...inDegree.entries()].reduce((prev: number[], [to, count]) => {
+		const queue = [...Object.entries(inDegree)].reduce((prev: string[], [to, count]) => {
 			if (count === 0) return [...prev, to];
 			else return prev;
 		}, []);
@@ -80,10 +86,10 @@ export class Renderer {
 		while (queue.length > 0) {
 			const n = queue.shift()!;
 			this.renderOrder.push(n);
-			for (const dependent of adj.get(n)!) {
-				const dependentDeg = inDegree.get(dependent)! - 1;
+			for (const dependent of adj[n]) {
+				const dependentDeg = inDegree[dependent] - 1;
 
-				inDegree.set(dependent, dependentDeg);
+				inDegree[dependent] = dependentDeg;
 				if (dependentDeg === 0) {
 					queue.push(dependent);
 				}
@@ -98,8 +104,8 @@ export class Renderer {
 			const currentNode = this.renderOrder[i];
 			const programInfo = this.programs[currentNode];
 			const uniforms: Uniforms = { ...this.uniforms[currentNode] };
-			for (const dependency of this.dependencyMapping.get(currentNode)!) {
-				uniforms[`u_input_${dependency.input}`] = this.fbos[dependency.from];
+			for (const dependency of this.dependencyMapping[currentNode]) {
+				uniforms[dependency.input] = this.fbos[dependency.from].attachments[0];
 			}
 
 			this.gl.useProgram(programInfo.program);
@@ -113,17 +119,19 @@ export class Renderer {
 	}
 
 	dispose() {
-		for (const programInfo of this.programs) {
+		for (const programInfo of Object.values(this.programs)) {
 			this.gl.deleteProgram(programInfo.program);
 		}
+		this.programs = {};
 
-		for (const fboInfo of this.fbos) {
+		for (const fboInfo of Object.values(this.fbos)) {
 			for (const attachment of fboInfo.attachments) {
 				if (attachment instanceof WebGLTexture) this.gl.deleteTexture(attachment);
 				else if (attachment instanceof WebGLRenderbuffer) this.gl.deleteRenderbuffer(attachment);
 			}
 			this.gl.deleteFramebuffer(fboInfo.framebuffer);
 		}
+		this.fbos = {};
 
 		if (this.quad.indices) this.gl.deleteBuffer(this.quad.indices);
 		for (const attrib of Object.values(this.quad.attribs ?? {})) {

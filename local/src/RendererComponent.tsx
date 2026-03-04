@@ -4,7 +4,7 @@ import { type Patch, Renderer, type Uniforms } from './renderer';
 
 interface RendererComponentProps {
 	patch: Patch;
-	uniforms: RefObject<Uniforms[]>;
+	uniforms: RefObject<Record<string, Uniforms>>;
 	className?: string;
 	width?: number;
 	height?: number;
