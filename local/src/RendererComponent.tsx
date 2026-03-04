@@ -24,7 +24,6 @@ export const RendererComponent: FC<RendererComponentProps> = ({
 	useEffect(() => {
 		if (canvasRef.current) {
 			const context = canvasRef.current.getContext('webgl2')!;
-			console.log('new renerer');
 			const renderer = new Renderer(context, patch);
 
 			let animationFrameId: number | null = null;
