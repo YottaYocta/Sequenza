@@ -1,12 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
-import type { Shader, Uniforms } from './renderer';
+import { useEffect, useState } from 'react';
+import type { Shader } from './renderer';
 import { io } from 'socket.io-client';
 import { RendererComponent } from './RendererComponent';
 import UniformForm from './UniformForm';
 
 function App() {
 	const [shaderMap, setShaderMap] = useState<Record<string, Shader>>({});
-	const uniformMapRef = useRef<Record<string, Uniforms>>({});
 
 	useEffect(() => {
 		console.log('[CONNECT]');
