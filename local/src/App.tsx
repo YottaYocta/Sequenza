@@ -1,11 +1,53 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { Shader } from './renderer';
 import { io } from 'socket.io-client';
 import { RendererComponent } from './RendererComponent';
 import UniformForm from './UniformForm';
+import {
+	ReactFlow,
+	Background,
+	Controls,
+	applyNodeChanges,
+	type OnNodesChange,
+	type Edge,
+	type Node,
+	type OnEdgesChange,
+	applyEdgeChanges,
+	type OnConnect,
+	addEdge
+} from '@xyflow/react';
+import '@xyflow/react/dist/style.css';
+
+/**
+ * a single node type; shaders
+ * data/props: shader, patch (for renderer), uniforms, handle uniform update
+ *
+ */
 
 function App() {
 	const [shaderMap, setShaderMap] = useState<Record<string, Shader>>({});
+	const [nodes, setNodes] = useState<Node[]>([
+		{
+			id: 'n1',
+			position: { x: 0, y: 0 },
+			data: { label: 'Node 1' },
+			type: 'input'
+		},
+		{
+			id: 'n2',
+			position: { x: 100, y: 100 },
+			data: { label: 'Node 2' }
+		}
+	]);
+
+	const [edges, setEdges] = useState<Edge[]>([
+		{
+			id: 'fjslkfkjsajflaj',
+			source: 'n1',
+			target: 'n2',
+			label: 'edge'
+		}
+	]);
 
 	useEffect(() => {
 		console.log('[CONNECT]');
@@ -21,8 +63,35 @@ function App() {
 
 	const RES = 300;
 
+	const onNodesChange: OnNodesChange = useCallback(
+		(changes) => setNodes((nodesSnapshot) => applyNodeChanges(changes, nodesSnapshot)),
+		[setNodes]
+	);
+	const onEdgesChange: OnEdgesChange = useCallback(
+		(changes) => setEdges((edgesSnapshot) => applyEdgeChanges(changes, edgesSnapshot)),
+		[setEdges]
+	);
+
+	const onConnect: OnConnect = useCallback((params) => {
+		setEdges((edgesSnapshot) => addEdge(params, edgesSnapshot));
+	}, []);
+
 	return (
 		<main className="">
+			<div className="w-full h-200 border">
+				<ReactFlow
+					proOptions={{ hideAttribution: true }}
+					nodes={nodes}
+					edges={edges}
+					onNodesChange={onNodesChange}
+					onEdgesChange={onEdgesChange}
+					onConnect={onConnect}
+					fitView
+				>
+					<Background />
+					<Controls />
+				</ReactFlow>
+			</div>
 			{Object.entries(shaderMap).map(([filepath, source]) => {
 				return (
 					<div className="flex gap-4 items-start" key={filepath}>
