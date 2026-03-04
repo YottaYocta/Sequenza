@@ -97,11 +97,6 @@ export class Renderer {
 		}
 
 		if (this.renderOrder.length < this.patch.shaders.length) throw Error('Cycle detected in graph');
-
-		console.log('---=');
-		console.log(this.patch);
-		console.log(this.renderOrder);
-		console.log(this.dependencyMapping);
 	}
 
 	render() {
@@ -110,11 +105,8 @@ export class Renderer {
 			const programInfo = this.programs[currentNode];
 			const uniforms: Uniforms = { ...this.uniforms[currentNode] };
 			for (const dependency of this.dependencyMapping[currentNode]) {
-				//console.log(dependency);
 				uniforms[dependency.input] = this.fbos[dependency.from].attachments[0];
-				//console.log(`${currentNode}:${dependency.input} <- ${dependency.from}`);
 			}
-			//console.log(uniforms);
 
 			this.gl.useProgram(programInfo.program);
 			if (i !== this.renderOrder.length - 1)
