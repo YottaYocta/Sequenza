@@ -66,7 +66,7 @@ export class Renderer {
 			adj[currentShader.id] = [];
 			inDegree[currentShader.id] = 0;
 			this.dependencyMapping[currentShader.id] = [];
-			this.uniforms[currentShader.id] = [];
+			this.uniforms[currentShader.id] = {};
 		}
 
 		for (const connection of this.patch.connections) {
@@ -97,6 +97,11 @@ export class Renderer {
 		}
 
 		if (this.renderOrder.length < this.patch.shaders.length) throw Error('Cycle detected in graph');
+
+		console.log('---=');
+		console.log(this.patch);
+		console.log(this.renderOrder);
+		console.log(this.dependencyMapping);
 	}
 
 	render() {
@@ -105,15 +110,18 @@ export class Renderer {
 			const programInfo = this.programs[currentNode];
 			const uniforms: Uniforms = { ...this.uniforms[currentNode] };
 			for (const dependency of this.dependencyMapping[currentNode]) {
+				//console.log(dependency);
 				uniforms[dependency.input] = this.fbos[dependency.from].attachments[0];
+				//console.log(`${currentNode}:${dependency.input} <- ${dependency.from}`);
 			}
+			//console.log(uniforms);
 
 			this.gl.useProgram(programInfo.program);
-			twgl.setUniforms(programInfo, uniforms);
-			twgl.setBuffersAndAttributes(this.gl, programInfo, this.quad);
 			if (i !== this.renderOrder.length - 1)
 				twgl.bindFramebufferInfo(this.gl, this.fbos[currentNode]);
 			else twgl.bindFramebufferInfo(this.gl, null);
+			twgl.setUniforms(programInfo, uniforms);
+			twgl.setBuffersAndAttributes(this.gl, programInfo, this.quad);
 			twgl.drawBufferInfo(this.gl, this.quad);
 		}
 	}

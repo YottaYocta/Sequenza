@@ -17,7 +17,7 @@ export const RendererComponent: FC<RendererComponentProps> = ({
 	className,
 	width = 100,
 	height = 100,
-	animate = false
+	animate
 }) => {
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -32,6 +32,7 @@ export const RendererComponent: FC<RendererComponentProps> = ({
 				renderer.uniforms = uniforms.current;
 				renderer.render();
 			};
+
 			if (animate) {
 				animationFrameId = requestAnimationFrame(function renderLoop() {
 					render();
@@ -45,6 +46,7 @@ export const RendererComponent: FC<RendererComponentProps> = ({
 				if (animationFrameId !== null) {
 					cancelAnimationFrame(animationFrameId);
 				}
+
 				renderer.dispose();
 			};
 		}
