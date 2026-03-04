@@ -14,6 +14,7 @@ import {
 	type OnEdgesChange,
 	type OnNodesChange
 } from '@xyflow/react';
+import { ShaderNode } from './ShaderNode';
 
 interface EditorProps {
 	shaders: Shader[];
@@ -56,11 +57,30 @@ export const Editor: FC<EditorProps> = ({ shaders }) => {
 		setEdges((edgesSnapshot) => addEdge(params, edgesSnapshot));
 	}, []);
 
+	const handleAddShader = (shader: Shader) => {
+		const newId = `${Math.random() * 100000}`;
+		const newShader: Shader = { ...shader, id: newId };
+		const shaderNode: ShaderNode = {
+			id: newId,
+			position: { x: 0, y: 0 },
+			data: {
+				shader: newShader,
+				patch: { shaders: [newShader], connections: [] },
+				uniforms: { current: {} },
+				handleUpdateUnforms: () => {}
+			},
+			type: 'shader'
+		};
+
+		setNodes((snapshot) => [...snapshot, shaderNode]);
+	};
+
 	return (
 		<div className="w-full h-full">
 			<ReactFlow
 				proOptions={{ hideAttribution: true }}
 				nodes={nodes}
+				nodeTypes={{ shader: ShaderNode }}
 				edges={edges}
 				onNodesChange={onNodesChange}
 				onEdgesChange={onEdgesChange}
@@ -75,6 +95,9 @@ export const Editor: FC<EditorProps> = ({ shaders }) => {
 								<button
 									key={shader.id}
 									className="text-xs flex justify-start p-1 border border-neutral-200 rounded-sm hover:bg-neutral-100 cursor-pointer"
+									onClick={() => {
+										handleAddShader(shader);
+									}}
 								>
 									{shader.id}
 								</button>
