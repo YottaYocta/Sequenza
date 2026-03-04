@@ -376,7 +376,7 @@ const UniformForm: FC<UniformFormProps> = ({ shader, handleUpdateUniform }) => {
 	}
 
 	useEffect(() => {
-		updateField();
+		if (fields.length > 0) updateField(0, fields[0]);
 	}, [shader]);
 
 	return (
