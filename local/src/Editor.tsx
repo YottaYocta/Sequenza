@@ -5,6 +5,7 @@ import {
 	applyEdgeChanges,
 	applyNodeChanges,
 	Controls,
+	getOutgoers,
 	Panel,
 	ReactFlow,
 	type Edge,
@@ -40,9 +41,24 @@ export const Editor: FC<EditorProps> = ({ shaders, initialState, handleSave }) =
 		[setEdges]
 	);
 
-	const onConnect: OnConnect = useCallback((params) => {
-		setEdges((edgesSnapshot) => addEdge(params, edgesSnapshot));
-	}, []);
+	const isValidConnection = useCallback(
+		(connection: { source: string; target: string }) => {
+			const visited = new Set<string>();
+			const hasCycle = (nodeId: string): boolean => {
+				if (visited.has(nodeId)) return false;
+				if (nodeId === connection.source) return true;
+				visited.add(nodeId);
+				return getOutgoers({ id: nodeId } as Node, nodes, edges).some((n) => hasCycle(n.id));
+			};
+			return !hasCycle(connection.target);
+		},
+		[nodes, edges]
+	);
+
+	const onConnect: OnConnect = useCallback(
+		(params) => setEdges((edgesSnapshot) => addEdge(params, edgesSnapshot)),
+		[]
+	);
 
 	const uniformRef = useRef<Record<string, Uniforms>>(initialState?.uniforms ?? {});
 	const [savedAt, setSavedAt] = useState<Date | null>(null);
@@ -154,6 +170,7 @@ export const Editor: FC<EditorProps> = ({ shaders, initialState, handleSave }) =
 					onNodesChange={onNodesChange}
 					onEdgesChange={onEdgesChange}
 					onConnect={onConnect}
+				isValidConnection={isValidConnection}
 					style={{
 						background: '#F9F9F9'
 					}}
