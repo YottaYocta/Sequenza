@@ -149,10 +149,35 @@ export const Editor: FC<EditorProps> = ({ shaders, initialState, handleSave }) =
 		return patches;
 	}, [shaderHash, edgesHash]);
 
+	const timeRef = useRef<number>(0);
+	const mousePosRef = useRef<[number, number]>([0, 0]);
+
+	useEffect(() => {
+		const interval = setInterval(() => {
+			timeRef.current = Date.now();
+		}, 10);
+
+		const onMouseMove = (e: MouseEvent) => {
+			mousePosRef.current = [
+				Math.min(1, e.clientX / window.innerWidth),
+				Math.min(e.clientY / innerHeight, 1)
+			];
+		};
+
+		window.addEventListener('mousemove', onMouseMove);
+
+		return () => {
+			clearInterval(interval);
+			window.removeEventListener('mousemove', onMouseMove);
+		};
+	});
+
 	return (
 		<div className="w-full h-full">
 			<EditorContext.Provider
 				value={{
+					currentTime: timeRef,
+					mousePosition: mousePosRef,
 					shaders,
 					patches,
 					uniforms: uniformRef,

@@ -1,6 +1,7 @@
-import { useState, useRef, useCallback, useEffect, type FC } from 'react';
+import { useState, useRef, useCallback, useEffect, useContext, type FC } from 'react';
 import type { Shader, Uniforms } from './renderer';
 import { Scrubber } from './Scrubber';
+import { EditorContext } from './EditorContext';
 
 interface UniformFormProps {
 	shader: Shader;
@@ -16,12 +17,14 @@ type Field =
 			min?: number;
 			max?: number;
 			default?: number;
+			special?: 'time';
 	  }
 	| {
 			name: string;
 			type: 'vec2';
 			value: [number, number];
 			default?: [number, number];
+			special?: 'mouse';
 	  }
 	| {
 			name: string;
@@ -42,6 +45,9 @@ type Field =
 // uniform vec3 varname; // color [r, g, b]
 // uniform vec4 varname; // color
 // uniform vec4 varname; // color [r, g, b, a]
+// add support for:
+// uniform float var; // time (if this, create an input component that looks like ([start/stop - changes by ui state] / timevalue), with timevalue being time elapsed in seconds. use the time context from the editor)
+// uniform vec2 varname; // mouse (if this, create a readonly component that monitors position of the mouse; does this by using the mouse context from the editor)
 
 /**
  * Parses shader source for uniform declarations with metadata comments.
@@ -73,6 +79,12 @@ const createFields = (shader: Shader): Field[] => {
 			const max = parseFloat(floatMeta[3]);
 			const def = parseFloat(floatMeta[4]);
 			fields.push({ name: floatMeta[1], type: 'float', value: def, min, max, default: def });
+			continue;
+		}
+
+		const floatTime = trimmed.match(/^uniform\s+float\s+(\w+)\s*;.*\/\/\s*time\b/);
+		if (floatTime?.[1]) {
+			fields.push({ name: floatTime[1], type: 'float', value: 0, special: 'time' });
 			continue;
 		}
 
@@ -172,6 +184,12 @@ const createFields = (shader: Shader): Field[] => {
 			continue;
 		}
 
+		const vec2Mouse = trimmed.match(/^uniform\s+vec2\s+(\w+)\s*;.*\/\/\s*mouse\b/);
+		if (vec2Mouse?.[1]) {
+			fields.push({ name: vec2Mouse[1], type: 'vec2', value: [0, 0], special: 'mouse' });
+			continue;
+		}
+
 		const vecMatch = trimmed.match(/^uniform\s+(vec[234])\s+(\w+)\s*;/);
 		if (vecMatch) {
 			const vecType = vecMatch[1] as 'vec2' | 'vec3' | 'vec4';
@@ -220,7 +238,6 @@ const ColorPickerButton: FC<{ color: string; onChange: (hex: string) => void }> 
 		</div>
 	);
 };
-
 
 const ResetButton: FC<{ onClick: () => void }> = ({ onClick }) => (
 	<button
@@ -369,6 +386,106 @@ const Vec4FieldComponent: FC<{
 	);
 };
 
+const TimeFieldComponent: FC<{
+	data: Field & { type: 'float'; special: 'time' };
+	handleUpdateField: (updatedField: Field & { type: 'float' }) => void;
+}> = ({ data, handleUpdateField }) => {
+	const [isPlaying, setIsPlaying] = useState(false);
+	const [display, setDisplay] = useState(0);
+	const accumulatedRef = useRef(0);
+	const startRef = useRef(0);
+	const rafRef = useRef(0);
+	const handleRef = useRef(handleUpdateField);
+	handleRef.current = handleUpdateField;
+	const dataRef = useRef(data);
+	dataRef.current = data;
+
+	useEffect(() => {
+		if (!isPlaying) return;
+		startRef.current = Date.now();
+		const tick = () => {
+			const secs = accumulatedRef.current + (Date.now() - startRef.current) / 1000;
+			setDisplay(secs);
+			handleRef.current({ ...dataRef.current, value: secs });
+			rafRef.current = requestAnimationFrame(tick);
+		};
+		rafRef.current = requestAnimationFrame(tick);
+		return () => {
+			cancelAnimationFrame(rafRef.current);
+			accumulatedRef.current += (Date.now() - startRef.current) / 1000;
+		};
+	}, [isPlaying]);
+
+	const toggle = () => setIsPlaying((p) => !p);
+	const reset = () => {
+		setIsPlaying(false);
+		accumulatedRef.current = 0;
+		setDisplay(0);
+		handleRef.current({ ...dataRef.current, value: 0 });
+	};
+
+	return (
+		<div className="flex items-center py-1.5">
+			<FieldLabel name={data.name} type="float time" />
+			<button
+				onClick={toggle}
+				className="text-xs font-mono text-neutral-500 bg-neutral-100 hover:bg-neutral-200 rounded-sm w-6 h-6 flex items-center justify-center select-none"
+				title={isPlaying ? 'Pause' : 'Play'}
+			>
+				{isPlaying ? '⏸' : '▶'}
+			</button>
+			<span className="font-mono text-xs text-neutral-500 px-2 w-16 text-right tabular-nums">
+				{display.toFixed(2)}s
+			</span>
+			<ResetButton onClick={reset} />
+		</div>
+	);
+};
+
+const MouseFieldComponent: FC<{
+	data: Field & { type: 'vec2'; special: 'mouse' };
+	handleUpdateField: (updatedField: Field & { type: 'vec2' }) => void;
+}> = ({ data, handleUpdateField }) => {
+	const { mousePosition } = useContext(EditorContext);
+	const [pos, setPos] = useState<[number, number]>([0, 0]);
+	const handleRef = useRef(handleUpdateField);
+	handleRef.current = handleUpdateField;
+	const dataRef = useRef(data);
+	dataRef.current = data;
+
+	useEffect(() => {
+		let rafId: number;
+		const tick = () => {
+			const p: [number, number] = [mousePosition.current[0], mousePosition.current[1]];
+			setPos(p);
+			handleRef.current({ ...dataRef.current, value: p });
+			rafId = requestAnimationFrame(tick);
+		};
+		rafId = requestAnimationFrame(tick);
+		return () => cancelAnimationFrame(rafId);
+	}, []);
+
+	return (
+		<div className="flex items-center py-1.5">
+			<FieldLabel name={data.name} type="vec2 mouse" />
+			<div className="flex gap-2">
+				{(['x', 'y'] as const).map((axis, i) => (
+					<div key={axis} className="flex items-center w-20 relative">
+						<span className="absolute left-1 z-10 bg-neutral-200 h-4 w-4 grid place-items-center pointer-events-none rounded-sm">
+							<p className="text-[11px] font-mono w-3 text-neutral-500 leading-0 -translate-y-0.5 translate-x-0.5">
+								{axis}
+							</p>
+						</span>
+						<span className="text-xs font-mono text-neutral-500 pl-5 pointer-events-none bg-neutral-100 rounded-sm w-full h-6 flex items-center justify-end px-1 tabular-nums">
+							{pos[i].toFixed(3)}
+						</span>
+					</div>
+				))}
+			</div>
+		</div>
+	);
+};
+
 const FieldLabel: FC<{ name: string; type: string }> = ({ name, type }) => (
 	<div className="min-w-30 flex flex-col gap-0.5">
 		<span className="font-mono text-xs text-neutral-900">{name}</span>
@@ -431,7 +548,13 @@ const UniformForm: FC<UniformFormProps> = ({ shader, handleUpdateUniform, initia
 				const key = `${field.name}-${field.type}`;
 				switch (field.type) {
 					case 'float':
-						return (
+						return field.special === 'time' ? (
+							<TimeFieldComponent
+								key={key}
+								data={field as Field & { type: 'float'; special: 'time' }}
+								handleUpdateField={(updated) => updateField(i, updated)}
+							/>
+						) : (
 							<FloatFieldComponent
 								key={key}
 								data={field}
@@ -439,7 +562,13 @@ const UniformForm: FC<UniformFormProps> = ({ shader, handleUpdateUniform, initia
 							/>
 						);
 					case 'vec2':
-						return (
+						return field.special === 'mouse' ? (
+							<MouseFieldComponent
+								key={key}
+								data={field as Field & { type: 'vec2'; special: 'mouse' }}
+								handleUpdateField={(updated) => updateField(i, updated)}
+							/>
+						) : (
 							<Vec2FieldComponent
 								key={key}
 								data={field}
