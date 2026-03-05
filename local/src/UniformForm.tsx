@@ -318,10 +318,10 @@ const Scrubber: FC<ScrubberProps> = ({
 							if (e.key === 'Enter') commitEdit();
 							if (e.key === 'Escape') setIsEditing(false);
 						}}
-						className="outline-none text-neutral-500 text-xs font-mono bg-neutral-50 border border-neutral-200 pl-5 rounded-sm text-right w-full h-full"
+						className="outline-none text-neutral-500 text-xs font-mono bg-neutral-50 border-neutral-200 pl-5 rounded-sm text-right w-full h-full"
 					/>
 				) : (
-					<span className="text-xs font-mono text-neutral-500 pl-5 pointer-events-none border-neutral-200 border bg-neutral-50 rounded-sm w-full h-full flex items-center justify-end px-1">
+					<span className="text-xs font-mono text-neutral-500 pl-5 pointer-events-none border-neutral-200 bg-neutral-100 rounded-sm w-full h-full flex items-center justify-end px-1">
 						<p>{displayValue}</p>
 					</span>
 				)}
