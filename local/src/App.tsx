@@ -1,11 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Shader, Uniforms } from './renderer';
 import { io } from 'socket.io-client';
-import { RendererComponent } from './RendererComponent';
 
 import '@xyflow/react/dist/style.css';
 import { Editor } from './Editor';
-import UniformForm from './UniformForm';
 
 /**
  * a single node type; shaders
@@ -34,32 +32,11 @@ function App() {
 		};
 	}, []);
 
-	const RES = 300;
-
 	return (
 		<main className="">
-			<div className="w-full h-200 border">
+			<div className="w-full min-h-screen h-screen border">
 				<Editor shaders={[...Object.values(shaderMap)]}></Editor>
 			</div>
-			{Object.entries(shaderMap).map(([filepath, source]) => {
-				return (
-					<div className="flex gap-4 items-start" key={filepath}>
-						<p className="font-bold w-32">{filepath}</p>
-						<UniformForm
-							shader={source}
-							handleUpdateUniform={(newUniforms) => {
-								shaderUniforms.current[source.id] = newUniforms;
-							}}
-						></UniformForm>
-						<RendererComponent
-							width={RES}
-							height={RES}
-							patch={{ shaders: [source], connections: [] }}
-							uniforms={shaderUniforms}
-						></RendererComponent>
-					</div>
-				);
-			})}
 		</main>
 	);
 }

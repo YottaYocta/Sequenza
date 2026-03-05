@@ -60,25 +60,11 @@ export const Editor: FC<EditorProps> = ({ shaders }) => {
 		setNodes((snapshot) => [...snapshot, shaderNode]);
 	};
 
-	/**
-	 * patches[i] gives the patch for shader node with id [i]
-	 */
-	const patches = useMemo<Record<string, Patch>>(() => {
-		// maps target -> incoming connection
+	const [edgesHash, edgeMap] = useMemo(() => {
 		const edgeMap: Record<string, Connection[]> = {};
-
-		// maps nodeId -> shader
-		const shaderMap: Record<string, Shader> = {};
-
-		// maps shader id to patch for that shader
-		const patches: Record<string, Patch> = {};
 
 		for (const node of nodes) {
 			edgeMap[node.id] = [];
-			if (node.type === 'shader') {
-				const shaderNode = node as ShaderNode;
-				shaderMap[shaderNode.id] = shaderNode.data.shader;
-			}
 		}
 
 		for (const edge of edges) {
@@ -89,27 +75,47 @@ export const Editor: FC<EditorProps> = ({ shaders }) => {
 			});
 		}
 
+		const hash = JSON.stringify(edgeMap);
+		return [hash, edgeMap];
+	}, [edges, nodes]);
+
+	const [shaderHash, shaderMap] = useMemo(() => {
+		const shaderMap: Record<string, Shader> = {};
 		for (const node of nodes) {
 			if (node.type === 'shader') {
 				const shaderNode = node as ShaderNode;
-				patches[shaderNode.id] = { shaders: [shaderMap[shaderNode.id]], connections: [] };
+				shaderMap[shaderNode.id] = shaderNode.data.shader;
+			}
+		}
 
-				const queue: string[] = [shaderNode.data.shader.id]; // nodes to traverse
+		return [JSON.stringify(shaderMap), shaderMap];
+	}, [nodes]);
 
-				while (queue.length !== 0) {
-					const dependentNodeId = queue.shift()!;
-					for (const incomingConnection of edgeMap[dependentNodeId]) {
-						const dependencyNodeId = incomingConnection.from;
-						queue.push(dependencyNodeId);
-						const dependencyShader = shaderMap[dependencyNodeId];
-						patches[shaderNode.id].shaders.push(dependencyShader);
-						patches[shaderNode.id].connections.push(incomingConnection);
-					}
+	/**
+	 * patches[i] gives the patch for shader node with id [i]
+	 */
+	const patches = useMemo<Record<string, Patch>>(() => {
+		// maps shader id to patch for that shader
+		const patches: Record<string, Patch> = {};
+
+		for (const [nodeId, shader] of Object.entries(shaderMap)) {
+			patches[nodeId] = { shaders: [shader], connections: [] };
+
+			const queue: string[] = [nodeId]; // nodes to traverse
+
+			while (queue.length !== 0) {
+				const dependentNodeId = queue.shift()!;
+				for (const incomingConnection of edgeMap[dependentNodeId]) {
+					const dependencyNodeId = incomingConnection.from;
+					queue.push(dependencyNodeId);
+					const dependencyShader = shaderMap[dependencyNodeId];
+					patches[nodeId].shaders.push(dependencyShader);
+					patches[nodeId].connections.push(incomingConnection);
 				}
 			}
 		}
 		return patches;
-	}, [nodes.length, edges.length, shaders]);
+	}, [shaderHash, edgesHash]);
 
 	return (
 		<div className="w-full h-full">
