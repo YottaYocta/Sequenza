@@ -291,18 +291,20 @@ const Scrubber: FC<ScrubberProps> = ({
 		: value.toFixed(3).replace(/0+$/, '');
 
 	return (
-		<div className="flex items-center gap-2 w-24">
-			{label ? (
-				<p className="text-xs font-mono w-3 text-neutral-500">{label}</p>
-			) : (
-				<span className="w-3"></span>
+		<div className="flex items-center w-20 relative">
+			{label && (
+				<span className="absolute left-1 z-10 bg-neutral-200 h-4 w-4 grid place-items-center pointer-events-none rounded-sm">
+					<p className="text-[11px] font-mono w-3 text-neutral-500 height-3 leading-0 -translate-y-0.5 translate-x-0.5 ">
+						{label}
+					</p>
+				</span>
 			)}
 			<div
 				onMouseDown={onMouseDown}
 				onDoubleClick={onDoubleClick}
 				className={[
-					'relative inline-flex items-center justify-center',
-					'h-5.5 rounded overflow-hidden select-none w-20',
+					'flex items-center justify-center',
+					'rounded overflow-hidden select-none w-full h-6',
 					isEditing ? 'cursor-text' : 'cursor-ew-resize'
 				].join(' ')}
 			>
@@ -316,11 +318,11 @@ const Scrubber: FC<ScrubberProps> = ({
 							if (e.key === 'Enter') commitEdit();
 							if (e.key === 'Escape') setIsEditing(false);
 						}}
-						className="outline-none text-neutral-500 text-xs font-mono bg-neutral-50 border border-neutral-200 px-1 rounded-sm "
+						className="outline-none text-neutral-500 text-xs font-mono bg-neutral-50 border border-neutral-200 pl-5 rounded-sm text-right w-full h-full"
 					/>
 				) : (
-					<span className="text-xs font-mono text-neutral-500 px-1.5 pointer-events-none border-neutral-200 border bg-neutral-50 rounded-sm w-full">
-						{displayValue}
+					<span className="text-xs font-mono text-neutral-500 pl-5 pointer-events-none border-neutral-200 border bg-neutral-50 rounded-sm w-full h-full flex items-center justify-end px-1">
+						<p>{displayValue}</p>
 					</span>
 				)}
 			</div>
@@ -331,10 +333,10 @@ const Scrubber: FC<ScrubberProps> = ({
 const ResetButton: FC<{ onClick: () => void }> = ({ onClick }) => (
 	<button
 		onClick={onClick}
-		className="text-[10px] text-neutral-600 hover:text-neutral-400 font-mono leading-none select-none"
+		className="text-xs text-neutral-600 hover:text-neutral-400 font-mono leading-none select-none px-2"
 		title="Reset to default"
 	>
-		↺
+		R
 	</button>
 );
 
@@ -342,7 +344,7 @@ const FloatFieldComponent: FC<{
 	data: Field & { type: 'float' };
 	handleUpdateField: (updatedField: Field & { type: 'float' }) => void;
 }> = ({ data, handleUpdateField }) => (
-	<div className="flex items-center gap-2 px-2 py-1.5">
+	<div className="flex items-center py-1.5">
 		<FieldLabel name={data.name} type="float" />
 		<Scrubber
 			value={data.value}
@@ -367,7 +369,7 @@ const Vec2FieldComponent: FC<{
 		handleUpdateField({ ...data, value: next });
 	};
 	return (
-		<div className="flex items-center gap-2 px-2 py-1.5">
+		<div className="flex items-center py-1.5">
 			<FieldLabel name={data.name} type="vec2" />
 			<div className="flex gap-2 flex-wrap">
 				{(['x', 'y'] as const).map((axis, i) => (
@@ -385,7 +387,7 @@ const Vec3ColorFieldComponent: FC<{
 	data: Field & { type: 'vec3' };
 	handleUpdateField: (updatedField: Field & { type: 'vec3' }) => void;
 }> = ({ data, handleUpdateField }) => (
-	<div className="flex items-center gap-2 px-2 py-1.5">
+	<div className="flex items-center py-1.5">
 		<FieldLabel name={data.name} type="vec3 color" />
 		<ColorPickerButton
 			color={vec3ToHex(data.value)}
@@ -403,7 +405,7 @@ const Vec4ColorFieldComponent: FC<{
 }> = ({ data, handleUpdateField }) => {
 	const [r, g, b, a] = data.value;
 	return (
-		<div className="flex items-center gap-2 px-2 py-1.5">
+		<div className="flex items-center py-1.5">
 			<FieldLabel name={data.name} type="vec4 color" />
 			<ColorPickerButton
 				color={vec3ToHex([r, g, b])}
@@ -437,7 +439,7 @@ const Vec3FieldComponent: FC<{
 		handleUpdateField({ ...data, value: next });
 	};
 	return (
-		<div className="flex items-center gap-2 px-2 py-1.5">
+		<div className="flex items-center py-1.5">
 			<FieldLabel name={data.name} type="vec3" />
 			<div className="flex gap-2 flex-wrap">
 				{(['x', 'y', 'z'] as const).map((axis, i) => (
