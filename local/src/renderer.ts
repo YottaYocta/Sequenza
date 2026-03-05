@@ -1,7 +1,7 @@
 import * as twgl from 'twgl.js';
 
 export type Uniforms = Record<string, any>;
-export type Shader = { id: string; source: string };
+export type Shader = { id: string; name: string; source: string };
 
 export type Connection = { from: string; to: string; input: string };
 

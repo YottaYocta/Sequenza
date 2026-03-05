@@ -5,7 +5,7 @@ in vec2 vUv;
 out vec4 fragColor;
 
 uniform vec2 resolution; // [100, 100]
-uniform float uTime; // [0, 1, 0.5]
+uniform float uTime; // time
 uniform float modSize; // [0, 2, 1]
 uniform float tileFactor; // [1,  100, 10]
 uniform vec2 uTranslation; // [0,0]

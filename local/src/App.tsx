@@ -4,6 +4,8 @@ import { io } from 'socket.io-client';
 
 import '@xyflow/react/dist/style.css';
 import { Editor } from './Editor';
+import type { Node } from '@xyflow/react';
+import type { ShaderNode } from './ShaderNode';
 
 /**
  * a single node type; shaders
@@ -21,10 +23,11 @@ function App() {
 		socket.on('shaders-found', (data: Record<string, string>) => {
 			const newShaders: Record<string, Shader> = {};
 			for (const [filepath, name] of Object.entries(data)) {
-				newShaders[filepath] = { id: filepath, source: name };
+				newShaders[filepath] = { id: filepath, source: name, name: filepath };
 				shaderUniforms.current[filepath] = {};
 			}
 			setShaderMap(newShaders);
+			localStorage.clear();
 		});
 		() => {
 			console.log('[DISCONNECT]');
@@ -34,7 +37,7 @@ function App() {
 
 	const initialState = useMemo(() => {
 		try {
-			const nodes = JSON.parse(localStorage.getItem('sequenza-nodes') ?? 'null');
+			const nodes: Node[] = JSON.parse(localStorage.getItem('sequenza-nodes') ?? 'null');
 			const edges = JSON.parse(localStorage.getItem('sequenza-edges') ?? 'null');
 			const uniforms = JSON.parse(localStorage.getItem('sequenza-uniforms') ?? 'null');
 			if (nodes !== null && edges !== null && uniforms !== null) return { nodes, edges, uniforms };

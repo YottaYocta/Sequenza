@@ -33,6 +33,7 @@ export const ShaderNode = ({ data, selected }: NodeProps<ShaderNode>) => {
 			`}
 		>
 			<p className="text-xs text-neutral-500 absolute -top-6">ID: {data.shader.id}</p>
+			<p className="text-xs text-neutral-500 absolute -top-10">{data.shader.name}</p>
 			{textureInputs.map((input) => (
 				<CustomHandle key={input} id={input} type="target" position={Position.Top} />
 			))}
