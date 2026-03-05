@@ -479,8 +479,8 @@ const Vec4FieldComponent: FC<{
 
 const FieldLabel: FC<{ name: string; type: string }> = ({ name, type }) => (
 	<div className="min-w-30 flex flex-col gap-0.5">
-		<span className="font-mono text-xs text-neutral-900 font-black">{name}</span>
-		<span className="font-mono text-[10px] text-neutral-600">{type}</span>
+		<span className="font-mono text-xs text-neutral-900">{name}</span>
+		<span className="font-mono text-[10px] text-neutral-500">{type}</span>
 	</div>
 );
 

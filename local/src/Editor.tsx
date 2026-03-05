@@ -137,6 +137,7 @@ export const Editor: FC<EditorProps> = ({ shaders, initialState, handleSave }) =
 		<div className="w-full h-full">
 			<EditorContext.Provider
 				value={{
+					shaders,
 					patches,
 					uniforms: uniformRef,
 					handleUpdateUniforms: (shaderId, uniforms) => {
