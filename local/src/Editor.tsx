@@ -176,6 +176,14 @@ export const Editor: FC<EditorProps> = ({ shaders, initialState, handleSave }) =
 					}}
 					fitView
 				>
+					<Controls
+						style={
+							{
+								'--xy-controls-button-background-color-default': 'transparent',
+								'--xy-controls-box-shadow-default': 'none'
+							} as any
+						}
+					></Controls>
 					<Panel position="top-left" className="flex flex-col gap-4">
 						<div className="flex flex-col gap-2">
 							{nodes.map((node) => (
@@ -217,7 +225,6 @@ export const Editor: FC<EditorProps> = ({ shaders, initialState, handleSave }) =
 							</p>
 						</Panel>
 					)}
-					<Controls />
 				</ReactFlow>
 			</EditorContext.Provider>
 		</div>
