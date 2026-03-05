@@ -27,13 +27,20 @@ type Field =
 			type: 'vec3';
 			value: [number, number, number];
 			default?: [number, number, number];
+			color?: true;
 	  }
 	| {
 			name: string;
 			type: 'vec4';
 			value: [number, number, number, number];
 			default?: [number, number, number, number];
+			color?: true;
 	  };
+
+// uniform vec3 varname; // color
+// uniform vec3 varname; // color [r, g, b]
+// uniform vec4 varname; // color
+// uniform vec4 varname; // color [r, g, b, a]
 
 /**
  * Parses shader source for uniform declarations with metadata comments.
@@ -84,6 +91,27 @@ const createFields = (shader: Shader): Field[] => {
 			continue;
 		}
 
+		// uniform vec3 name; // color [r, g, b]
+		const vec3Color = trimmed.match(
+			new RegExp(
+				`^uniform\\s+vec3\\s+(\\w+)\\s*;.*\\/\\/\\s*color(?:\\s*\\[\\s*${NUM}${SEP}${NUM}${SEP}${NUM}\\s*\\])?`
+			)
+		);
+		if (vec3Color?.[1]) {
+			const def: [number, number, number] | undefined =
+				vec3Color[2] !== undefined
+					? [parseFloat(vec3Color[2]), parseFloat(vec3Color[3]), parseFloat(vec3Color[4])]
+					: undefined;
+			fields.push({
+				name: vec3Color[1],
+				type: 'vec3',
+				value: def ?? [1, 1, 1],
+				color: true,
+				...(def && { default: def })
+			});
+			continue;
+		}
+
 		// uniform vec3 name; // [x, y, z]
 		const vec3Meta = trimmed.match(
 			new RegExp(
@@ -97,6 +125,32 @@ const createFields = (shader: Shader): Field[] => {
 				parseFloat(vec3Meta[4])
 			];
 			fields.push({ name: vec3Meta[1], type: 'vec3', value: def, default: def });
+			continue;
+		}
+
+		// uniform vec4 name; // color [r, g, b, a]
+		const vec4Color = trimmed.match(
+			new RegExp(
+				`^uniform\\s+vec4\\s+(\\w+)\\s*;.*\\/\\/\\s*color(?:\\s*\\[\\s*${NUM}${SEP}${NUM}${SEP}${NUM}${SEP}${NUM}\\s*\\])?`
+			)
+		);
+		if (vec4Color?.[1]) {
+			const def: [number, number, number, number] | undefined =
+				vec4Color[2] !== undefined
+					? [
+							parseFloat(vec4Color[2]),
+							parseFloat(vec4Color[3]),
+							parseFloat(vec4Color[4]),
+							parseFloat(vec4Color[5])
+						]
+					: undefined;
+			fields.push({
+				name: vec4Color[1],
+				type: 'vec4',
+				value: def ?? [1, 1, 1, 1],
+				color: true,
+				...(def && { default: def })
+			});
 			continue;
 		}
 
@@ -128,6 +182,42 @@ const createFields = (shader: Shader): Field[] => {
 	}
 
 	return fields;
+};
+
+const toHex = (v: number) =>
+	Math.round(Math.min(1, Math.max(0, v)) * 255)
+		.toString(16)
+		.padStart(2, '0');
+const fromHex = (h: string) => parseInt(h, 16) / 255;
+const vec3ToHex = ([r, g, b]: [number, number, number]) => `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+const hexToVec3 = (hex: string): [number, number, number] => [
+	fromHex(hex.slice(1, 3)),
+	fromHex(hex.slice(3, 5)),
+	fromHex(hex.slice(5, 7))
+];
+
+const ColorPickerButton: FC<{ color: string; onChange: (hex: string) => void }> = ({
+	color,
+	onChange
+}) => {
+	const inputRef = useRef<HTMLInputElement>(null);
+	return (
+		<div className="relative">
+			<button
+				onClick={() => inputRef.current?.click()}
+				className="w-8 h-5.5 rounded border border-neutral-500 cursor-pointer"
+				style={{ backgroundColor: color }}
+				title={color}
+			/>
+			<input
+				ref={inputRef}
+				type="color"
+				value={color}
+				onChange={(e) => onChange(e.target.value)}
+				className="absolute opacity-0 w-0 h-0 pointer-events-none"
+			/>
+		</div>
+	);
 };
 
 interface ScrubberProps {
@@ -201,14 +291,18 @@ const Scrubber: FC<ScrubberProps> = ({
 		: value.toFixed(3).replace(/0+$/, '');
 
 	return (
-		<div className="flex items-center gap-1">
-			{label && <span className="text-[10px] font-mono w-3 text-right shrink-0">{label}</span>}
+		<div className="flex items-center gap-2 w-24">
+			{label ? (
+				<p className="text-xs font-mono w-3 text-neutral-500">{label}</p>
+			) : (
+				<span className="w-3"></span>
+			)}
 			<div
 				onMouseDown={onMouseDown}
 				onDoubleClick={onDoubleClick}
 				className={[
 					'relative inline-flex items-center justify-center',
-					'min-w-16 h-5.5 rounded overflow-hidden select-none',
+					'h-5.5 rounded overflow-hidden select-none w-20',
 					isEditing ? 'cursor-text' : 'cursor-ew-resize'
 				].join(' ')}
 			>
@@ -222,10 +316,10 @@ const Scrubber: FC<ScrubberProps> = ({
 							if (e.key === 'Enter') commitEdit();
 							if (e.key === 'Escape') setIsEditing(false);
 						}}
-						className="bg-transparent outline-none text-neutral-500 text-[11px] font-mono w-full text-center px-1"
+						className="outline-none text-neutral-500 text-xs font-mono bg-neutral-50 border border-neutral-200 px-1 rounded-sm "
 					/>
 				) : (
-					<span className="text-[11px] font-mono text-neutral-500 px-1.5 pointer-events-none border-neutral-900 border">
+					<span className="text-xs font-mono text-neutral-500 px-1.5 pointer-events-none border-neutral-200 border bg-neutral-50 rounded-sm w-full">
 						{displayValue}
 					</span>
 				)}
@@ -275,11 +369,57 @@ const Vec2FieldComponent: FC<{
 	return (
 		<div className="flex items-center gap-2 px-2 py-1.5">
 			<FieldLabel name={data.name} type="vec2" />
-			<div className="flex gap-1 flex-wrap">
+			<div className="flex gap-2 flex-wrap">
 				{(['x', 'y'] as const).map((axis, i) => (
 					<Scrubber key={axis} label={axis} value={data.value[i]} onChange={(v) => update(i, v)} />
 				))}
 			</div>
+			{data.default !== undefined && (
+				<ResetButton onClick={() => handleUpdateField({ ...data, value: data.default! })} />
+			)}
+		</div>
+	);
+};
+
+const Vec3ColorFieldComponent: FC<{
+	data: Field & { type: 'vec3' };
+	handleUpdateField: (updatedField: Field & { type: 'vec3' }) => void;
+}> = ({ data, handleUpdateField }) => (
+	<div className="flex items-center gap-2 px-2 py-1.5">
+		<FieldLabel name={data.name} type="vec3 color" />
+		<ColorPickerButton
+			color={vec3ToHex(data.value)}
+			onChange={(hex) => handleUpdateField({ ...data, value: hexToVec3(hex) })}
+		/>
+		{data.default !== undefined && (
+			<ResetButton onClick={() => handleUpdateField({ ...data, value: data.default! })} />
+		)}
+	</div>
+);
+
+const Vec4ColorFieldComponent: FC<{
+	data: Field & { type: 'vec4' };
+	handleUpdateField: (updatedField: Field & { type: 'vec4' }) => void;
+}> = ({ data, handleUpdateField }) => {
+	const [r, g, b, a] = data.value;
+	return (
+		<div className="flex items-center gap-2 px-2 py-1.5">
+			<FieldLabel name={data.name} type="vec4 color" />
+			<ColorPickerButton
+				color={vec3ToHex([r, g, b])}
+				onChange={(hex) => {
+					const [nr, ng, nb] = hexToVec3(hex);
+					handleUpdateField({ ...data, value: [nr, ng, nb, a] });
+				}}
+			/>
+			<Scrubber
+				label="a"
+				value={a}
+				min={0}
+				max={1}
+				step={0.01}
+				onChange={(v) => handleUpdateField({ ...data, value: [r, g, b, v] })}
+			/>
 			{data.default !== undefined && (
 				<ResetButton onClick={() => handleUpdateField({ ...data, value: data.default! })} />
 			)}
@@ -299,7 +439,7 @@ const Vec3FieldComponent: FC<{
 	return (
 		<div className="flex items-center gap-2 px-2 py-1.5">
 			<FieldLabel name={data.name} type="vec3" />
-			<div className="flex gap-1 flex-wrap">
+			<div className="flex gap-2 flex-wrap">
 				{(['x', 'y', 'z'] as const).map((axis, i) => (
 					<Scrubber key={axis} label={axis} value={data.value[i]} onChange={(v) => update(i, v)} />
 				))}
@@ -323,7 +463,7 @@ const Vec4FieldComponent: FC<{
 	return (
 		<div className="flex items-center gap-2 px-2 py-1.5">
 			<FieldLabel name={data.name} type="vec4" />
-			<div className="flex gap-1 flex-wrap">
+			<div className="flex gap-2 flex-wrap">
 				{(['x', 'y', 'z', 'w'] as const).map((axis, i) => (
 					<Scrubber key={axis} label={axis} value={data.value[i]} onChange={(v) => update(i, v)} />
 				))}
@@ -378,7 +518,7 @@ const UniformForm: FC<UniformFormProps> = ({ shader, handleUpdateUniform, initia
 
 	if (fields.length === 0) {
 		return (
-			<p className="px-2 py-3 font-mono text-[11px]">
+			<p className="px-2 py-3 font-mono text-xs">
 				No uniforms found.{' '}
 				<span>
 					Add <code className="">// [min, max, default]</code> comments to float uniforms.
@@ -392,7 +532,7 @@ const UniformForm: FC<UniformFormProps> = ({ shader, handleUpdateUniform, initia
 	}, [shader]);
 
 	return (
-		<div className="rounded border border-neutral-800 overflow-hidden nodrag">
+		<div className="rounded overflow-hidden nodrag">
 			{fields.map((field, i) => {
 				const key = `${field.name}-${field.type}`;
 				switch (field.type) {
@@ -413,7 +553,13 @@ const UniformForm: FC<UniformFormProps> = ({ shader, handleUpdateUniform, initia
 							/>
 						);
 					case 'vec3':
-						return (
+						return field.color ? (
+							<Vec3ColorFieldComponent
+								key={key}
+								data={field}
+								handleUpdateField={(updated) => updateField(i, updated)}
+							/>
+						) : (
 							<Vec3FieldComponent
 								key={key}
 								data={field}
@@ -421,7 +567,13 @@ const UniformForm: FC<UniformFormProps> = ({ shader, handleUpdateUniform, initia
 							/>
 						);
 					case 'vec4':
-						return (
+						return field.color ? (
+							<Vec4ColorFieldComponent
+								key={key}
+								data={field}
+								handleUpdateField={(updated) => updateField(i, updated)}
+							/>
+						) : (
 							<Vec4FieldComponent
 								key={key}
 								data={field}

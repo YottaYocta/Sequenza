@@ -9,7 +9,7 @@ uniform float uAmplitude;
 uniform float uRotation; // [0, 6.28, 0]
 uniform float uDensity;  // [10, 50, 30]    
 uniform float uThreshold;
-uniform vec4 uLineColor;
+uniform vec4 uLineColor; // color
 
 uniform sampler2D tInputTex;
 

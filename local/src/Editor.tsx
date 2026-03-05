@@ -4,7 +4,6 @@ import {
 	addEdge,
 	applyEdgeChanges,
 	applyNodeChanges,
-	Background,
 	Controls,
 	Panel,
 	ReactFlow,
@@ -27,11 +26,7 @@ interface EditorProps {
 	handleSave: (data: { nodes: Node[]; edges: Edge[]; uniforms: Record<string, Uniforms> }) => void;
 }
 
-export const Editor: FC<EditorProps> = ({
-	shaders,
-	initialState,
-	handleSave
-}) => {
+export const Editor: FC<EditorProps> = ({ shaders, initialState, handleSave }) => {
 	const [nodes, setNodes] = useState<Node[]>(initialState?.nodes ?? []);
 	const [edges, setEdges] = useState<Edge[]>(initialState?.edges ?? []);
 
@@ -158,6 +153,9 @@ export const Editor: FC<EditorProps> = ({
 					onNodesChange={onNodesChange}
 					onEdgesChange={onEdgesChange}
 					onConnect={onConnect}
+					style={{
+						background: '#F9F9F9'
+					}}
 					fitView
 				>
 					<Panel position="top-left" className="flex flex-col gap-4">
@@ -199,7 +197,6 @@ export const Editor: FC<EditorProps> = ({
 							<p>saved at {savedAt.toLocaleTimeString()}</p>
 						</Panel>
 					)}
-					<Background />
 					<Controls />
 				</ReactFlow>
 			</EditorContext.Provider>
