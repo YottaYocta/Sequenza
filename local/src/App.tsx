@@ -44,7 +44,7 @@ function App() {
 
 	return (
 		<main className="">
-			<div className="w-full min-h-screen h-screen border">
+			<div className="w-full min-h-screen h-screen ">
 				<Editor
 					shaders={[...Object.values(shaderMap)]}
 					initialState={initialState}

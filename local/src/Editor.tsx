@@ -170,7 +170,7 @@ export const Editor: FC<EditorProps> = ({ shaders, initialState, handleSave }) =
 					onNodesChange={onNodesChange}
 					onEdgesChange={onEdgesChange}
 					onConnect={onConnect}
-				isValidConnection={isValidConnection}
+					isValidConnection={isValidConnection}
 					style={{
 						background: '#F9F9F9'
 					}}
@@ -179,27 +179,27 @@ export const Editor: FC<EditorProps> = ({ shaders, initialState, handleSave }) =
 					<Panel position="top-left" className="flex flex-col gap-4">
 						<div className="flex flex-col gap-2">
 							{nodes.map((node) => (
-								<p className="text-xs" key={node.id}>
+								<p className="text-xs text-neutral-400" key={node.id}>
 									{node.id}
 								</p>
 							))}
 						</div>
 						<div className="flex flex-col gap-2">
 							{edges.map((edge) => (
-								<p className="text-xs" key={edge.id}>
+								<p className="text-xs text-neutral-400" key={edge.id}>
 									{edge.source} {'>'} {edge.target} {edge.targetHandle}
 								</p>
 							))}
 						</div>
 					</Panel>
 					<Panel position="top-right">
-						<div className="bg-white p-4 flex flex-col border rounded-sm border-neutral-200 gap-4">
-							<p className="text-sm">Add Shader</p>
+						<div className="p-4 flex flex-col rounded-sm border border-neutral-200 gap-4">
+							<p className="text-sm p-1">Add Shader</p>
 							<div className="flex flex-col gap-1">
 								{shaders.map((shader) => (
 									<button
 										key={shader.id}
-										className="text-xs flex justify-start p-1 border border-neutral-200 rounded-sm hover:bg-neutral-100 cursor-pointer"
+										className="text-xs flex justify-start p-1 rounded-sm hover:bg-neutral-100 cursor-pointer text-neutral-500"
 										onClick={() => {
 											handleAddShader(shader);
 										}}
@@ -211,8 +211,10 @@ export const Editor: FC<EditorProps> = ({ shaders, initialState, handleSave }) =
 						</div>
 					</Panel>
 					{savedAt && (
-						<Panel position="bottom-left">
-							<p>saved at {savedAt.toLocaleTimeString()}</p>
+						<Panel position="bottom-center">
+							<p className="text-xs text-neutral-400">
+								Last saved at {savedAt.toLocaleTimeString()}
+							</p>
 						</Panel>
 					)}
 					<Controls />
