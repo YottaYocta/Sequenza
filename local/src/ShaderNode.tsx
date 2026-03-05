@@ -1,7 +1,8 @@
 import { Position, type Node, type NodeProps } from '@xyflow/react';
 import CustomHandle from './CustomHandle';
 import type { Shader, Uniforms } from './renderer';
-import { useContext, useMemo, type RefObject } from 'react';
+import { useContext, useMemo, useState, type RefObject } from 'react';
+import { Scrubber } from './Scrubber';
 import UniformForm from './UniformForm';
 import { RendererComponent } from './RendererComponent';
 import { EditorContext } from './EditorContext';
@@ -17,6 +18,9 @@ export const ShaderNode = ({ data, dragging }: NodeProps<ShaderNode>) => {
 
 	if (!patches || patches[data.shader.id] === undefined) return null;
 
+	const [width, setWidth] = useState(200);
+	const [height, setHeight] = useState(200);
+
 	const textureInputs = useMemo<string[]>(() => {
 		const matches = data.shader.source.matchAll(/uniform\s+sampler2D\s+(\w+)\s*;/g);
 		return Array.from(matches, (m) => m[1]);
@@ -25,7 +29,7 @@ export const ShaderNode = ({ data, dragging }: NodeProps<ShaderNode>) => {
 	return (
 		<div
 			className={`
-				flex gap-6 bg-white border border-neutral-200 rounded-lg p-6 relative transition 
+				flex gap-8 bg-white border border-neutral-200 rounded-lg p-6 relative transition 
 				${dragging && 'scale-[101%] shadow-lg shadow-neutral-200'}
 			`}
 		>
@@ -42,14 +46,18 @@ export const ShaderNode = ({ data, dragging }: NodeProps<ShaderNode>) => {
 					}}
 				></UniformForm>
 			</div>
-			<div className="flex justify-center items-center ">
+			<div className="flex flex-col justify-center items-center gap-2">
 				<RendererComponent
 					animate
-					width={200}
-					height={200}
+					width={width}
+					height={height}
 					patch={patches[data.shader.id]}
 					uniforms={uniforms}
 				></RendererComponent>
+				<div className="flex gap-2">
+					<Scrubber label="w" value={width} min={1} step={1} onChange={setWidth} />
+					<Scrubber label="h" value={height} min={1} step={1} onChange={setHeight} />
+				</div>
 			</div>
 			<CustomHandle id="out" type="source" position={Position.Bottom} />
 		</div>
