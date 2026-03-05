@@ -4,7 +4,6 @@ import { io } from 'socket.io-client';
 
 import '@xyflow/react/dist/style.css';
 import { Editor } from './Editor';
-import type { Edge, Node } from '@xyflow/react';
 
 /**
  * a single node type; shaders
@@ -49,14 +48,10 @@ function App() {
 				<Editor
 					shaders={[...Object.values(shaderMap)]}
 					initialState={initialState}
-					handleNodesUpdated={(newNodes: Node[]) => {
-						localStorage.setItem('sequenza-nodes', JSON.stringify(newNodes));
-					}}
-					handleEdgesUpdated={(newEdges: Edge[]) => {
-						localStorage.setItem('sequenza-edges', JSON.stringify(newEdges));
-					}}
-					handleUniformsUpdated={(newUniforms: Record<string, Uniforms>) => {
-						localStorage.setItem('sequenza-uniforms', JSON.stringify(newUniforms));
+					handleSave={({ nodes, edges, uniforms }) => {
+						localStorage.setItem('sequenza-nodes', JSON.stringify(nodes));
+						localStorage.setItem('sequenza-edges', JSON.stringify(edges));
+						localStorage.setItem('sequenza-uniforms', JSON.stringify(uniforms));
 					}}
 				></Editor>
 			</div>

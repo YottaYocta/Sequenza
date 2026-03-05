@@ -24,17 +24,13 @@ interface EditorProps {
 		edges: Edge[];
 		uniforms: Record<string, Uniforms>;
 	};
-	handleEdgesUpdated: (newEdges: Edge[]) => void;
-	handleNodesUpdated: (newNodes: Node[]) => void;
-	handleUniformsUpdated: (newUniforms: Record<string, Uniforms>) => void;
+	handleSave: (data: { nodes: Node[]; edges: Edge[]; uniforms: Record<string, Uniforms> }) => void;
 }
 
 export const Editor: FC<EditorProps> = ({
 	shaders,
 	initialState,
-	handleEdgesUpdated,
-	handleNodesUpdated,
-	handleUniformsUpdated
+	handleSave
 }) => {
 	const [nodes, setNodes] = useState<Node[]>(initialState?.nodes ?? []);
 	const [edges, setEdges] = useState<Edge[]>(initialState?.edges ?? []);
@@ -54,19 +50,19 @@ export const Editor: FC<EditorProps> = ({
 	}, []);
 
 	const uniformRef = useRef<Record<string, Uniforms>>(initialState?.uniforms ?? {});
+	const [savedAt, setSavedAt] = useState<Date | null>(null);
 
 	useEffect(() => {
-		const handleSave = (e: KeyboardEvent) => {
+		const onKeyDown = (e: KeyboardEvent) => {
 			if ((e.metaKey || e.ctrlKey) && e.key === 's') {
 				e.preventDefault();
-				handleEdgesUpdated(edges);
-				handleNodesUpdated(nodes);
-				handleUniformsUpdated(uniformRef.current);
+				handleSave({ nodes, edges, uniforms: uniformRef.current });
+				setSavedAt(new Date());
 			}
 		};
 
-		window.addEventListener('keydown', handleSave);
-		return () => window.removeEventListener('keydown', handleSave);
+		window.addEventListener('keydown', onKeyDown);
+		return () => window.removeEventListener('keydown', onKeyDown);
 	}, [nodes, edges]);
 
 	const handleAddShader = (shader: Shader) => {
@@ -198,6 +194,11 @@ export const Editor: FC<EditorProps> = ({
 							</div>
 						</div>
 					</Panel>
+					{savedAt && (
+						<Panel position="bottom-left">
+							<p>saved at {savedAt.toLocaleTimeString()}</p>
+						</Panel>
+					)}
 					<Background />
 					<Controls />
 				</ReactFlow>
