@@ -291,7 +291,7 @@ const Scrubber: FC<ScrubberProps> = ({
 		: value.toFixed(3).replace(/0+$/, '');
 
 	return (
-		<div className="flex items-center w-20 relative">
+		<div className="flex items-center w-20 relative nodrag">
 			{label && (
 				<span className="absolute left-1 z-10 bg-neutral-200 h-4 w-4 grid place-items-center pointer-events-none rounded-sm">
 					<p className="text-[11px] font-mono w-3 text-neutral-500 height-3 leading-0 -translate-y-0.5 translate-x-0.5 ">
@@ -534,7 +534,7 @@ const UniformForm: FC<UniformFormProps> = ({ shader, handleUpdateUniform, initia
 	}, [shader]);
 
 	return (
-		<div className="rounded overflow-hidden nodrag">
+		<div className="rounded overflow-hidden">
 			{fields.map((field, i) => {
 				const key = `${field.name}-${field.type}`;
 				switch (field.type) {

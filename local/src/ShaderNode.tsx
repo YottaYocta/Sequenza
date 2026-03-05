@@ -11,7 +11,7 @@ type ShaderNodeData = {
 };
 
 export type ShaderNode = Node<ShaderNodeData, 'shader'>;
-export const ShaderNode = ({ data }: NodeProps<ShaderNode>) => {
+export const ShaderNode = ({ data, dragging }: NodeProps<ShaderNode>) => {
 	const { patches, uniforms, handleUpdateUniforms } = useContext(EditorContext);
 
 	if (!patches || patches[data.shader.id] === undefined) return null;
@@ -22,14 +22,21 @@ export const ShaderNode = ({ data }: NodeProps<ShaderNode>) => {
 	}, [data.shader.source]);
 
 	return (
-		<div className="flex gap-2 bg-white border p-4">
+		<div
+			className={`
+				flex gap-6 bg-white border border-neutral-200 rounded-lg p-6 relative transition 
+				${dragging && 'scale-[101%] shadow-lg shadow-neutral-200'}
+			`}
+		>
+			<p className="text-xs text-neutral-500 absolute -top-6 left-1/2 -translate-x-1/2">
+				ID: {data.shader.id}
+			</p>
 			{textureInputs.map((input) => (
 				<Handle key={input} id={input} type="target" position={Position.Top}>
 					{input}
 				</Handle>
 			))}
-			<div>
-				<p>{data.shader.id}</p>
+			<div className="flex flex-col gap-2">
 				<UniformForm
 					shader={data.shader}
 					initialUniforms={uniforms.current[data.shader.id]}
