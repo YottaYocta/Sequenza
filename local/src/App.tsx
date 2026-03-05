@@ -5,7 +5,6 @@ import { io } from 'socket.io-client';
 import '@xyflow/react/dist/style.css';
 import { Editor } from './Editor';
 import type { Node } from '@xyflow/react';
-import type { ShaderNode } from './ShaderNode';
 
 /**
  * a single node type; shaders
