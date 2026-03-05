@@ -13,7 +13,7 @@ type ShaderNodeData = {
 };
 
 export type ShaderNode = Node<ShaderNodeData, 'shader'>;
-export const ShaderNode = ({ data, dragging }: NodeProps<ShaderNode>) => {
+export const ShaderNode = ({ data, selected }: NodeProps<ShaderNode>) => {
 	const { patches, uniforms, handleUpdateUniforms } = useContext(EditorContext);
 
 	if (!patches || patches[data.shader.id] === undefined) return null;
@@ -29,8 +29,7 @@ export const ShaderNode = ({ data, dragging }: NodeProps<ShaderNode>) => {
 	return (
 		<div
 			className={`
-				flex gap-8 bg-white border border-neutral-200 rounded-lg p-6 relative transition 
-				${dragging && 'scale-[101%] shadow-lg shadow-neutral-200'}
+				flex gap-8 bg-white border ${selected ? 'border-neutral-400' : 'border-neutral-200'} rounded-lg p-6 relative transition 
 			`}
 		>
 			<p className="text-xs text-neutral-500 absolute -top-6">ID: {data.shader.id}</p>
