@@ -1,19 +1,16 @@
 import { Handle, type HandleProps } from '@xyflow/react';
-import { useState, type FC } from 'react';
+import { type FC } from 'react';
 
 const HANDLE_SIZE = 16;
 
-const CustomHandle: FC<HandleProps> = ({ id, type, position, onConnect }) => {
-	const [isConnected, setIsConnected] = useState(false);
+const CustomHandle: FC<HandleProps> = ({ id, type, position }) => {
 	const isSource = type === 'source';
 
 	let classes: string;
 
-	if (isConnected) {
-		classes = 'bg-[#78A3C4] border-neutral-700 text-white';
-	} else if (isSource) {
+	if (isSource) {
 		classes =
-			'bg-white border-neutral-300 text-neutral-500 hover:border-neutral-500 hover:text-neutral-800';
+			'bg-white border-neutral-300 text-neutral-500 hover:border-neutral-500 hover:text-neutral-800 bg-[#78A3C4]';
 	} else {
 		classes = 'bg-white border-neutral-300';
 	}
@@ -23,10 +20,6 @@ const CustomHandle: FC<HandleProps> = ({ id, type, position, onConnect }) => {
 			id={id}
 			type={type}
 			position={position}
-			onConnect={(connection) => {
-				setIsConnected(true);
-				onConnect?.(connection);
-			}}
 			style={{
 				background: 'none',
 				border: 'none',
