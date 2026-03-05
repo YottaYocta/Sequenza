@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Shader, Uniforms } from './renderer';
 import { io } from 'socket.io-client';
 
 import '@xyflow/react/dist/style.css';
 import { Editor } from './Editor';
+import type { Edge, Node } from '@xyflow/react';
 
 /**
  * a single node type; shaders
@@ -32,10 +33,32 @@ function App() {
 		};
 	}, []);
 
+	const initialState = useMemo(() => {
+		try {
+			const nodes = JSON.parse(localStorage.getItem('sequenza-nodes') ?? 'null');
+			const edges = JSON.parse(localStorage.getItem('sequenza-edges') ?? 'null');
+			const uniforms = JSON.parse(localStorage.getItem('sequenza-uniforms') ?? 'null');
+			if (nodes !== null && edges !== null && uniforms !== null) return { nodes, edges, uniforms };
+		} catch {}
+		return undefined;
+	}, []);
+
 	return (
 		<main className="">
 			<div className="w-full min-h-screen h-screen border">
-				<Editor shaders={[...Object.values(shaderMap)]}></Editor>
+				<Editor
+					shaders={[...Object.values(shaderMap)]}
+					initialState={initialState}
+					handleNodesUpdated={(newNodes: Node[]) => {
+						localStorage.setItem('sequenza-nodes', JSON.stringify(newNodes));
+					}}
+					handleEdgesUpdated={(newEdges: Edge[]) => {
+						localStorage.setItem('sequenza-edges', JSON.stringify(newEdges));
+					}}
+					handleUniformsUpdated={(newUniforms: Record<string, Uniforms>) => {
+						localStorage.setItem('sequenza-uniforms', JSON.stringify(newUniforms));
+					}}
+				></Editor>
 			</div>
 		</main>
 	);

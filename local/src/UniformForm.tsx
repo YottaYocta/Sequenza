@@ -3,6 +3,7 @@ import type { Shader, Uniforms } from './renderer';
 
 interface UniformFormProps {
 	shader: Shader;
+	initialUniforms?: Uniforms;
 	handleUpdateUniform: (newUniforms: Uniforms) => void;
 }
 
@@ -341,11 +342,22 @@ const FieldLabel: FC<{ name: string; type: string }> = ({ name, type }) => (
 	</div>
 );
 
-const UniformForm: FC<UniformFormProps> = ({ shader, handleUpdateUniform }) => {
-	const [fields, setFields] = useState<Field[]>(() => createFields(shader));
+const applyInitialUniforms = (fields: Field[], initialUniforms?: Uniforms): Field[] => {
+	if (!initialUniforms) return fields;
+	return fields.map((field) => {
+		const saved = initialUniforms[field.name];
+		if (saved === undefined) return field;
+		return { ...field, value: saved } as Field;
+	});
+};
+
+const UniformForm: FC<UniformFormProps> = ({ shader, handleUpdateUniform, initialUniforms }) => {
+	const [fields, setFields] = useState<Field[]>(() =>
+		applyInitialUniforms(createFields(shader), initialUniforms)
+	);
 
 	useEffect(() => {
-		setFields(createFields(shader));
+		setFields(applyInitialUniforms(createFields(shader), initialUniforms));
 	}, [shader]);
 
 	const updateField = useCallback(

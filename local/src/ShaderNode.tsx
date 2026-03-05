@@ -8,11 +8,11 @@ import { EditorContext } from './EditorContext';
 type ShaderNodeData = {
 	shader: Shader;
 	uniforms: RefObject<Record<string, Uniforms>>;
-	handleUpdateUnforms: (newUniforms: Uniforms) => void;
 };
+
 export type ShaderNode = Node<ShaderNodeData, 'shader'>;
 export const ShaderNode = ({ data }: NodeProps<ShaderNode>) => {
-	const { patches, uniforms } = useContext(EditorContext);
+	const { patches, uniforms, handleUpdateUniforms } = useContext(EditorContext);
 
 	if (!patches || patches[data.shader.id] === undefined) return null;
 
@@ -32,8 +32,9 @@ export const ShaderNode = ({ data }: NodeProps<ShaderNode>) => {
 				<p>{data.shader.id}</p>
 				<UniformForm
 					shader={data.shader}
+					initialUniforms={uniforms.current[data.shader.id]}
 					handleUpdateUniform={(newUniforms) => {
-						data.handleUpdateUnforms(newUniforms);
+						handleUpdateUniforms(data.shader.id, newUniforms);
 					}}
 				></UniformForm>
 			</div>

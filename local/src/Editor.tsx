@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState, type FC } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type FC } from 'react';
 import type { Connection, Patch, Shader, Uniforms } from './renderer';
 import {
 	addEdge,
@@ -19,17 +19,31 @@ import { EditorContext } from './EditorContext';
 
 interface EditorProps {
 	shaders: Shader[];
+	initialState?: {
+		nodes: Node[];
+		edges: Edge[];
+		uniforms: Record<string, Uniforms>;
+	};
+	handleEdgesUpdated: (newEdges: Edge[]) => void;
+	handleNodesUpdated: (newNodes: Node[]) => void;
+	handleUniformsUpdated: (newUniforms: Record<string, Uniforms>) => void;
 }
 
-export const Editor: FC<EditorProps> = ({ shaders }) => {
-	const [nodes, setNodes] = useState<Node[]>([]);
-
-	const [edges, setEdges] = useState<Edge[]>([]);
+export const Editor: FC<EditorProps> = ({
+	shaders,
+	initialState,
+	handleEdgesUpdated,
+	handleNodesUpdated,
+	handleUniformsUpdated
+}) => {
+	const [nodes, setNodes] = useState<Node[]>(initialState?.nodes ?? []);
+	const [edges, setEdges] = useState<Edge[]>(initialState?.edges ?? []);
 
 	const onNodesChange: OnNodesChange = useCallback(
 		(changes) => setNodes((nodesSnapshot) => applyNodeChanges(changes, nodesSnapshot)),
 		[setNodes]
 	);
+
 	const onEdgesChange: OnEdgesChange = useCallback(
 		(changes) => setEdges((edgesSnapshot) => applyEdgeChanges(changes, edgesSnapshot)),
 		[setEdges]
@@ -39,7 +53,21 @@ export const Editor: FC<EditorProps> = ({ shaders }) => {
 		setEdges((edgesSnapshot) => addEdge(params, edgesSnapshot));
 	}, []);
 
-	const uniformRef = useRef<Record<string, Uniforms>>({});
+	const uniformRef = useRef<Record<string, Uniforms>>(initialState?.uniforms ?? {});
+
+	useEffect(() => {
+		const handleSave = (e: KeyboardEvent) => {
+			if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+				e.preventDefault();
+				handleEdgesUpdated(edges);
+				handleNodesUpdated(nodes);
+				handleUniformsUpdated(uniformRef.current);
+			}
+		};
+
+		window.addEventListener('keydown', handleSave);
+		return () => window.removeEventListener('keydown', handleSave);
+	}, [nodes, edges]);
 
 	const handleAddShader = (shader: Shader) => {
 		const newId = `${Math.random() * 100000}`;
@@ -49,10 +77,7 @@ export const Editor: FC<EditorProps> = ({ shaders }) => {
 			position: { x: 0, y: 0 },
 			data: {
 				shader: newShader,
-				uniforms: uniformRef,
-				handleUpdateUnforms: (newUniforms) => {
-					uniformRef.current[newId] = newUniforms;
-				}
+				uniforms: uniformRef
 			},
 			type: 'shader'
 		};
@@ -122,7 +147,10 @@ export const Editor: FC<EditorProps> = ({ shaders }) => {
 			<EditorContext.Provider
 				value={{
 					patches,
-					uniforms: uniformRef
+					uniforms: uniformRef,
+					handleUpdateUniforms: (shaderId, uniforms) => {
+						uniformRef.current[shaderId] = uniforms;
+					}
 				}}
 			>
 				<ReactFlow
