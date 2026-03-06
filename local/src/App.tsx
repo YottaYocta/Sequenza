@@ -4,8 +4,9 @@ import { io } from 'socket.io-client';
 
 import '@xyflow/react/dist/style.css';
 import { Editor } from './Editor';
-import type { Node } from '@xyflow/react';
+import type { Edge, Node } from '@xyflow/react';
 import type { ShaderNode } from './ShaderNode';
+import { extractFields } from './Field';
 
 /**
  * a single node type; shaders
@@ -14,6 +15,7 @@ import type { ShaderNode } from './ShaderNode';
  */
 
 function App() {
+	// maps filepath to shader
 	const [shaderMap, setShaderMap] = useState<Record<string, Shader>>({});
 	const shaderUniforms = useRef<Record<string, Uniforms>>({});
 
@@ -27,7 +29,6 @@ function App() {
 				shaderUniforms.current[filepath] = {};
 			}
 			setShaderMap(newShaders);
-			console.log('newShaders');
 		});
 		() => {
 			console.log('[DISCONNECT]');
@@ -36,26 +37,36 @@ function App() {
 	}, []);
 
 	const initialState = useMemo(() => {
-		console.log('updatingState');
 		try {
-			const nodes: Node[] = JSON.parse(localStorage.getItem('sequenza-nodes') ?? 'null');
-			const edges = JSON.parse(localStorage.getItem('sequenza-edges') ?? 'null');
-			const uniforms = JSON.parse(localStorage.getItem('sequenza-uniforms') ?? 'null');
+			const nodes: Node[] = JSON.parse(localStorage.getItem('sequenza-nodes') ?? '[]');
+			const edges: Edge[] = JSON.parse(localStorage.getItem('sequenza-edges') ?? '[]');
+			const uniforms: Record<string, Uniforms> = JSON.parse(
+				localStorage.getItem('sequenza-uniforms') ?? 'null'
+			);
+
 			for (const node of nodes) {
 				if (node.type === 'shader') {
 					const shaderNode = node as ShaderNode;
-					if (shaderNode.data.shader.source !== shaderMap[shaderNode.data.shader.name]?.source) {
-						//
+					const newShader = shaderMap[shaderNode.data.shader.name];
+					if (newShader && shaderNode.data.shader.source !== newShader?.source) {
+						uniforms[shaderNode.data.shader.id] = {};
+						shaderNode.data.shader = { ...newShader, id: shaderNode.data.shader.id };
+						// console.log(shaderNode.data.shader.source.slice(0, 100));
+						// console.log(extractFields(shaderNode.data.shader));
+						// console.log('uniforms updated');
+						localStorage.setItem('sequenza-nodes', JSON.stringify(nodes));
 					}
 				}
 			}
+
+			console.log(nodes);
 
 			if (nodes !== null && edges !== null && uniforms !== null) return { nodes, edges, uniforms };
 		} catch (e) {
 			console.error(e);
 		}
 		return undefined;
-	}, []);
+	}, [shaderMap]);
 
 	return (
 		<main className="">
