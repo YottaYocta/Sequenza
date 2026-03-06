@@ -30,6 +30,10 @@ export type Field =
 			value: [number, number, number, number];
 			default?: [number, number, number, number];
 			color?: true;
+	  }
+	| {
+			name: string;
+			type: 'sampler2D';
 	  };
 
 // uniform vec3 varname; // color
@@ -188,6 +192,12 @@ export const extractFields = (shader: Shader): Field[] => {
 			if (vecType === 'vec2') fields.push({ name, type: 'vec2', value: [0, 0] });
 			else if (vecType === 'vec3') fields.push({ name, type: 'vec3', value: [0, 0, 0] });
 			else if (vecType === 'vec4') fields.push({ name, type: 'vec4', value: [0, 0, 0, 0] });
+			continue;
+		}
+
+		const sampler2DMatch = trimmed.match(/^uniform\s+sampler2D\s+(\w+)\s*;/);
+		if (sampler2DMatch?.[1]) {
+			fields.push({ name: sampler2DMatch[1], type: 'sampler2D' });
 		}
 	}
 

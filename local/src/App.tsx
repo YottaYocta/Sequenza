@@ -39,27 +39,50 @@ function App() {
 	const initialState = useMemo(() => {
 		try {
 			const nodes: Node[] = JSON.parse(localStorage.getItem('sequenza-nodes') ?? '[]');
-			const edges: Edge[] = JSON.parse(localStorage.getItem('sequenza-edges') ?? '[]');
+			let edges: Edge[] = JSON.parse(localStorage.getItem('sequenza-edges') ?? '[]');
 			const uniforms: Record<string, Uniforms> = JSON.parse(
-				localStorage.getItem('sequenza-uniforms') ?? 'null'
+				localStorage.getItem('sequenza-uniforms') ?? '{}'
 			);
 
+			let shadersUpdated = false;
 			for (const node of nodes) {
 				if (node.type === 'shader') {
 					const shaderNode = node as ShaderNode;
-					const newShader = shaderMap[shaderNode.data.shader.name];
-					if (newShader && shaderNode.data.shader.source !== newShader?.source) {
-						uniforms[shaderNode.data.shader.id] = {};
-						shaderNode.data.shader = { ...newShader, id: shaderNode.data.shader.id };
-						// console.log(shaderNode.data.shader.source.slice(0, 100));
-						// console.log(extractFields(shaderNode.data.shader));
-						// console.log('uniforms updated');
-						localStorage.setItem('sequenza-nodes', JSON.stringify(nodes));
+					const libraryShader = shaderMap[shaderNode.data.shader.name];
+
+					if (libraryShader && shaderNode.data.shader.source !== libraryShader?.source) {
+						// update shader, keep id because that's used for matching uniforms => shaders
+						const newShader = { ...libraryShader, id: shaderNode.data.shader.id };
+						shaderNode.data.shader = newShader;
+
+						uniforms[newShader.id] = {};
+						shadersUpdated = true;
 					}
 				}
 			}
 
-			console.log(nodes);
+			edges = edges.filter((edge) => {
+				const sourceNode = nodes.find((node) => node.id === edge.source);
+				const targetNode = nodes.find((node) => node.id === edge.target);
+				const targetHandle = edge.targetHandle;
+				if (targetNode && targetNode.type !== 'shader') return false;
+				const targetShaderNode = targetNode as ShaderNode;
+				const targetFields = extractFields(targetShaderNode.data.shader);
+				if (
+					!sourceNode ||
+					targetHandle === null ||
+					targetHandle === undefined ||
+					targetFields.find(
+						(field) => field.name === targetHandle && field.type === 'sampler2D'
+					) === undefined
+				)
+					return false;
+				else return true;
+			});
+
+			localStorage.setItem('sequenza-nodes', JSON.stringify(nodes));
+			localStorage.setItem('sequenza-edges', JSON.stringify(edges));
+			localStorage.setItem('sequenza-uniforms', JSON.stringify(uniforms));
 
 			if (nodes !== null && edges !== null && uniforms !== null) return { nodes, edges, uniforms };
 		} catch (e) {
