@@ -1,5 +1,6 @@
 import { createContext, type RefObject } from 'react';
 import type { Patch, Shader, Uniforms } from './renderer';
+import type { ShaderNodeData } from './ShaderNode';
 
 interface EditorContextType {
 	currentTime: RefObject<number>;
@@ -8,6 +9,7 @@ interface EditorContextType {
 	patches: Record<string, Patch>;
 	uniforms: RefObject<Record<string, Uniforms>>;
 	handleUpdateUniforms: (shaderId: string, newUniforms: Uniforms) => void;
+	handleUpdateNode: (nodeId: string, data: (snapshot: ShaderNodeData) => ShaderNodeData) => void;
 }
 
 export const EditorContext = createContext<EditorContextType>({
@@ -16,5 +18,6 @@ export const EditorContext = createContext<EditorContextType>({
 	shaders: [],
 	patches: {},
 	uniforms: { current: {} },
-	handleUpdateUniforms: () => {}
+	handleUpdateUniforms: () => {},
+	handleUpdateNode: (snapshot) => snapshot
 });

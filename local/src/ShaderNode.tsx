@@ -7,14 +7,16 @@ import UniformForm from './UniformForm';
 import { RendererComponent } from './RendererComponent';
 import { EditorContext } from './EditorContext';
 
-type ShaderNodeData = {
+export type ShaderNodeData = {
 	shader: Shader;
+	paused: boolean;
 	uniforms: RefObject<Record<string, Uniforms>>;
 };
 
 export type ShaderNode = Node<ShaderNodeData, 'shader'>;
-export const ShaderNode = ({ data, selected }: NodeProps<ShaderNode>) => {
-	const { patches, uniforms, handleUpdateUniforms } = useContext(EditorContext);
+export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
+	// console.log(data.paused);
+	const { patches, uniforms, handleUpdateUniforms, handleUpdateNode } = useContext(EditorContext);
 
 	if (!patches || patches[data.shader.id] === undefined) return null;
 
@@ -46,9 +48,24 @@ export const ShaderNode = ({ data, selected }: NodeProps<ShaderNode>) => {
 					}}
 				></UniformForm>
 			</div>
-			<div className="flex flex-col justify-center items-center gap-2">
+			<div className="flex flex-col justify-center items-center gap-2 relative">
+				<button
+					className={`absolute w-full h-full group hover:bg-white/10 ${data.paused ? 'bg-white/10' : 'bg-transparent'} transition cursor-pointer flex items-center justify-center`}
+					onClick={() => {
+						handleUpdateNode(id, (snapshot) => {
+							console.log(snapshot);
+							return { ...snapshot, paused: !snapshot.paused };
+						});
+					}}
+				>
+					<span
+						className={` w-min px-1 h-6 group-hover:bg-white/80 ${data.paused ? 'bg-white/50' : 'bg-transparent'} rounded-sm transition flex items-center justify-center`}
+					>
+						<span className="h-3 leading-3 text-xs">{data.paused ? 'Resume' : 'Pause'}</span>
+					</span>
+				</button>
 				<RendererComponent
-					animate
+					animate={!data.paused}
 					width={width}
 					height={height}
 					patch={patches[data.shader.id]}

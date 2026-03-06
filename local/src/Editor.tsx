@@ -84,7 +84,8 @@ export const Editor: FC<EditorProps> = ({ shaders, initialState, handleSave }) =
 			position: { x: 0, y: 0 },
 			data: {
 				shader: newShader,
-				uniforms: uniformRef
+				uniforms: uniformRef,
+				paused: false
 			},
 			type: 'shader'
 		};
@@ -119,7 +120,6 @@ export const Editor: FC<EditorProps> = ({ shaders, initialState, handleSave }) =
 				shaderMap[shaderNode.id] = shaderNode.data.shader;
 			}
 		}
-
 		return [JSON.stringify(shaderMap), shaderMap];
 	}, [nodes]);
 
@@ -183,6 +183,17 @@ export const Editor: FC<EditorProps> = ({ shaders, initialState, handleSave }) =
 					uniforms: uniformRef,
 					handleUpdateUniforms: (shaderId, uniforms) => {
 						uniformRef.current[shaderId] = uniforms;
+					},
+					handleUpdateNode: (nodeId, updateData) => {
+						setNodes((snapshot) =>
+							snapshot.map((node) => {
+								if (node.id === nodeId && node.type === 'shader') {
+									const shaderNode = node as ShaderNode;
+									return { ...shaderNode, data: updateData(shaderNode.data) };
+								}
+								return node;
+							})
+						);
 					}
 				}}
 			>
