@@ -14,7 +14,7 @@ import {
 	type OnEdgesChange,
 	type OnNodesChange
 } from '@xyflow/react';
-import { ShaderNode } from './ShaderNode';
+import { ShaderNode, type ShaderNodeData } from './ShaderNode';
 import { EditorContext } from './EditorContext';
 
 interface EditorProps {
@@ -149,6 +149,25 @@ export const Editor: FC<EditorProps> = ({ shaders, initialState, handleSave }) =
 		return patches;
 	}, [shaderHash, edgesHash]);
 
+	const handleUpdateUniforms = useCallback((shaderId: string, uniforms: Uniforms) => {
+		uniformRef.current[shaderId] = uniforms;
+	}, []);
+
+	const handleUpdateNode = useCallback(
+		(nodeId: string, updateData: (snapshot: ShaderNodeData) => ShaderNodeData) => {
+			setNodes((snapshot) =>
+				snapshot.map((node) => {
+					if (node.id === nodeId && node.type === 'shader') {
+						const shaderNode = node as ShaderNode;
+						return { ...shaderNode, data: updateData(shaderNode.data) };
+					}
+					return node;
+				})
+			);
+		},
+		[]
+	);
+
 	const timeRef = useRef<number>(0);
 	const mousePosRef = useRef<[number, number]>([0, 0]);
 
@@ -170,7 +189,7 @@ export const Editor: FC<EditorProps> = ({ shaders, initialState, handleSave }) =
 			clearInterval(interval);
 			window.removeEventListener('mousemove', onMouseMove);
 		};
-	});
+	}, []);
 
 	return (
 		<div className="w-full h-full">
@@ -181,20 +200,8 @@ export const Editor: FC<EditorProps> = ({ shaders, initialState, handleSave }) =
 					shaders,
 					patches,
 					uniforms: uniformRef,
-					handleUpdateUniforms: (shaderId, uniforms) => {
-						uniformRef.current[shaderId] = uniforms;
-					},
-					handleUpdateNode: (nodeId, updateData) => {
-						setNodes((snapshot) =>
-							snapshot.map((node) => {
-								if (node.id === nodeId && node.type === 'shader') {
-									const shaderNode = node as ShaderNode;
-									return { ...shaderNode, data: updateData(shaderNode.data) };
-								}
-								return node;
-							})
-						);
-					}
+					handleUpdateUniforms,
+					handleUpdateNode
 				}}
 			>
 				<ReactFlow
