@@ -11,7 +11,7 @@ uniform float uDensity;  // [10, 50, 30]
 uniform float uThreshold;
 uniform vec4 uLineColor; // color [0,0,0,0]
 
-uniform sampler2D tInputTex;
+uniform sampler2D tInputTex; // texture
 
 
 in vec2 vUv;

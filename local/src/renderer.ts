@@ -2,12 +2,22 @@ import * as twgl from 'twgl.js';
 
 export type Uniforms = Record<string, any>;
 export type Shader = { id: string; name: string; source: string };
+export type TextureUniform = {
+	type: 'texture';
+	src: string | HTMLCanvasElement;
+};
 
 export type Connection = { from: string; to: string; input: string };
 
 export type Patch = {
 	shaders: Shader[];
 	connections: Connection[];
+};
+
+const isTexture = (o: unknown): o is TextureUniform => {
+	return (
+		typeof o === 'object' && o !== null && (o as TextureUniform).type === 'texture' && 'src' in o
+	);
 };
 
 const DefaultVertexShader = `#version 300 es
@@ -35,6 +45,7 @@ export class Renderer {
 	private renderOrder: string[] = []; // corresponds with shader id
 	private dependencyMapping: Record<string, { input: string; from: string }[]> = {};
 	private quad: twgl.BufferInfo;
+	private textureMap: Record<string, WebGLTexture> = {};
 
 	readonly patch: Patch;
 	readonly gl: WebGL2RenderingContext;
@@ -99,11 +110,29 @@ export class Renderer {
 		if (this.renderOrder.length < this.patch.shaders.length) throw Error('Cycle detected in graph');
 	}
 
+	private _buildTexture(textureUniform: TextureUniform): WebGLTexture {
+		return twgl.createTexture(this.gl, { src: textureUniform.src }, (err, texture) => {
+			console.log(err);
+		});
+	}
+
 	render() {
+		// const builtTextures: WebGLTexture[] = [];
+
 		for (let i = 0; i < this.renderOrder.length; i++) {
 			const currentNode = this.renderOrder[i];
 			const programInfo = this.programs[currentNode];
 			const uniforms: Uniforms = { ...this.uniforms[currentNode] };
+
+			for (const [key, value] of Object.entries(uniforms)) {
+				if (isTexture(value)) {
+					const tex = this._buildTexture(value);
+					uniforms[key] = tex;
+					// console.log(value);
+					// .push(tex);
+				}
+			}
+
 			for (const dependency of this.dependencyMapping[currentNode]) {
 				uniforms[dependency.input] = this.fbos[dependency.from].attachments[0];
 			}
@@ -116,6 +145,10 @@ export class Renderer {
 			twgl.setBuffersAndAttributes(this.gl, programInfo, this.quad);
 			twgl.drawBufferInfo(this.gl, this.quad);
 		}
+
+		// for (const tex of builtTextures) {
+		// 	this.gl.deleteTexture(tex);
+		// }
 	}
 
 	dispose() {

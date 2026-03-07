@@ -4,7 +4,6 @@ export type Field =
 	| {
 			name: string;
 			type: 'float';
-			value: number;
 			min?: number;
 			max?: number;
 			default?: number;
@@ -13,36 +12,34 @@ export type Field =
 	| {
 			name: string;
 			type: 'vec2';
-			value: [number, number];
 			default?: [number, number];
 			special?: 'mouse';
 	  }
 	| {
 			name: string;
 			type: 'vec3';
-			value: [number, number, number];
 			default?: [number, number, number];
 			color?: true;
 	  }
 	| {
 			name: string;
 			type: 'vec4';
-			value: [number, number, number, number];
 			default?: [number, number, number, number];
 			color?: true;
 	  }
 	| {
 			name: string;
 			type: 'sampler2D';
+			texture?: true;
 	  };
 
 // uniform vec3 varname; // color
 // uniform vec3 varname; // color [r, g, b]
 // uniform vec4 varname; // color
 // uniform vec4 varname; // color [r, g, b, a]
-// add support for:
 // uniform float var; // time (if this, create an input component that looks like ([start/stop - changes by ui state] / timevalue), with timevalue being time elapsed in seconds. use the time context from the editor)
 // uniform vec2 varname; // mouse (if this, create a readonly component that monitors position of the mouse; does this by using the mouse context from the editor)
+// uniform sampler2D varname; // texture
 
 /**
  * Parses shader source for uniform declarations with metadata comments.
@@ -73,19 +70,19 @@ export const extractFields = (shader: Shader): Field[] => {
 			const min = parseFloat(floatMeta[2]);
 			const max = parseFloat(floatMeta[3]);
 			const def = parseFloat(floatMeta[4]);
-			fields.push({ name: floatMeta[1], type: 'float', value: def, min, max, default: def });
+			fields.push({ name: floatMeta[1], type: 'float', min, max, default: def });
 			continue;
 		}
 
 		const floatTime = trimmed.match(/^uniform\s+float\s+(\w+)\s*;.*\/\/\s*time\b/);
 		if (floatTime?.[1]) {
-			fields.push({ name: floatTime[1], type: 'float', value: 0, special: 'time' });
+			fields.push({ name: floatTime[1], type: 'float', special: 'time' });
 			continue;
 		}
 
 		const floatMatch = trimmed.match(/^uniform\s+float\s+(\w+)\s*;/);
 		if (floatMatch?.[1]) {
-			fields.push({ name: floatMatch[1], type: 'float', value: 0 });
+			fields.push({ name: floatMatch[1], type: 'float' });
 			continue;
 		}
 
@@ -95,7 +92,7 @@ export const extractFields = (shader: Shader): Field[] => {
 		);
 		if (vec2Meta?.[1]) {
 			const def: [number, number] = [parseFloat(vec2Meta[2]), parseFloat(vec2Meta[3])];
-			fields.push({ name: vec2Meta[1], type: 'vec2', value: def, default: def });
+			fields.push({ name: vec2Meta[1], type: 'vec2', default: def });
 			continue;
 		}
 
@@ -113,7 +110,6 @@ export const extractFields = (shader: Shader): Field[] => {
 			fields.push({
 				name: vec3Color[1],
 				type: 'vec3',
-				value: def ?? [1, 1, 1],
 				color: true,
 				...(def && { default: def })
 			});
@@ -132,7 +128,7 @@ export const extractFields = (shader: Shader): Field[] => {
 				parseFloat(vec3Meta[3]),
 				parseFloat(vec3Meta[4])
 			];
-			fields.push({ name: vec3Meta[1], type: 'vec3', value: def, default: def });
+			fields.push({ name: vec3Meta[1], type: 'vec3', default: def });
 			continue;
 		}
 
@@ -155,7 +151,6 @@ export const extractFields = (shader: Shader): Field[] => {
 			fields.push({
 				name: vec4Color[1],
 				type: 'vec4',
-				value: def ?? [1, 1, 1, 1],
 				color: true,
 				...(def && { default: def })
 			});
@@ -175,13 +170,13 @@ export const extractFields = (shader: Shader): Field[] => {
 				parseFloat(vec4Meta[4]),
 				parseFloat(vec4Meta[5])
 			];
-			fields.push({ name: vec4Meta[1], type: 'vec4', value: def, default: def });
+			fields.push({ name: vec4Meta[1], type: 'vec4', default: def });
 			continue;
 		}
 
 		const vec2Mouse = trimmed.match(/^uniform\s+vec2\s+(\w+)\s*;.*\/\/\s*mouse\b/);
 		if (vec2Mouse?.[1]) {
-			fields.push({ name: vec2Mouse[1], type: 'vec2', value: [0, 0], special: 'mouse' });
+			fields.push({ name: vec2Mouse[1], type: 'vec2', special: 'mouse' });
 			continue;
 		}
 
@@ -189,15 +184,21 @@ export const extractFields = (shader: Shader): Field[] => {
 		if (vecMatch) {
 			const vecType = vecMatch[1] as 'vec2' | 'vec3' | 'vec4';
 			const name = vecMatch[2];
-			if (vecType === 'vec2') fields.push({ name, type: 'vec2', value: [0, 0] });
-			else if (vecType === 'vec3') fields.push({ name, type: 'vec3', value: [0, 0, 0] });
-			else if (vecType === 'vec4') fields.push({ name, type: 'vec4', value: [0, 0, 0, 0] });
+			if (vecType === 'vec2') fields.push({ name, type: 'vec2' });
+			else if (vecType === 'vec3') fields.push({ name, type: 'vec3' });
+			else if (vecType === 'vec4') fields.push({ name, type: 'vec4' });
 			continue;
 		}
 
-		const sampler2DMatch = trimmed.match(/^uniform\s+sampler2D\s+(\w+)\s*;/);
+		const sampler2DMatch = trimmed.match(
+			/^uniform\s+sampler2D\s+(\w+)\s*;(?:.*\/\/\s*(texture)\b)?/
+		);
 		if (sampler2DMatch?.[1]) {
-			fields.push({ name: sampler2DMatch[1], type: 'sampler2D' });
+			fields.push({
+				name: sampler2DMatch[1],
+				type: 'sampler2D',
+				...(sampler2DMatch[2] && { texture: true })
+			});
 		}
 	}
 

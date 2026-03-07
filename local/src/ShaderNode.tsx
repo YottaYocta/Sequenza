@@ -6,6 +6,7 @@ import { Scrubber } from './Scrubber';
 import UniformForm from './UniformForm';
 import { RendererComponent } from './RendererComponent';
 import { EditorContext } from './EditorContext';
+import { extractFields } from './Field';
 
 export type ShaderNodeData = {
 	shader: Shader;
@@ -24,9 +25,10 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
 	const [height, setHeight] = useState(200);
 
 	const textureInputs = useMemo<string[]>(() => {
-		const matches = data.shader.source.matchAll(/uniform\s+sampler2D\s+(\w+)\s*;/g);
-		return Array.from(matches, (m) => m[1]);
-	}, [data.shader.source]);
+		return extractFields(data.shader)
+			.filter((f) => f.type === 'sampler2D' && !f.texture)
+			.map((f) => f.name);
+	}, [data.shader]);
 
 	return (
 		<div
@@ -48,29 +50,30 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
 					}}
 				></UniformForm>
 			</div>
-			<div className="flex flex-col justify-center items-center gap-2 relative">
-				<button
-					className={`absolute w-full h-full group hover:bg-white/10 ${data.paused ? 'bg-white/10' : 'bg-transparent'} transition cursor-pointer flex items-center justify-center`}
-					onClick={() => {
-						handleUpdateNode(id, (snapshot) => {
-							console.log(snapshot);
-							return { ...snapshot, paused: !snapshot.paused };
-						});
-					}}
-				>
-					<span
-						className={` w-min px-1 h-6 group-hover:bg-white/80 ${data.paused ? 'bg-white/50' : 'bg-transparent'} rounded-sm transition flex items-center justify-center`}
+			<div className="flex flex-col justify-center items-center gap-2 ">
+				<div className="w-full h-full top-0 left-0 relative">
+					<button
+						className={`absolute w-full h-full group hover:bg-white/10 ${data.paused ? 'bg-white/10' : 'bg-transparent hover:opacity-100 opacity-0'} transition cursor-pointer flex items-center justify-center`}
+						onClick={() => {
+							handleUpdateNode(id, (snapshot) => {
+								return { ...snapshot, paused: !snapshot.paused };
+							});
+						}}
 					>
-						<span className="h-3 leading-3 text-xs">{data.paused ? 'Resume' : 'Pause'}</span>
-					</span>
-				</button>
-				<RendererComponent
-					animate={!data.paused}
-					width={width}
-					height={height}
-					patch={patches[data.shader.id]}
-					uniforms={uniforms}
-				></RendererComponent>
+						<span
+							className={` w-min px-1 h-6 group-hover:bg-white/80 ${data.paused ? 'bg-white/50' : 'bg-transparent'} rounded-sm transition flex items-center justify-center`}
+						>
+							<span className={`h-3 leading-3 text-xs `}>{data.paused ? 'Resume' : 'Pause'}</span>
+						</span>
+					</button>
+					<RendererComponent
+						animate={!data.paused}
+						width={width}
+						height={height}
+						patch={patches[data.shader.id]}
+						uniforms={uniforms}
+					></RendererComponent>
+				</div>
 				<div className="flex gap-2">
 					<Scrubber label="w" value={width} min={1} step={1} onChange={setWidth} />
 					<Scrubber label="h" value={height} min={1} step={1} onChange={setHeight} />

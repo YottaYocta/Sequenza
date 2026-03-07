@@ -1,5 +1,5 @@
-import { useState, useRef, useCallback, useEffect, useContext, type FC } from 'react';
-import type { Shader, Uniforms } from './renderer';
+import { useState, useRef, useEffect, useContext, useMemo, type FC } from 'react';
+import type { Shader, TextureUniform, Uniforms } from './renderer';
 import { Scrubber } from './Scrubber';
 import { EditorContext } from './EditorContext';
 import { extractFields, type Field } from './Field';
@@ -7,7 +7,7 @@ import { extractFields, type Field } from './Field';
 interface UniformFormProps {
 	shader: Shader;
 	initialUniforms?: Uniforms;
-	handleUpdateUniform: (newUniforms: Uniforms) => void;
+	handleUpdateUniform: (uniforms: Uniforms) => void;
 }
 
 const toHex = (v: number) =>
@@ -56,78 +56,106 @@ const ResetButton: FC<{ onClick: () => void }> = ({ onClick }) => (
 	</button>
 );
 
-const FloatFieldComponent: FC<{
-	data: Field & { type: 'float' };
-	handleUpdateField: (updatedField: Field & { type: 'float' }) => void;
-}> = ({ data, handleUpdateField }) => (
-	<div className="flex items-center py-1.5">
-		<FieldLabel name={data.name} type="float" />
-		<Scrubber
-			value={data.value}
-			min={data.min}
-			max={data.max}
-			step={0.01}
-			onChange={(v) => handleUpdateField({ ...data, value: v })}
-		/>
-		{data.default !== undefined && (
-			<ResetButton onClick={() => handleUpdateField({ ...data, value: data.default! })} />
-		)}
+const FieldLabel: FC<{ name: string; type: string }> = ({ name, type }) => (
+	<div className="min-w-30 flex flex-col gap-0.5">
+		<span className="font-mono text-xs text-neutral-900">{name}</span>
+		<span className="font-mono text-[10px] text-neutral-500">{type}</span>
 	</div>
 );
 
-const Vec2FieldComponent: FC<{
-	data: Field & { type: 'vec2' };
-	handleUpdateField: (updatedField: Field & { type: 'vec2' }) => void;
-}> = ({ data, handleUpdateField }) => {
-	const update = (i: number, v: number) => {
-		const next = [...data.value] as [number, number];
-		next[i] = v;
-		handleUpdateField({ ...data, value: next });
+const FloatFieldComponent: FC<{
+	field: Field & { type: 'float' };
+	initialValue?: number;
+	handleUpdateUniformField: (value: number) => void;
+}> = ({ field, initialValue, handleUpdateUniformField }) => {
+	const [value, setValue] = useState(initialValue ?? field.default ?? 0);
+	const update = (v: number) => {
+		setValue(v);
+		handleUpdateUniformField(v);
 	};
 	return (
 		<div className="flex items-center py-1.5">
-			<FieldLabel name={data.name} type="vec2" />
+			<FieldLabel name={field.name} type="float" />
+			<Scrubber value={value} min={field.min} max={field.max} step={0.01} onChange={update} />
+			{field.default !== undefined && <ResetButton onClick={() => update(field.default!)} />}
+		</div>
+	);
+};
+
+const Vec2FieldComponent: FC<{
+	field: Field & { type: 'vec2' };
+	initialValue?: [number, number];
+	handleUpdateUniformField: (value: [number, number]) => void;
+}> = ({ field, initialValue, handleUpdateUniformField }) => {
+	const [value, setValue] = useState<[number, number]>(initialValue ?? field.default ?? [0, 0]);
+	const update = (i: number, v: number) => {
+		const next = [...value] as [number, number];
+		next[i] = v;
+		setValue(next);
+		handleUpdateUniformField(next);
+	};
+	return (
+		<div className="flex items-center py-1.5">
+			<FieldLabel name={field.name} type="vec2" />
 			<div className="flex gap-2 flex-wrap">
 				{(['x', 'y'] as const).map((axis, i) => (
-					<Scrubber key={axis} label={axis} value={data.value[i]} onChange={(v) => update(i, v)} />
+					<Scrubber key={axis} label={axis} value={value[i]} onChange={(v) => update(i, v)} />
 				))}
 			</div>
-			{data.default !== undefined && (
-				<ResetButton onClick={() => handleUpdateField({ ...data, value: data.default! })} />
+			{field.default !== undefined && (
+				<ResetButton
+					onClick={() => {
+						setValue(field.default!);
+						handleUpdateUniformField(field.default!);
+					}}
+				/>
 			)}
 		</div>
 	);
 };
 
 const Vec3ColorFieldComponent: FC<{
-	data: Field & { type: 'vec3' };
-	handleUpdateField: (updatedField: Field & { type: 'vec3' }) => void;
-}> = ({ data, handleUpdateField }) => (
-	<div className="flex items-center py-1.5">
-		<FieldLabel name={data.name} type="vec3 color" />
-		<ColorPickerButton
-			color={vec3ToHex(data.value)}
-			onChange={(hex) => handleUpdateField({ ...data, value: hexToVec3(hex) })}
-		/>
-		{data.default !== undefined && (
-			<ResetButton onClick={() => handleUpdateField({ ...data, value: data.default! })} />
-		)}
-	</div>
-);
-
-const Vec4ColorFieldComponent: FC<{
-	data: Field & { type: 'vec4' };
-	handleUpdateField: (updatedField: Field & { type: 'vec4' }) => void;
-}> = ({ data, handleUpdateField }) => {
-	const [r, g, b, a] = data.value;
+	field: Field & { type: 'vec3' };
+	initialValue?: [number, number, number];
+	handleUpdateUniformField: (value: [number, number, number]) => void;
+}> = ({ field, initialValue, handleUpdateUniformField }) => {
+	const [value, setValue] = useState<[number, number, number]>(
+		initialValue ?? field.default ?? [1, 1, 1]
+	);
+	const update = (v: [number, number, number]) => {
+		setValue(v);
+		handleUpdateUniformField(v);
+	};
 	return (
 		<div className="flex items-center py-1.5">
-			<FieldLabel name={data.name} type="vec4 color" />
+			<FieldLabel name={field.name} type="vec3 color" />
+			<ColorPickerButton color={vec3ToHex(value)} onChange={(hex) => update(hexToVec3(hex))} />
+			{field.default !== undefined && <ResetButton onClick={() => update(field.default!)} />}
+		</div>
+	);
+};
+
+const Vec4ColorFieldComponent: FC<{
+	field: Field & { type: 'vec4' };
+	initialValue?: [number, number, number, number];
+	handleUpdateUniformField: (value: [number, number, number, number]) => void;
+}> = ({ field, initialValue, handleUpdateUniformField }) => {
+	const [value, setValue] = useState<[number, number, number, number]>(
+		initialValue ?? field.default ?? [1, 1, 1, 1]
+	);
+	const [r, g, b, a] = value;
+	const update = (v: [number, number, number, number]) => {
+		setValue(v);
+		handleUpdateUniformField(v);
+	};
+	return (
+		<div className="flex items-center py-1.5">
+			<FieldLabel name={field.name} type="vec4 color" />
 			<ColorPickerButton
 				color={vec3ToHex([r, g, b])}
 				onChange={(hex) => {
 					const [nr, ng, nb] = hexToVec3(hex);
-					handleUpdateField({ ...data, value: [nr, ng, nb, a] });
+					update([nr, ng, nb, a]);
 				}}
 			/>
 			<Scrubber
@@ -136,76 +164,92 @@ const Vec4ColorFieldComponent: FC<{
 				min={0}
 				max={1}
 				step={0.01}
-				onChange={(v) => handleUpdateField({ ...data, value: [r, g, b, v] })}
+				onChange={(v) => update([r, g, b, v])}
 			/>
-			{data.default !== undefined && (
-				<ResetButton onClick={() => handleUpdateField({ ...data, value: data.default! })} />
-			)}
+			{field.default !== undefined && <ResetButton onClick={() => update(field.default!)} />}
 		</div>
 	);
 };
 
 const Vec3FieldComponent: FC<{
-	data: Field & { type: 'vec3' };
-	handleUpdateField: (updatedField: Field & { type: 'vec3' }) => void;
-}> = ({ data, handleUpdateField }) => {
+	field: Field & { type: 'vec3' };
+	initialValue?: [number, number, number];
+	handleUpdateUniformField: (value: [number, number, number]) => void;
+}> = ({ field, initialValue, handleUpdateUniformField }) => {
+	const [value, setValue] = useState<[number, number, number]>(
+		initialValue ?? field.default ?? [0, 0, 0]
+	);
 	const update = (i: number, v: number) => {
-		const next = [...data.value] as [number, number, number];
+		const next = [...value] as [number, number, number];
 		next[i] = v;
-		handleUpdateField({ ...data, value: next });
+		setValue(next);
+		handleUpdateUniformField(next);
 	};
 	return (
 		<div className="flex items-center py-1.5">
-			<FieldLabel name={data.name} type="vec3" />
+			<FieldLabel name={field.name} type="vec3" />
 			<div className="flex gap-2 flex-wrap">
 				{(['x', 'y', 'z'] as const).map((axis, i) => (
-					<Scrubber key={axis} label={axis} value={data.value[i]} onChange={(v) => update(i, v)} />
+					<Scrubber key={axis} label={axis} value={value[i]} onChange={(v) => update(i, v)} />
 				))}
 			</div>
-			{data.default !== undefined && (
-				<ResetButton onClick={() => handleUpdateField({ ...data, value: data.default! })} />
+			{field.default !== undefined && (
+				<ResetButton
+					onClick={() => {
+						setValue(field.default!);
+						handleUpdateUniformField(field.default!);
+					}}
+				/>
 			)}
 		</div>
 	);
 };
 
 const Vec4FieldComponent: FC<{
-	data: Field & { type: 'vec4' };
-	handleUpdateField: (updatedField: Field & { type: 'vec4' }) => void;
-}> = ({ data, handleUpdateField }) => {
+	field: Field & { type: 'vec4' };
+	initialValue?: [number, number, number, number];
+	handleUpdateUniformField: (value: [number, number, number, number]) => void;
+}> = ({ field, initialValue, handleUpdateUniformField }) => {
+	const [value, setValue] = useState<[number, number, number, number]>(
+		initialValue ?? field.default ?? [0, 0, 0, 0]
+	);
 	const update = (i: number, v: number) => {
-		const next = [...data.value] as [number, number, number, number];
+		const next = [...value] as [number, number, number, number];
 		next[i] = v;
-		handleUpdateField({ ...data, value: next });
+		setValue(next);
+		handleUpdateUniformField(next);
 	};
 	return (
 		<div className="flex items-center gap-2 px-2 py-1.5">
-			<FieldLabel name={data.name} type="vec4" />
+			<FieldLabel name={field.name} type="vec4" />
 			<div className="flex gap-2 flex-wrap">
 				{(['x', 'y', 'z', 'w'] as const).map((axis, i) => (
-					<Scrubber key={axis} label={axis} value={data.value[i]} onChange={(v) => update(i, v)} />
+					<Scrubber key={axis} label={axis} value={value[i]} onChange={(v) => update(i, v)} />
 				))}
 			</div>
-			{data.default !== undefined && (
-				<ResetButton onClick={() => handleUpdateField({ ...data, value: data.default! })} />
+			{field.default !== undefined && (
+				<ResetButton
+					onClick={() => {
+						setValue(field.default!);
+						handleUpdateUniformField(field.default!);
+					}}
+				/>
 			)}
 		</div>
 	);
 };
 
 const TimeFieldComponent: FC<{
-	data: Field & { type: 'float'; special: 'time' };
-	handleUpdateField: (updatedField: Field & { type: 'float' }) => void;
-}> = ({ data, handleUpdateField }) => {
+	field: Field & { type: 'float'; special: 'time' };
+	handleUpdateUniformField: (value: number) => void;
+}> = ({ field, handleUpdateUniformField }) => {
 	const [isPlaying, setIsPlaying] = useState(false);
 	const [display, setDisplay] = useState(0);
 	const accumulatedRef = useRef(0);
 	const startRef = useRef(0);
 	const rafRef = useRef(0);
-	const handleRef = useRef(handleUpdateField);
-	handleRef.current = handleUpdateField;
-	const dataRef = useRef(data);
-	dataRef.current = data;
+	const handleRef = useRef(handleUpdateUniformField);
+	handleRef.current = handleUpdateUniformField;
 
 	useEffect(() => {
 		if (!isPlaying) return;
@@ -213,7 +257,7 @@ const TimeFieldComponent: FC<{
 		const tick = () => {
 			const secs = accumulatedRef.current + (Date.now() - startRef.current) / 1000;
 			setDisplay(secs);
-			handleRef.current({ ...dataRef.current, value: secs });
+			handleRef.current(secs);
 			rafRef.current = requestAnimationFrame(tick);
 		};
 		rafRef.current = requestAnimationFrame(tick);
@@ -228,12 +272,12 @@ const TimeFieldComponent: FC<{
 		setIsPlaying(false);
 		accumulatedRef.current = 0;
 		setDisplay(0);
-		handleRef.current({ ...dataRef.current, value: 0 });
+		handleRef.current(0);
 	};
 
 	return (
 		<div className="flex items-center py-1.5">
-			<FieldLabel name={data.name} type="float time" />
+			<FieldLabel name={field.name} type="float time" />
 			<button
 				onClick={toggle}
 				className="text-xs font-mono text-neutral-500 bg-neutral-100 hover:bg-neutral-200 rounded-sm w-6 h-6 flex items-center justify-center select-none"
@@ -250,22 +294,20 @@ const TimeFieldComponent: FC<{
 };
 
 const MouseFieldComponent: FC<{
-	data: Field & { type: 'vec2'; special: 'mouse' };
-	handleUpdateField: (updatedField: Field & { type: 'vec2' }) => void;
-}> = ({ data, handleUpdateField }) => {
+	field: Field & { type: 'vec2'; special: 'mouse' };
+	handleUpdateUniformField: (value: [number, number]) => void;
+}> = ({ field, handleUpdateUniformField }) => {
 	const { mousePosition } = useContext(EditorContext);
 	const [pos, setPos] = useState<[number, number]>([0, 0]);
-	const handleRef = useRef(handleUpdateField);
-	handleRef.current = handleUpdateField;
-	const dataRef = useRef(data);
-	dataRef.current = data;
+	const handleRef = useRef(handleUpdateUniformField);
+	handleRef.current = handleUpdateUniformField;
 
 	useEffect(() => {
 		let rafId: number;
 		const tick = () => {
 			const p: [number, number] = [mousePosition.current[0], mousePosition.current[1]];
 			setPos(p);
-			handleRef.current({ ...dataRef.current, value: p });
+			handleRef.current(p);
 			rafId = requestAnimationFrame(tick);
 		};
 		rafId = requestAnimationFrame(tick);
@@ -274,7 +316,7 @@ const MouseFieldComponent: FC<{
 
 	return (
 		<div className="flex items-center py-1.5">
-			<FieldLabel name={data.name} type="vec2 mouse" />
+			<FieldLabel name={field.name} type="vec2 mouse" />
 			<div className="flex gap-2">
 				{(['x', 'y'] as const).map((axis, i) => (
 					<div key={axis} className="flex items-center w-20 relative">
@@ -293,46 +335,68 @@ const MouseFieldComponent: FC<{
 	);
 };
 
-const FieldLabel: FC<{ name: string; type: string }> = ({ name, type }) => (
-	<div className="min-w-30 flex flex-col gap-0.5">
-		<span className="font-mono text-xs text-neutral-900">{name}</span>
-		<span className="font-mono text-[10px] text-neutral-500">{type}</span>
+const ImageUploadFieldComponent: FC<{
+	field: Field & { type: 'sampler2D' };
+	handleUpdateUniformField: (value: TextureUniform | null) => void;
+}> = ({ field, handleUpdateUniformField }) => (
+	<div className="flex items-center py-1.5">
+		<FieldLabel name={field.name} type="sampler2D texture" />
+		<input
+			type="file"
+			accept="image/*"
+			className="text-xs text-neutral-500"
+			onChange={(e) => {
+				const file = e.target.files?.[0] ?? null;
+				handleUpdateUniformField(file ? { type: 'texture', src: URL.createObjectURL(file) } : null);
+			}}
+		/>
 	</div>
 );
 
-const applyInitialUniforms = (fields: Field[], initialUniforms?: Uniforms): Field[] => {
-	if (!initialUniforms) return fields;
-	return fields.map((field) => {
-		const saved = initialUniforms[field.name];
-		if (saved === undefined) return field;
-		return { ...field, value: saved } as Field;
-	});
+const buildInitialUniforms = (fields: Field[], initialUniforms?: Uniforms): Uniforms => {
+	const u: Uniforms = {};
+	for (const field of fields) {
+		switch (field.type) {
+			case 'float':
+				u[field.name] = field.default ?? 0;
+				break;
+			case 'vec2':
+				u[field.name] = field.default ?? [0, 0];
+				break;
+			case 'vec3':
+				u[field.name] = field.default ?? [0, 0, 0];
+				break;
+			case 'vec4':
+				u[field.name] = field.default ?? [0, 0, 0, 0];
+				break;
+			// sampler2D: omitted until a file is uploaded
+		}
+	}
+	// TODO: no type checking — blindly copy matching field names from saved uniforms
+	if (initialUniforms) {
+		for (const field of fields) {
+			if (field.name in initialUniforms) {
+				u[field.name] = initialUniforms[field.name];
+			}
+		}
+	}
+	return u;
 };
 
-const UniformForm: FC<UniformFormProps> = ({ shader, handleUpdateUniform, initialUniforms }) => {
-	const [fields, setFields] = useState<Field[]>(() =>
-		applyInitialUniforms(extractFields(shader), initialUniforms)
+const UniformForm: FC<UniformFormProps> = ({ shader, initialUniforms, handleUpdateUniform }) => {
+	const fields = useMemo(() => extractFields(shader), [shader]);
+
+	const initialUniformValues = useMemo(
+		() => buildInitialUniforms(fields, initialUniforms),
+		[fields]
 	);
+
+	const uniformRef = useRef<Uniforms>(initialUniformValues);
 
 	useEffect(() => {
-		setFields(applyInitialUniforms(extractFields(shader), initialUniforms));
-	}, [shader]);
-
-	const updateField = useCallback(
-		(index: number, updated: Field) => {
-			setFields((prev) => {
-				const next = [...prev];
-				next[index] = updated;
-				const uniforms: Uniforms = {};
-				for (const f of next) {
-					uniforms[f.name] = f.value;
-				}
-				handleUpdateUniform(uniforms);
-				return next;
-			});
-		},
-		[handleUpdateUniform]
-	);
+		uniformRef.current = { ...initialUniformValues };
+		handleUpdateUniform(uniformRef.current);
+	}, [initialUniformValues]);
 
 	if (fields.length === 0) {
 		return (
@@ -345,69 +409,94 @@ const UniformForm: FC<UniformFormProps> = ({ shader, handleUpdateUniform, initia
 		);
 	}
 
-	useEffect(() => {
-		if (fields.length > 0) updateField(0, fields[0]);
-	}, [shader]);
-
 	return (
 		<div className="rounded overflow-hidden">
-			{fields.map((field, i) => {
+			{fields.map((field) => {
 				const key = `${field.name}-${field.type}`;
+				const update = (newValue: any) => {
+					uniformRef.current[field.name] = newValue;
+					handleUpdateUniform(uniformRef.current);
+				};
+				const updateTexture = (newValue: TextureUniform | null) => {
+					if (newValue === null) delete uniformRef.current[field.name];
+					else uniformRef.current[field.name] = newValue;
+					handleUpdateUniform(uniformRef.current);
+				};
+
 				switch (field.type) {
 					case 'float':
 						return field.special === 'time' ? (
 							<TimeFieldComponent
 								key={key}
-								data={field as Field & { type: 'float'; special: 'time' }}
-								handleUpdateField={(updated) => updateField(i, updated)}
+								field={field as Field & { type: 'float'; special: 'time' }}
+								handleUpdateUniformField={update}
 							/>
 						) : (
 							<FloatFieldComponent
 								key={key}
-								data={field}
-								handleUpdateField={(updated) => updateField(i, updated)}
+								field={field}
+								initialValue={initialUniformValues[field.name] as number}
+								handleUpdateUniformField={update}
 							/>
 						);
 					case 'vec2':
 						return field.special === 'mouse' ? (
 							<MouseFieldComponent
 								key={key}
-								data={field as Field & { type: 'vec2'; special: 'mouse' }}
-								handleUpdateField={(updated) => updateField(i, updated)}
+								field={field as Field & { type: 'vec2'; special: 'mouse' }}
+								handleUpdateUniformField={update}
 							/>
 						) : (
 							<Vec2FieldComponent
 								key={key}
-								data={field}
-								handleUpdateField={(updated) => updateField(i, updated)}
+								field={field}
+								initialValue={initialUniformValues[field.name] as [number, number]}
+								handleUpdateUniformField={update}
 							/>
 						);
 					case 'vec3':
 						return field.color ? (
 							<Vec3ColorFieldComponent
 								key={key}
-								data={field}
-								handleUpdateField={(updated) => updateField(i, updated)}
+								field={field}
+								initialValue={initialUniformValues[field.name] as [number, number, number]}
+								handleUpdateUniformField={update}
 							/>
 						) : (
 							<Vec3FieldComponent
 								key={key}
-								data={field}
-								handleUpdateField={(updated) => updateField(i, updated)}
+								field={field}
+								initialValue={initialUniformValues[field.name] as [number, number, number]}
+								handleUpdateUniformField={update}
 							/>
 						);
 					case 'vec4':
 						return field.color ? (
 							<Vec4ColorFieldComponent
 								key={key}
-								data={field}
-								handleUpdateField={(updated) => updateField(i, updated)}
+								field={field}
+								initialValue={
+									initialUniformValues[field.name] as [number, number, number, number]
+								}
+								handleUpdateUniformField={update}
 							/>
 						) : (
 							<Vec4FieldComponent
 								key={key}
-								data={field}
-								handleUpdateField={(updated) => updateField(i, updated)}
+								field={field}
+								initialValue={
+									initialUniformValues[field.name] as [number, number, number, number]
+								}
+								handleUpdateUniformField={update}
+							/>
+						);
+					case 'sampler2D':
+						if (!field.texture) return null;
+						return (
+							<ImageUploadFieldComponent
+								key={key}
+								field={field}
+								handleUpdateUniformField={updateTexture}
 							/>
 						);
 				}
@@ -417,4 +506,3 @@ const UniformForm: FC<UniformFormProps> = ({ shader, handleUpdateUniform, initia
 };
 
 export default UniformForm;
-export type { Field };
