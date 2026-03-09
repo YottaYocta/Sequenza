@@ -1,7 +1,7 @@
 #version 300 es
 precision highp float;
 
-uniform float uTime;
+uniform float uTime; // time
 uniform vec2 uResolution; // [100, 100]
 uniform vec2 uMouse;
 uniform float uAmplitude;
@@ -11,7 +11,8 @@ uniform float uDensity;  // [10, 50, 30]
 uniform float uThreshold;
 uniform vec4 uLineColor; // color [0,0,0,0]
 
-uniform sampler2D tInputTex; // texture
+uniform sampler2D tInputTex; 
+uniform float mode; // [0, 1, 1]
 
 
 in vec2 vUv;
@@ -57,10 +58,18 @@ void main() {
     float solidMask = clamp(targetLum, 0.0, 1.0) < distanceFromTargetInRot * uDensity ? 1.0 : 0.0; 
 
 
-    if (solidMask > 0.5) {
-        fragColor = vec4(vec3(uLineColor), 1.0);
+    if (mode > 0.5) {
+        if (solidMask < 0.5) {
+            fragColor = vec4(vec3(uLineColor), 1.0);
+        } else {
+            fragColor = vec4(1.0);
+        }
     } else {
-        fragColor = vec4(1.0);
+        if (solidMask > 0.5) {
+            fragColor = vec4(vec3(uLineColor), 1.0);
+        } else {
+            fragColor = vec4(1.0);
+        }
     }
 
 }
