@@ -4,7 +4,7 @@ export type Uniforms = Record<string, any>;
 export type Shader = { id: string; name: string; source: string };
 export type TextureUniform = {
 	type: 'texture';
-	src: string | HTMLCanvasElement;
+	src: string | HTMLCanvasElement | HTMLImageElement | HTMLVideoElement | HTMLElement;
 };
 
 export type Connection = { from: string; to: string; input: string };
@@ -45,7 +45,9 @@ export class Renderer {
 	private renderOrder: string[] = []; // corresponds with shader id
 	private dependencyMapping: Record<string, { input: string; from: string }[]> = {};
 	private quad: twgl.BufferInfo;
-	private textureMap: Record<string, WebGLTexture> = {};
+	private textures: Record<string, WebGLTexture> = {};
+	private textureSrcs: Record<string, string> = {};
+	private defaultTexture: WebGLTexture;
 
 	readonly patch: Patch;
 	readonly gl: WebGL2RenderingContext;
@@ -55,6 +57,12 @@ export class Renderer {
 	constructor(context: WebGL2RenderingContext, patch: Patch) {
 		this.patch = patch;
 		this.gl = context;
+
+		this.defaultTexture = this.gl.createTexture()!;
+		twgl.setTextureFromArray(this.gl, this.defaultTexture, new Uint8Array([0, 0, 0, 255]), {
+			width: 1,
+			height: 1
+		});
 
 		for (let i = 0; i < patch.shaders.length; i++) {
 			const currentShader = patch.shaders[i];
@@ -110,15 +118,37 @@ export class Renderer {
 		if (this.renderOrder.length < this.patch.shaders.length) throw Error('Cycle detected in graph');
 	}
 
-	private _buildTexture(textureUniform: TextureUniform): WebGLTexture {
-		return twgl.createTexture(this.gl, { src: textureUniform.src }, (err, texture) => {
-			console.log(err);
-		});
+	private _getOrCreateTexture(key: string): WebGLTexture {
+		if (!this.textures[key]) {
+			const tex = this.gl.createTexture()!;
+			twgl.setTextureFromArray(this.gl, tex, new Uint8Array([0, 0, 0, 255]), {
+				width: 1,
+				height: 1
+			});
+			this.textures[key] = tex;
+		}
+		return this.textures[key];
+	}
+
+	private _updateTextureUniform(key: string, textureUniform: TextureUniform): WebGLTexture {
+		const tex = this._getOrCreateTexture(key);
+		const src = textureUniform.src;
+
+		if (typeof src === 'string') {
+			if (this.textureSrcs[key] !== src) {
+				this.textureSrcs[key] = src;
+				const img = new Image();
+				img.onload = () => twgl.setTextureFromElement(this.gl, tex, img);
+				img.src = src;
+			}
+		} else {
+			twgl.setTextureFromElement(this.gl, tex, src as HTMLElement);
+		}
+
+		return tex;
 	}
 
 	render() {
-		// const builtTextures: WebGLTexture[] = [];
-
 		for (let i = 0; i < this.renderOrder.length; i++) {
 			const currentNode = this.renderOrder[i];
 			const programInfo = this.programs[currentNode];
@@ -126,10 +156,7 @@ export class Renderer {
 
 			for (const [key, value] of Object.entries(uniforms)) {
 				if (isTexture(value)) {
-					const tex = this._buildTexture(value);
-					uniforms[key] = tex;
-					// console.log(value);
-					// .push(tex);
+					uniforms[key] = this._updateTextureUniform(`${currentNode}::${key}`, value);
 				}
 			}
 
@@ -145,10 +172,6 @@ export class Renderer {
 			twgl.setBuffersAndAttributes(this.gl, programInfo, this.quad);
 			twgl.drawBufferInfo(this.gl, this.quad);
 		}
-
-		// for (const tex of builtTextures) {
-		// 	this.gl.deleteTexture(tex);
-		// }
 	}
 
 	dispose() {
@@ -165,6 +188,13 @@ export class Renderer {
 			this.gl.deleteFramebuffer(fboInfo.framebuffer);
 		}
 		this.fbos = {};
+
+		for (const tex of Object.values(this.textures)) {
+			this.gl.deleteTexture(tex);
+		}
+		this.textures = {};
+		this.textureSrcs = {};
+		this.gl.deleteTexture(this.defaultTexture);
 
 		if (this.quad.indices) this.gl.deleteBuffer(this.quad.indices);
 		for (const attrib of Object.values(this.quad.attribs ?? {})) {
