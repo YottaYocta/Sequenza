@@ -1,7 +1,7 @@
 import { Position, type Node, type NodeProps } from '@xyflow/react';
 import CustomHandle from './CustomHandle';
 import type { Shader, Uniforms } from './renderer';
-import { useContext, useMemo, useState, type RefObject } from 'react';
+import { useContext, useEffect, useMemo, useState, type RefObject } from 'react';
 import { Scrubber } from './Scrubber';
 import UniformForm from './UniformForm';
 import { RendererComponent } from './RendererComponent';
@@ -11,18 +11,24 @@ import { extractFields } from './Field';
 export type ShaderNodeData = {
 	shader: Shader;
 	paused: boolean;
+	resolution: [number, number];
 	uniforms: RefObject<Record<string, Uniforms>>;
 };
 
 export type ShaderNode = Node<ShaderNodeData, 'shader'>;
 export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
-	// console.log(data.paused);
 	const { patches, uniforms, handleUpdateUniforms, handleUpdateNode } = useContext(EditorContext);
 
 	if (!patches || patches[data.shader.id] === undefined) return null;
 
-	const [width, setWidth] = useState(200);
-	const [height, setHeight] = useState(200);
+	const [width, setWidth] = useState(data.resolution[0]);
+	const [height, setHeight] = useState(data.resolution[1]);
+
+	useEffect(() => {
+		handleUpdateNode(id, (snapshot) => {
+			return { ...snapshot, resolution: [width, height] };
+		});
+	}, [width, height]);
 
 	const textureInputs = useMemo<string[]>(() => {
 		return extractFields(data.shader)

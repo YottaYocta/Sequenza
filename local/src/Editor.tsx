@@ -85,6 +85,7 @@ export const Editor: FC<EditorProps> = ({ shaders, initialState, handleSave }) =
 			data: {
 				shader: newShader,
 				uniforms: uniformRef,
+				resolution: [100, 100],
 				paused: false
 			},
 			type: 'shader'
