@@ -7,6 +7,7 @@ import UniformForm from './UniformForm';
 import { RendererComponent } from './RendererComponent';
 import { EditorContext } from './EditorContext';
 import { extractFields } from '../lib/Field';
+import { Dialog } from './Dialog';
 
 export type ShaderNodeData = {
 	shader: Shader;
@@ -79,6 +80,9 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
 						patch={patches[data.shader.id]}
 						uniforms={uniforms}
 					></RendererComponent>
+					<Dialog open={!data.paused ? true : undefined}>
+						<p>Animating!!</p>
+					</Dialog>
 				</div>
 				<div className="flex gap-2">
 					<Scrubber label="w" value={width} min={1} step={1} onChange={setWidth} />
