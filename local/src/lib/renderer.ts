@@ -1,7 +1,12 @@
 import * as twgl from 'twgl.js';
 
 export type Uniforms = Record<string, any>;
-export type Shader = { id: string; name: string; source: string };
+export type Shader = {
+	id: string;
+	name: string;
+	source: string;
+	resolution: { width: number; height: number };
+};
 export type TextureUniform = {
 	type: 'texture';
 	src: string | HTMLCanvasElement | HTMLImageElement | HTMLVideoElement | HTMLElement;
@@ -70,7 +75,12 @@ export class Renderer {
 				DefaultVertexShader,
 				currentShader.source
 			]);
-			this.fbos[currentShader.id] = twgl.createFramebufferInfo(this.gl);
+			this.fbos[currentShader.id] = twgl.createFramebufferInfo(
+				this.gl,
+				undefined,
+				currentShader.resolution.width,
+				currentShader.resolution.height
+			);
 		}
 
 		this.quad = twgl.primitives.createXYQuadBufferInfo(this.gl);

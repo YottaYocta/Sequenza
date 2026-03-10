@@ -25,7 +25,12 @@ function App() {
 		socket.on('shaders-found', (data: Record<string, string>) => {
 			const newShaders: Record<string, Shader> = {};
 			for (const [filepath, name] of Object.entries(data)) {
-				newShaders[filepath] = { id: filepath, source: name, name: filepath };
+				newShaders[filepath] = {
+					id: filepath,
+					source: name,
+					name: filepath,
+					resolution: { width: 100, height: 100 }
+				};
 				shaderUniforms.current[filepath] = {};
 			}
 			setShaderMap(newShaders);

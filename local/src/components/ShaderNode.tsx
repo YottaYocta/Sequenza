@@ -106,7 +106,17 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
 
 	useEffect(() => {
 		handleUpdateNode(id, (snapshot) => {
-			return { ...snapshot, resolution: [width, height] };
+			return {
+				...snapshot,
+				resolution: [width, height],
+				shader: {
+					...snapshot.shader,
+					resolution: {
+						width,
+						height
+					}
+				}
+			};
 		});
 	}, [width, height]);
 
