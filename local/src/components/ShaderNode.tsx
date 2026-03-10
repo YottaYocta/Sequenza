@@ -1,12 +1,12 @@
 import { Position, type Node, type NodeProps } from '@xyflow/react';
 import CustomHandle from './CustomHandle';
-import type { Shader, Uniforms } from './renderer';
+import type { Shader, Uniforms } from '../lib/renderer';
 import { useContext, useEffect, useMemo, useState, type RefObject } from 'react';
 import { Scrubber } from './Scrubber';
 import UniformForm from './UniformForm';
 import { RendererComponent } from './RendererComponent';
 import { EditorContext } from './EditorContext';
-import { extractFields } from './Field';
+import { extractFields } from '../lib/Field';
 
 export type ShaderNodeData = {
 	shader: Shader;

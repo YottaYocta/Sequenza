@@ -1,4 +1,4 @@
-import type { Shader } from './renderer';
+import type { Shader } from './lib/renderer';
 
 export type Field =
 	| {

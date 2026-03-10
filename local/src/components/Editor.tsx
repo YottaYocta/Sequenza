@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FC } from 'react';
-import type { Connection, Patch, Shader, Uniforms } from './renderer';
+import type { Connection, Patch, Shader, Uniforms } from '../lib/renderer';
 import {
 	addEdge,
 	applyEdgeChanges,

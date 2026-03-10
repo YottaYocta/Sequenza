@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect, useContext, useMemo, type FC } from 'react';
-import type { Shader, TextureUniform, Uniforms } from './renderer';
+import type { Shader, TextureUniform, Uniforms } from '../lib/renderer';
 import { Scrubber } from './Scrubber';
 import { EditorContext } from './EditorContext';
-import { extractFields, type Field } from './Field';
+import { extractFields, type Field } from '../Field';
 
 interface UniformFormProps {
 	shader: Shader;
@@ -475,18 +475,14 @@ const UniformForm: FC<UniformFormProps> = ({ shader, initialUniforms, handleUpda
 							<Vec4ColorFieldComponent
 								key={key}
 								field={field}
-								initialValue={
-									initialUniformValues[field.name] as [number, number, number, number]
-								}
+								initialValue={initialUniformValues[field.name] as [number, number, number, number]}
 								handleUpdateUniformField={update}
 							/>
 						) : (
 							<Vec4FieldComponent
 								key={key}
 								field={field}
-								initialValue={
-									initialUniformValues[field.name] as [number, number, number, number]
-								}
+								initialValue={initialUniformValues[field.name] as [number, number, number, number]}
 								handleUpdateUniformField={update}
 							/>
 						);
