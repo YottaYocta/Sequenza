@@ -149,7 +149,7 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
 			</div>
 			<div className="flex flex-col justify-center items-start gap-4 ">
 				<div className="flex flex-col gap-2">
-					<div className="w-full top-0 left-0 relative">
+					<div className="relative max-w-96">
 						<button
 							className={`absolute w-full h-full group hover:bg-white/10 ${data.paused ? 'bg-white/10' : 'bg-transparent hover:opacity-100 opacity-0'} transition cursor-pointer flex items-center justify-center`}
 							onClick={() => {
@@ -171,6 +171,8 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
 							height={height}
 							patch={patches[data.shader.id]}
 							uniforms={uniforms}
+							className="w-full h-auto"
+							style={{ maxWidth: `${(width / height) * 24}rem` }}
 						></RendererComponent>
 					</div>
 					<div className="flex gap-2">

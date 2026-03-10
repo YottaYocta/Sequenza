@@ -1,18 +1,19 @@
 'use client';
-import { forwardRef, type RefObject, useEffect, useRef } from 'react';
+import { forwardRef, type CSSProperties, type RefObject, useEffect, useRef } from 'react';
 import { type Patch, Renderer, type Uniforms } from '../lib/renderer';
 
 interface RendererComponentProps {
 	patch: Patch;
 	uniforms: RefObject<Record<string, Uniforms>>;
 	className?: string;
+	style?: CSSProperties;
 	width?: number;
 	height?: number;
 	animate?: boolean;
 }
 
 export const RendererComponent = forwardRef<HTMLCanvasElement, RendererComponentProps>(
-	({ patch, uniforms, className, width = 100, height = 100, animate }, ref) => {
+	({ patch, uniforms, className, style, width = 100, height = 100, animate }, ref) => {
 		const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
 		useEffect(() => {
@@ -49,6 +50,7 @@ export const RendererComponent = forwardRef<HTMLCanvasElement, RendererComponent
 		return (
 			<canvas
 				className={`image-crisp ${className}`}
+				style={style}
 				width={width}
 				height={height}
 				ref={(el) => {
