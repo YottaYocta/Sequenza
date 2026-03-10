@@ -1,6 +1,6 @@
 {
   "name": "sequenza",
-  "version": "0.1.0",
+  "version": "1.0.1",
   "type": "module",
   "module": "./dist/sequenza.js",
   "types": "./dist/index.d.ts",
