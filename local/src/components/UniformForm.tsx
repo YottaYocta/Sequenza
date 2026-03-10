@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useContext, useMemo, type FC } from 'react
 import type { Shader, TextureUniform, Uniforms } from '../lib/renderer';
 import { Scrubber } from './Scrubber';
 import { EditorContext } from './EditorContext';
-import { extractFields, type Field } from '../Field';
+import { extractFields, type Field } from '../lib/Field';
 
 interface UniformFormProps {
 	shader: Shader;
