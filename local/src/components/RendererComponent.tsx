@@ -1,5 +1,5 @@
 'use client';
-import { type FC, type RefObject, useEffect, useRef } from 'react';
+import { forwardRef, type RefObject, useEffect, useRef } from 'react';
 import { type Patch, Renderer, type Uniforms } from '../lib/renderer';
 
 interface RendererComponentProps {
@@ -11,53 +11,52 @@ interface RendererComponentProps {
 	animate?: boolean;
 }
 
-export const RendererComponent: FC<RendererComponentProps> = ({
-	patch,
-	uniforms,
-	className,
-	width = 100,
-	height = 100,
-	animate
-}) => {
-	const canvasRef = useRef<HTMLCanvasElement | null>(null);
+export const RendererComponent = forwardRef<HTMLCanvasElement, RendererComponentProps>(
+	({ patch, uniforms, className, width = 100, height = 100, animate }, ref) => {
+		const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-	useEffect(() => {
-		if (canvasRef.current) {
-			const context = canvasRef.current.getContext('webgl2')!;
-			const renderer = new Renderer(context, patch);
+		useEffect(() => {
+			if (canvasRef.current) {
+				const context = canvasRef.current.getContext('webgl2', { preserveDrawingBuffer: true })!;
+				const renderer = new Renderer(context, patch);
 
-			let animationFrameId: number | null = null;
+				let animationFrameId: number | null = null;
 
-			const render = () => {
-				renderer.uniforms = uniforms.current;
-				renderer.render();
-			};
+				const render = () => {
+					renderer.uniforms = uniforms.current;
+					renderer.render();
+				};
 
-			if (animate) {
-				animationFrameId = requestAnimationFrame(function renderLoop() {
+				if (animate) {
+					animationFrameId = requestAnimationFrame(function renderLoop() {
+						render();
+						animationFrameId = requestAnimationFrame(renderLoop);
+					});
+				} else {
 					render();
-					animationFrameId = requestAnimationFrame(renderLoop);
-				});
-			} else {
-				render();
-			}
-
-			return () => {
-				if (animationFrameId !== null) {
-					cancelAnimationFrame(animationFrameId);
 				}
 
-				renderer.dispose();
-			};
-		}
-	}, [patch, width, height, animate]);
+				return () => {
+					if (animationFrameId !== null) {
+						cancelAnimationFrame(animationFrameId);
+					}
 
-	return (
-		<canvas
-			className={`image-crisp ${className}`}
-			width={width}
-			height={height}
-			ref={canvasRef}
-		></canvas>
-	);
-};
+					renderer.dispose();
+				};
+			}
+		}, [patch, width, height, animate]);
+
+		return (
+			<canvas
+				className={`image-crisp ${className}`}
+				width={width}
+				height={height}
+				ref={(el) => {
+					canvasRef.current = el;
+					if (typeof ref === 'function') ref(el);
+					else if (ref) ref.current = el;
+				}}
+			></canvas>
+		);
+	}
+);

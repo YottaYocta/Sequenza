@@ -1,7 +1,7 @@
 import { Position, type Node, type NodeProps } from '@xyflow/react';
 import CustomHandle from './CustomHandle';
 import type { Patch, Shader, Uniforms } from '../lib/renderer';
-import { useContext, useEffect, useMemo, useState, type FC, type RefObject } from 'react';
+import { useContext, useEffect, useMemo, useRef, useState, type FC, type RefObject } from 'react';
 import { Scrubber } from './Scrubber';
 import UniformForm from './UniformForm';
 import { RendererComponent } from './RendererComponent';
@@ -87,6 +87,22 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
 
 	const [width, setWidth] = useState(data.resolution[0]);
 	const [height, setHeight] = useState(data.resolution[1]);
+	const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+	const copyImage = () => {
+		canvasRef.current?.toBlob((blob) => {
+			if (blob) navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+		});
+	};
+
+	const saveImage = () => {
+		const url = canvasRef.current?.toDataURL('image/png');
+		if (!url) return;
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = `${data.shader.name}.png`;
+		a.click();
+	};
 
 	useEffect(() => {
 		handleUpdateNode(id, (snapshot) => {
@@ -139,6 +155,7 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
 							</span>
 						</button>
 						<RendererComponent
+							ref={canvasRef}
 							animate={!data.paused}
 							width={width}
 							height={height}
@@ -151,7 +168,15 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
 						<Scrubber label="h" value={height} min={1} step={1} onChange={setHeight} />
 					</div>
 				</div>
-				<IntegrationDialog uniforms={uniforms.current} patch={patches[data.shader.id]} />
+				<div className="flex gap-2">
+					<IntegrationDialog uniforms={uniforms.current} patch={patches[data.shader.id]} />
+					<button className="button-base hover:bg-neutral-300" onClick={copyImage}>
+						Copy
+					</button>
+					<button className="button-base hover:bg-neutral-300" onClick={saveImage}>
+						Save
+					</button>
+				</div>
 			</div>
 			<CustomHandle id="out" type="source" position={Position.Bottom} />
 		</div>
