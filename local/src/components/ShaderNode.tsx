@@ -1,13 +1,75 @@
 import { Position, type Node, type NodeProps } from '@xyflow/react';
 import CustomHandle from './CustomHandle';
-import type { Shader, Uniforms } from '../lib/renderer';
-import { useContext, useEffect, useMemo, useState, type RefObject } from 'react';
+import type { Patch, Shader, Uniforms } from '../lib/renderer';
+import { useContext, useEffect, useMemo, useState, type FC, type RefObject } from 'react';
 import { Scrubber } from './Scrubber';
 import UniformForm from './UniformForm';
 import { RendererComponent } from './RendererComponent';
 import { EditorContext } from './EditorContext';
 import { extractFields } from '../lib/Field';
 import { Dialog } from './Dialog';
+import { exportSequenzaPatch } from '../lib/exportSequenzaPatch';
+
+interface IntegrationDialogProps {
+	uniforms: Record<string, Uniforms>;
+	patch: Patch;
+}
+
+const IntegrationDialog: FC<IntegrationDialogProps> = ({ uniforms, patch }) => {
+	const [open, setOpen] = useState(false);
+	const installCommand = 'pnpm i @yottayocta/sequenza';
+	const generatedCode = exportSequenzaPatch(uniforms, patch);
+
+	return (
+		<>
+			<button
+				className="text-xs text-neutral-500 hover:text-neutral-800 border border-neutral-200 hover:border-neutral-400 rounded px-2 py-1 transition cursor-pointer"
+				onClick={() => setOpen(true)}
+			>
+				Export
+			</button>
+			<Dialog open={open ? true : undefined} className="flex flex-col gap-4 p-6 overflow-y-auto">
+				<div className="flex items-center justify-between">
+					<h2 className="text-sm font-medium text-neutral-800">Integrate shader</h2>
+					<button
+						className="text-xs text-neutral-400 hover:text-neutral-700 transition cursor-pointer"
+						onClick={() => setOpen(false)}
+					>
+						Close
+					</button>
+				</div>
+				<div className="flex flex-col gap-1">
+					<p className="text-xs text-neutral-500">Install</p>
+					<div className="flex items-center gap-2 bg-neutral-50 border border-neutral-200 rounded px-3 py-2">
+						<code className="text-xs text-neutral-700 flex-1 select-all">{installCommand}</code>
+						<button
+							className="text-xs text-neutral-400 hover:text-neutral-700 transition cursor-pointer shrink-0"
+							onClick={() => navigator.clipboard.writeText(installCommand)}
+						>
+							Copy
+						</button>
+					</div>
+				</div>
+				<div className="flex flex-col gap-1 flex-1 min-h-0">
+					<p className="text-xs text-neutral-500">Component</p>
+					<div className="relative flex-1 min-h-0 bg-neutral-50 border border-neutral-200 rounded">
+						<button
+							className="absolute top-2 right-2 text-xs text-neutral-400 hover:text-neutral-700 transition cursor-pointer z-10"
+							onClick={() => navigator.clipboard.writeText(generatedCode)}
+						>
+							Copy
+						</button>
+						<textarea
+							readOnly
+							value={generatedCode}
+							className="w-full h-full resize-none bg-transparent text-xs text-neutral-700 font-mono p-3 pr-12 outline-none"
+						/>
+					</div>
+				</div>
+			</Dialog>
+		</>
+	);
+};
 
 export type ShaderNodeData = {
 	shader: Shader;
@@ -80,14 +142,12 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
 						patch={patches[data.shader.id]}
 						uniforms={uniforms}
 					></RendererComponent>
-					<Dialog open={!data.paused ? true : undefined}>
-						<p>Animating!!</p>
-					</Dialog>
 				</div>
 				<div className="flex gap-2">
 					<Scrubber label="w" value={width} min={1} step={1} onChange={setWidth} />
 					<Scrubber label="h" value={height} min={1} step={1} onChange={setHeight} />
 				</div>
+				<IntegrationDialog uniforms={uniforms.current} patch={patches[data.shader.id]} />
 			</div>
 			<CustomHandle id="out" type="source" position={Position.Bottom} />
 		</div>
