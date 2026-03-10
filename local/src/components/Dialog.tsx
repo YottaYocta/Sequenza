@@ -10,7 +10,6 @@ export const Dialog: FC<DialogProps> = ({ children, open, className }) => {
 	const dialogRef = useRef<HTMLDialogElement | null>(null);
 
 	useEffect(() => {
-		console.log(open);
 		if (dialogRef.current !== null) {
 			if (open) dialogRef.current.showPopover();
 			else dialogRef.current.hidePopover();

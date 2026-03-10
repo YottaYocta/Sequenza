@@ -52,5 +52,12 @@ export const RendererComponent: FC<RendererComponentProps> = ({
 		}
 	}, [patch, width, height, animate]);
 
-	return <canvas className={className} width={width} height={height} ref={canvasRef}></canvas>;
+	return (
+		<canvas
+			className={`image-crisp ${className}`}
+			width={width}
+			height={height}
+			ref={canvasRef}
+		></canvas>
+	);
 };

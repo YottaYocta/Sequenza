@@ -7,7 +7,7 @@ uniform vec2 uMouse;
 uniform float uAmplitude;
 
 uniform float uRotation; // [0, 6.28, 0]
-uniform float uDensity;  // [10, 50, 30]    
+uniform float uDensity;  // [10, 200, 30]    
 uniform float uThreshold;
 uniform vec4 uLineColor; // color [0,0,0,0]
 

@@ -1,1 +1,8 @@
-@import 'tailwindcss'
+@import 'tailwindcss';
+
+@layer utilities {
+    .image-crisp {
+		image-rendering: crisp-edges;
+		image-rendering: pixelated;
+	}
+}
