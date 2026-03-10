@@ -22,13 +22,14 @@ const IntegrationDialog: FC<IntegrationDialogProps> = ({ uniforms, patch }) => {
 
 	return (
 		<>
-			<button
-				className="text-xs text-neutral-500 hover:text-neutral-800 border border-neutral-200 hover:border-neutral-400 rounded px-2 py-1 transition cursor-pointer"
-				onClick={() => setOpen(true)}
-			>
+			<button className="button-base hover:bg-neutral-300" onClick={() => setOpen(true)}>
 				Export
 			</button>
-			<Dialog open={open ? true : undefined} className="flex flex-col gap-4 p-6 overflow-y-auto">
+			<Dialog
+				open={open}
+				handleOpenChange={setOpen}
+				className="flex flex-col gap-4 p-6 overflow-y-auto"
+			>
 				<div className="flex items-center justify-between">
 					<h2 className="text-sm font-medium text-neutral-800">Integrate shader</h2>
 					<button
@@ -40,7 +41,7 @@ const IntegrationDialog: FC<IntegrationDialogProps> = ({ uniforms, patch }) => {
 				</div>
 				<div className="flex flex-col gap-1">
 					<p className="text-xs text-neutral-500">Install</p>
-					<div className="flex items-center gap-2 bg-neutral-50 border border-neutral-200 rounded px-3 py-2">
+					<div className="flex items-center gap-2 bg-neutral-50 rounded px-3 py-2">
 						<code className="text-xs text-neutral-700 flex-1 select-all">{installCommand}</code>
 						<button
 							className="text-xs text-neutral-400 hover:text-neutral-700 transition cursor-pointer shrink-0"
@@ -52,7 +53,7 @@ const IntegrationDialog: FC<IntegrationDialogProps> = ({ uniforms, patch }) => {
 				</div>
 				<div className="flex flex-col gap-1 flex-1 min-h-0">
 					<p className="text-xs text-neutral-500">Component</p>
-					<div className="relative flex-1 min-h-0 bg-neutral-50 border border-neutral-200 rounded">
+					<div className="relative flex-1 min-h-0 bg-neutral-50 rounded">
 						<button
 							className="absolute top-2 right-2 text-xs text-neutral-400 hover:text-neutral-700 transition cursor-pointer z-10"
 							onClick={() => navigator.clipboard.writeText(generatedCode)}
@@ -102,7 +103,8 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
 	return (
 		<div
 			className={`
-				flex gap-8 bg-white border ${selected ? 'border-neutral-400' : 'border-neutral-200'} rounded-lg p-6 relative transition 
+				flex gap-8 bg-white rounded-lg p-6 relative transition-[outline] outline-neutral-200 duration-75
+				${selected ? 'outline-4' : 'outline-0'}
 			`}
 		>
 			<p className="text-xs text-neutral-500 absolute -top-6">ID: {data.shader.id}</p>
@@ -119,33 +121,35 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
 					}}
 				></UniformForm>
 			</div>
-			<div className="flex flex-col justify-center items-center gap-2 ">
-				<div className="w-full h-full top-0 left-0 relative">
-					<button
-						className={`absolute w-full h-full group hover:bg-white/10 ${data.paused ? 'bg-white/10' : 'bg-transparent hover:opacity-100 opacity-0'} transition cursor-pointer flex items-center justify-center`}
-						onClick={() => {
-							handleUpdateNode(id, (snapshot) => {
-								return { ...snapshot, paused: !snapshot.paused };
-							});
-						}}
-					>
-						<span
-							className={` w-min px-1 h-6 group-hover:bg-white/80 ${data.paused ? 'bg-white/50' : 'bg-transparent'} rounded-sm transition flex items-center justify-center`}
+			<div className="flex flex-col justify-center items-start gap-4 ">
+				<div className="flex flex-col gap-2">
+					<div className="w-full top-0 left-0 relative">
+						<button
+							className={`absolute w-full h-full group hover:bg-white/10 ${data.paused ? 'bg-white/10' : 'bg-transparent hover:opacity-100 opacity-0'} transition cursor-pointer flex items-center justify-center`}
+							onClick={() => {
+								handleUpdateNode(id, (snapshot) => {
+									return { ...snapshot, paused: !snapshot.paused };
+								});
+							}}
 						>
-							<span className={`h-3 leading-3 text-xs `}>{data.paused ? 'Resume' : 'Pause'}</span>
-						</span>
-					</button>
-					<RendererComponent
-						animate={!data.paused}
-						width={width}
-						height={height}
-						patch={patches[data.shader.id]}
-						uniforms={uniforms}
-					></RendererComponent>
-				</div>
-				<div className="flex gap-2">
-					<Scrubber label="w" value={width} min={1} step={1} onChange={setWidth} />
-					<Scrubber label="h" value={height} min={1} step={1} onChange={setHeight} />
+							<span
+								className={` w-min px-1 h-6 group-hover:bg-white/80 ${data.paused ? 'bg-white/50' : 'bg-transparent'} rounded-sm transition flex items-center justify-center`}
+							>
+								<span className={`h-3 leading-3 text-xs `}>{data.paused ? 'Resume' : 'Pause'}</span>
+							</span>
+						</button>
+						<RendererComponent
+							animate={!data.paused}
+							width={width}
+							height={height}
+							patch={patches[data.shader.id]}
+							uniforms={uniforms}
+						></RendererComponent>
+					</div>
+					<div className="flex gap-2">
+						<Scrubber label="w" value={width} min={1} step={1} onChange={setWidth} />
+						<Scrubber label="h" value={height} min={1} step={1} onChange={setHeight} />
+					</div>
 				</div>
 				<IntegrationDialog uniforms={uniforms.current} patch={patches[data.shader.id]} />
 			</div>

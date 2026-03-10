@@ -394,7 +394,7 @@ const ImageUploadFieldComponent: FC<{
 					ref={inputRef}
 					type="file"
 					accept="image/*"
-					className="text-xs text-neutral-500 file:file-upload-button hover:file:bg-neutral-200 file:transition w-32"
+					className="text-xs text-neutral-500 file:button-base hover:file:bg-neutral-200 file:transition w-32"
 					onChange={(e) => upload(e.target.files?.[0] ?? null)}
 				/>
 			</div>

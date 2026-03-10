@@ -10,9 +10,9 @@ const CustomHandle: FC<HandleProps> = ({ id, type, position }) => {
 
 	if (isSource) {
 		classes =
-			'bg-white border-neutral-300 text-neutral-500 hover:border-neutral-500 hover:text-neutral-800 bg-[#78A3C4]';
+			'bg-neutral-300 text-neutral-500 hover:border-neutral-500 hover:text-neutral-800 bg-[#78A3C4]';
 	} else {
-		classes = 'bg-white border-neutral-300';
+		classes = 'bg-neutral-300';
 	}
 
 	return (
@@ -28,7 +28,7 @@ const CustomHandle: FC<HandleProps> = ({ id, type, position }) => {
 			}}
 		>
 			<div
-				className={`absolute inset-0 rounded-full border flex items-center justify-center text-xs font-mono leading-none pointer-events-none transition-colors ${classes}`}
+				className={`absolute inset-0 rounded-full flex items-center justify-center text-xs font-mono leading-none pointer-events-none transition-colors ${classes}`}
 			/>
 		</Handle>
 	);

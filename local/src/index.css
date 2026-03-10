@@ -1,6 +1,6 @@
 @import 'tailwindcss';
 
-@utility file-upload-button {
+@utility button-base {
 	background-color: var(--color-neutral-100);
 	color: var(--color-neutral-600);
 	width: min-content;
@@ -9,6 +9,8 @@
 	border-radius: var(--radius-sm);
 	padding: 0.25rem 0.5rem;
 	border: none;
+	cursor: pointer;
+	transition: all 0.05s;
 }
 
 @utility image-crisp {
