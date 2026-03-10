@@ -1,6 +1,6 @@
 {
   "name": "@yottayocta/sequenza",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "module",
   "module": "./dist/sequenza.js",
   "types": "./dist/index.d.ts",
