@@ -338,20 +338,69 @@ const MouseFieldComponent: FC<{
 const ImageUploadFieldComponent: FC<{
 	field: Field & { type: 'sampler2D' };
 	handleUpdateUniformField: (value: TextureUniform | null) => void;
-}> = ({ field, handleUpdateUniformField }) => (
-	<div className="flex items-center py-1.5">
-		<FieldLabel name={field.name} type="sampler2D texture" />
-		<input
-			type="file"
-			accept="image/*"
-			className="text-xs text-neutral-500"
-			onChange={(e) => {
-				const file = e.target.files?.[0] ?? null;
-				handleUpdateUniformField(file ? { type: 'texture', src: URL.createObjectURL(file) } : null);
-			}}
-		/>
-	</div>
-);
+}> = ({ field, handleUpdateUniformField }) => {
+	const [focused, setFocused] = useState(false);
+	const [imageSrc, setImageSrc] = useState<string | null>(null);
+	const inputRef = useRef<HTMLInputElement>(null);
+
+	const upload = (file: File | null) => {
+		if (file) {
+			const src = URL.createObjectURL(file);
+			setImageSrc(src);
+			handleUpdateUniformField({ type: 'texture', src });
+		}
+	};
+
+	useEffect(() => {
+		if (!focused) return;
+		const handlePaste = (e: ClipboardEvent) => {
+			if (!e.clipboardData) return;
+			for (const item of e.clipboardData.items) {
+				if (item.type.startsWith('image/')) {
+					upload(item.getAsFile());
+					break;
+				}
+			}
+		};
+		window.addEventListener('paste', handlePaste);
+		return () => window.removeEventListener('paste', handlePaste);
+	}, [focused]);
+
+	return (
+		<div className="flex items-center py-1.5">
+			<FieldLabel name={field.name} type="sampler2D texture" />
+			<div className="flex flex-col items-start gap-2">
+				<div
+					tabIndex={0}
+					onFocus={() => setFocused(true)}
+					onBlur={() => setFocused(false)}
+					className={`w-32 h-32 rounded overflow-hidden flex flex-col items-center justify-center cursor-pointer select-none transition border-4 text-neutral-500 text-xs font-mono p-2 ${
+						focused ? 'bg-neutral-50 border-neutral-300' : 'bg-neutral-100 border-neutral-50'
+					}`}
+				>
+					{imageSrc ? (
+						<img src={imageSrc} className="w-full h-full object-contain" />
+					) : focused ? (
+						'cmd+V'
+					) : (
+						<>
+							<p>Paste</p>
+							<p>Here</p>
+						</>
+					)}
+				</div>
+
+				<input
+					ref={inputRef}
+					type="file"
+					accept="image/*"
+					className="text-xs text-neutral-500 file:file-upload-button hover:file:bg-neutral-200 file:transition w-32"
+					onChange={(e) => upload(e.target.files?.[0] ?? null)}
+				/>
+			</div>
+		</div>
+	);
+};
 
 const buildInitialUniforms = (fields: Field[], initialUniforms?: Uniforms): Uniforms => {
 	const u: Uniforms = {};
