@@ -1,0 +1,4 @@
+.image-crisp {
+	image-rendering: crisp-edges;
+	image-rendering: pixelated;
+}

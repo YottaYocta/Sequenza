@@ -1,0 +1,38 @@
+{
+	"name": "@yottayocta/sequenza",
+	"version": "1.0.3",
+	"type": "module",
+	"module": "./dist/sequenza-renderer.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"import": "./dist/sequenza-renderer.js",
+			"types": "./dist/index.d.ts"
+		},
+		"./style.css": "./dist/sequenza-renderer.css"
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "vite build",
+		"lint": "eslint ."
+	},
+	"peerDependencies": {
+		"react": "^19.0.0",
+		"react-dom": "^19.0.0"
+	},
+	"dependencies": {
+		"twgl.js": "^7.0.0"
+	},
+	"devDependencies": {
+		"@types/react": "^19.2.7",
+		"@types/react-dom": "^19.2.3",
+		"@vitejs/plugin-react": "^5.1.1",
+		"react": "^19.2.0",
+		"react-dom": "^19.2.0",
+		"typescript": "~5.9.3",
+		"vite": "^7.3.1",
+		"vite-plugin-dts": "^4.5.4"
+	}
+}
