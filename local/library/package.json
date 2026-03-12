@@ -1,6 +1,6 @@
 {
 	"name": "@yottayocta/sequenza",
-	"version": "1.0.3",
+	"version": "1.0.4",
 	"type": "module",
 	"module": "./dist/sequenza-renderer.js",
 	"types": "./dist/index.d.ts",
