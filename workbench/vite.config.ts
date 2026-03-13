@@ -14,6 +14,7 @@ export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
+
     dts({
       tsconfigPath: "./tsconfig.app.json",
       include: ["src"],
