@@ -23,7 +23,6 @@
     "dev": "vite",
     "watch": "nodemon --exec tsx server.ts",
     "build": "vite build",
-    "build:static": "vite build --mode static",
     "lint": "eslint .",
     "preview": "vite preview"
   },
