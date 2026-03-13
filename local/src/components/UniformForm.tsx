@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect, useContext, useMemo, type FC } from 'react';
-import type { Shader, TextureUniform, Uniforms } from '../lib/renderer';
+import type { Shader, TextureUniform, Uniforms } from '@yottayocta/sequenza';
 import { Scrubber } from './Scrubber';
 import { EditorContext } from './EditorContext';
-import { extractFields, type Field } from '../lib/Field';
+import { extractFields, type Field } from '@yottayocta/sequenza';
 
 interface UniformFormProps {
 	shader: Shader;

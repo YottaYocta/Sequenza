@@ -6,6 +6,11 @@ import { resolve } from 'path';
 
 // https://vite.dev/config/
 export default defineConfig({
+	resolve: {
+		alias: {
+			'@yottayocta/sequenza': resolve(__dirname, '../library/src/index.ts')
+		}
+	},
 	plugins: [
 		react(),
 		tailwindcss(),

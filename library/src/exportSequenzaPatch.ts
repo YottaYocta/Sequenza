@@ -1,4 +1,4 @@
-import templateContent from '../assets/SequenzaComponent.tsx?raw';
+import templateContent from './assets/SequenzaComponent.tsx?raw';
 import type { Patch, Uniforms } from './renderer';
 
 export function exportSequenzaPatch(uniforms: Record<string, Uniforms>, patch: Patch): string {

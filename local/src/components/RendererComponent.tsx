@@ -1,6 +1,6 @@
 'use client';
 import { forwardRef, type CSSProperties, type RefObject, useEffect, useRef } from 'react';
-import { type Patch, Renderer, type Uniforms } from '../lib/renderer';
+import { type Patch, Renderer, type Uniforms } from '@yottayocta/sequenza';
 
 interface RendererComponentProps {
 	patch: Patch;

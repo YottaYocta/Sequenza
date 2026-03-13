@@ -1,5 +1,5 @@
 {
-	"name": "@yottayocta/sequenza",
+	"name": "@yottayocta/workbench",
 	"version": "1.0.2",
 	"type": "module",
 	"module": "./dist/sequenza.js",
@@ -26,6 +26,7 @@
 		"react-dom": "^19.0.0"
 	},
 	"dependencies": {
+		"@yottayocta/sequenza": "workspace:*",
 		"twgl.js": "^7.0.0",
 		"@tailwindcss/line-clamp": "^0.4.4",
 		"@tailwindcss/vite": "^4.2.1",

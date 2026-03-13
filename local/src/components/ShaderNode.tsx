@@ -1,14 +1,14 @@
 import { Position, type Node, type NodeProps } from '@xyflow/react';
 import CustomHandle from './CustomHandle';
-import type { Patch, Shader, Uniforms } from '../lib/renderer';
+import type { Patch, Shader, Uniforms } from '@yottayocta/sequenza';
 import { useContext, useEffect, useMemo, useRef, useState, type FC, type RefObject } from 'react';
 import { Scrubber } from './Scrubber';
 import UniformForm from './UniformForm';
 import { RendererComponent } from './RendererComponent';
 import { EditorContext } from './EditorContext';
-import { extractFields } from '../lib/Field';
+import { extractFields } from '@yottayocta/sequenza';
 import { Dialog } from './Dialog';
-import { exportSequenzaPatch } from '../lib/exportSequenzaPatch';
+import { exportSequenzaPatch } from '@yottayocta/sequenza';
 
 interface IntegrationDialogProps {
 	uniforms: Record<string, Uniforms>;

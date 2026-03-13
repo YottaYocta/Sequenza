@@ -1,5 +1,5 @@
 import { createContext, type RefObject } from 'react';
-import type { Patch, Shader, Uniforms } from '../lib/renderer';
+import type { Patch, Shader, Uniforms } from '@yottayocta/sequenza';
 import type { ShaderNodeData } from './ShaderNode';
 
 interface EditorContextType {
