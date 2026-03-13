@@ -12,12 +12,18 @@
     "./style.css": "./dist/sequenza.css"
   },
   "files": [
-    "dist"
+    "dist",
+    "app",
+    "bin"
   ],
+  "bin": {
+    "sequenza": "bin/sequenza.js"
+  },
   "scripts": {
     "dev": "vite",
     "watch": "nodemon --exec tsx server.ts",
     "build": "vite build",
+    "build:static": "vite build --mode static",
     "lint": "eslint .",
     "preview": "vite preview"
   },

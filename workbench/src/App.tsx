@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Shader, Uniforms } from "@sequenza/lib";
 import { io } from "socket.io-client";
+import { staticShaders } from "./shaders";
+
+const STATIC_MODE = import.meta.env.VITE_STATIC_MODE === "true";
 
 import "@xyflow/react/dist/style.css";
 import { Editor } from "./components/Editor";
@@ -20,6 +23,21 @@ function App() {
   const shaderUniforms = useRef<Record<string, Uniforms>>({});
 
   useEffect(() => {
+    if (STATIC_MODE) {
+      const newShaders: Record<string, Shader> = {};
+      for (const [filepath, source] of Object.entries(staticShaders)) {
+        newShaders[filepath] = {
+          id: filepath,
+          source,
+          name: filepath,
+          resolution: { width: 100, height: 100 },
+        };
+        shaderUniforms.current[filepath] = {};
+      }
+      setShaderMap(newShaders);
+      return;
+    }
+
     console.log("[CONNECT]");
     const socket = io("http://localhost:3001");
     socket.on("shaders-found", (data: Record<string, string>) => {
@@ -35,7 +53,7 @@ function App() {
       }
       setShaderMap(newShaders);
     });
-    () => {
+    return () => {
       console.log("[DISCONNECT]");
       socket.disconnect();
     };

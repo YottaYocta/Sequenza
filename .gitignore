@@ -35,6 +35,7 @@ dist-ssr
 .wrangler
 /.svelte-kit
 /build
+app/
 
 # OS
 .DS_Store
