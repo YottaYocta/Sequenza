@@ -27,7 +27,7 @@
     /* Workspace path aliases */
     "baseUrl": ".",
     "paths": {
-      "@yottayocta/sequenza": ["../library/src/index.ts"]
+      "@sequenza/lib": ["../library/src/index.ts"]
     }
   },
   "include": ["src"]

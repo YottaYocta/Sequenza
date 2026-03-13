@@ -16,7 +16,7 @@ services:
     command: ["--auth"]
 
   app:
-    image: ghcr.io/yottayocta/sequenza:latest
+    image: ghcr.io/sequenza/lib:latest
     container_name: sequenza-app-prod
     restart: unless-stopped
     ports:

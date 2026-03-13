@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { Shader, Uniforms } from "@yottayocta/sequenza";
+import type { Shader, Uniforms } from "@sequenza/lib";
 import { io } from "socket.io-client";
 
 import "@xyflow/react/dist/style.css";
 import { Editor } from "./components/Editor";
 import type { Edge, Node } from "@xyflow/react";
 import type { ShaderNode } from "./components/ShaderNode";
-import { extractFields } from "@yottayocta/sequenza";
+import { extractFields } from "@sequenza/lib";
 
 /**
  * a single node type; shaders

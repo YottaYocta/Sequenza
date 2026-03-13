@@ -3,7 +3,7 @@ export {
   RendererComponent,
   extractFields,
   exportSequenzaPatch,
-} from "@yottayocta/sequenza";
+} from "@sequenza/lib";
 export type {
   Shader,
   Uniforms,
@@ -11,7 +11,7 @@ export type {
   Connection,
   Patch,
   Field,
-} from "@yottayocta/sequenza";
+} from "@sequenza/lib";
 export { Editor } from "./components/Editor";
 export { Dialog } from "./components/Dialog";
 

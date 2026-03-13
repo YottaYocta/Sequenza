@@ -1,64 +1,64 @@
 {
-	"name": "@yottayocta/workbench",
-	"version": "1.0.2",
-	"type": "module",
-	"module": "./dist/sequenza.js",
-	"types": "./dist/index.d.ts",
-	"exports": {
-		".": {
-			"import": "./dist/sequenza.js",
-			"types": "./dist/index.d.ts"
-		},
-		"./style.css": "./dist/sequenza.css"
-	},
-	"files": [
-		"dist"
-	],
-	"scripts": {
-		"dev": "vite",
-		"watch": "nodemon --exec tsx server.ts",
-		"build": "vite build",
-		"lint": "eslint .",
-		"preview": "vite preview"
-	},
-	"peerDependencies": {
-		"react": "^19.0.0",
-		"react-dom": "^19.0.0"
-	},
-	"dependencies": {
-		"@yottayocta/sequenza": "workspace:*",
-		"twgl.js": "^7.0.0",
-		"@tailwindcss/line-clamp": "^0.4.4",
-		"@tailwindcss/vite": "^4.2.1",
-		"chokidar": "^5.0.0",
-		"cors": "^2.8.6",
-		"express": "^5.2.1",
-		"http": "0.0.1-security",
-		"socket.io": "^4.8.3",
-		"socket.io-client": "^4.8.3",
-		"tailwindcss": "^4.2.1",
-		"@xyflow/react": "^12.10.1"
-	},
-	"devDependencies": {
-		"@eslint/js": "^9.39.1",
-		"@types/cors": "^2.8.19",
-		"@types/express": "^5.0.6",
-		"@types/node": "^24.10.1",
-		"@types/react": "^19.2.7",
-		"@types/react-dom": "^19.2.3",
-		"@vitejs/plugin-react": "^5.1.1",
-		"eslint": "^9.39.1",
-		"eslint-plugin-react-hooks": "^7.0.1",
-		"eslint-plugin-react-refresh": "^0.4.24",
-		"globals": "^16.5.0",
-		"nodemon": "^3.1.14",
-		"react": "^19.2.0",
-		"react-dom": "^19.2.0",
-		"tsx": "^4.21.0",
-		"twgl.js": "^7.0.0",
-		"typescript": "~5.9.3",
-		"typescript-eslint": "^8.48.0",
-		"vite": "^7.3.1",
-		"vite-plugin-dts": "^4.5.4"
-	}
+  "name": "@sequenza/workbench",
+  "version": "1.0.2",
+  "type": "module",
+  "module": "./dist/sequenza.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/sequenza.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./style.css": "./dist/sequenza.css"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "watch": "nodemon --exec tsx server.ts",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "dependencies": {
+    "@sequenza/lib": "workspace:*",
+    "twgl.js": "^7.0.0",
+    "@tailwindcss/line-clamp": "^0.4.4",
+    "@tailwindcss/vite": "^4.2.1",
+    "chokidar": "^5.0.0",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "http": "0.0.1-security",
+    "socket.io": "^4.8.3",
+    "socket.io-client": "^4.8.3",
+    "tailwindcss": "^4.2.1",
+    "@xyflow/react": "^12.10.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^24.10.1",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.1",
+    "eslint": "^9.39.1",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.4.24",
+    "globals": "^16.5.0",
+    "nodemon": "^3.1.14",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "tsx": "^4.21.0",
+    "twgl.js": "^7.0.0",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.48.0",
+    "vite": "^7.3.1",
+    "vite-plugin-dts": "^4.5.4"
+  }
 }

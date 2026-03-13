@@ -1,5 +1,5 @@
 {
-  "name": "@yottayocta/sequenza",
+  "name": "@sequenza/lib",
   "version": "1.0.5",
   "type": "module",
   "module": "./dist/sequenza-renderer.js",
