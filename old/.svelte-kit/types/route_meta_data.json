@@ -1,0 +1,37 @@
+{
+	"/": [
+		"src/routes/+page.ts",
+		"src/routes/+layout.server.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/api/patch": [
+		"src/routes/api/patch/+server.ts"
+	],
+	"/api/patch/[slug]": [
+		"src/routes/api/patch/[slug]/+server.ts"
+	],
+	"/explore": [
+		"src/routes/explore/+page.server.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/login": [
+		"src/routes/login/+page.server.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/logout": [
+		"src/routes/logout/+page.server.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/patches/[slug]": [
+		"src/routes/patches/[slug]/+page.server.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/patch/[slug]": [
+		"src/routes/patch/[slug]/+page.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/signup": [
+		"src/routes/signup/+page.server.ts",
+		"src/routes/+layout.server.ts"
+	]
+}

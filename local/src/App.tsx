@@ -49,7 +49,6 @@ function App() {
 				localStorage.getItem('sequenza-uniforms') ?? '{}'
 			);
 
-			let shadersUpdated = false;
 			for (const node of nodes) {
 				if (node.type === 'shader') {
 					const shaderNode = node as ShaderNode;
@@ -61,7 +60,6 @@ function App() {
 						shaderNode.data.shader = newShader;
 
 						uniforms[newShader.id] = {};
-						shadersUpdated = true;
 					}
 				}
 			}
@@ -70,7 +68,7 @@ function App() {
 				const sourceNode = nodes.find((node) => node.id === edge.source);
 				const targetNode = nodes.find((node) => node.id === edge.target);
 				const targetHandle = edge.targetHandle;
-				if (targetNode && targetNode.type !== 'shader') return false;
+				if (!targetNode || (targetNode && targetNode.type !== 'shader')) return false;
 				const targetShaderNode = targetNode as ShaderNode;
 				const targetFields = extractFields(targetShaderNode.data.shader);
 				if (
