@@ -4,7 +4,7 @@ import type { Patch, Shader, Uniforms } from '@yottayocta/sequenza';
 import { useContext, useEffect, useMemo, useRef, useState, type FC, type RefObject } from 'react';
 import { Scrubber } from './Scrubber';
 import UniformForm from './UniformForm';
-import { RendererComponent } from './RendererComponent';
+import { RendererComponent } from '@yottayocta/sequenza';
 import { EditorContext } from './EditorContext';
 import { extractFields } from '@yottayocta/sequenza';
 import { Dialog } from './Dialog';
