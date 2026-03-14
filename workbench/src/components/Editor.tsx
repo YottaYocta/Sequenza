@@ -473,9 +473,6 @@ const EditorAux: FC<EditorProps> = ({ shaders, initialState, handleSave }) => {
   );
 };
 
-// ids are not random; add custom getId method to the editor context
-// modal shoudl close when clicking outside
-
 export const Editor: FC<EditorProps> = (props) => {
   return (
     <ReactFlowProvider>
