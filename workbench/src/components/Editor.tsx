@@ -23,15 +23,20 @@ import {
   Panel,
   Position,
   ReactFlow,
+  ReactFlowProvider,
+  useReactFlow,
   type Edge,
   type Node,
   type OnConnect,
+  type OnConnectEnd,
   type OnEdgesChange,
   type OnNodesChange,
+  type XYPosition,
 } from "@xyflow/react";
 import { ShaderNode, type ShaderNodeData } from "./ShaderNode";
 import { EditorContext } from "./EditorContext";
 import CustomEdge from "./CustomEdge";
+import { Dialog } from "./Dialog";
 
 interface EditorProps {
   shaders: Shader[];
@@ -47,11 +52,7 @@ interface EditorProps {
   }) => void;
 }
 
-export const Editor: FC<EditorProps> = ({
-  shaders,
-  initialState,
-  handleSave,
-}) => {
+const EditorAux: FC<EditorProps> = ({ shaders, initialState, handleSave }) => {
   const [nodes, setNodes] = useState<Node[]>(initialState?.nodes ?? []);
   const [edges, setEdges] = useState<Edge[]>(initialState?.edges ?? []);
 
@@ -86,6 +87,30 @@ export const Editor: FC<EditorProps> = ({
   const onConnect: OnConnect = useCallback((params) => {
     setEdges((snapshot) => addEdge({ ...params, type: "insert" }, snapshot));
   }, []);
+
+  const { screenToFlowPosition } = useReactFlow();
+
+  const [dropLocation, setDropLocation] = useState<null | {
+    position: XYPosition;
+    sourceId: string;
+  }>(null);
+
+  const onConnectEnd: OnConnectEnd = useCallback(
+    (event, connectionState) => {
+      if (!connectionState.isValid && connectionState.fromNode) {
+        const { clientX, clientY } =
+          "changedTouches" in event ? event.changedTouches[0] : event;
+        setDropLocation({
+          position: screenToFlowPosition({
+            x: clientX,
+            y: clientY,
+          }),
+          sourceId: connectionState.fromNode.id,
+        });
+      }
+    },
+    [screenToFlowPosition],
+  );
 
   const uniformRef = useRef<Record<string, Uniforms>>(
     initialState?.uniforms ?? {},
@@ -287,6 +312,39 @@ export const Editor: FC<EditorProps> = ({
     };
   }, []);
 
+  const handleAppendShader = (
+    shader: Shader,
+    sourceId: string,
+    position: XYPosition,
+  ) => {
+    const sourceNode = nodes.find((node) => node.id === sourceId);
+    if (sourceNode) {
+      const newNode = createShaderNode(shader);
+
+      newNode.position = position;
+
+      const fields = extractFields(newNode.data.shader);
+      let inputHandleName: string | undefined = undefined;
+      for (const field of fields) {
+        if (field.type === "sampler2D" && field.texture === undefined) {
+          inputHandleName = field.name;
+          break;
+        }
+      }
+      setNodes((snapshot) => [...snapshot, newNode]);
+      if (inputHandleName !== undefined) {
+        const newEdge: Edge = {
+          id: "" + Math.random(),
+          source: sourceId,
+          target: newNode.id,
+          targetHandle: inputHandleName,
+        };
+
+        setEdges((snapshot) => addEdge(newEdge, snapshot));
+      }
+    }
+  };
+
   return (
     <div className="w-full h-full">
       <EditorContext.Provider
@@ -311,6 +369,7 @@ export const Editor: FC<EditorProps> = ({
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
+          onConnectEnd={onConnectEnd}
           isValidConnection={isValidConnection}
           style={{
             background: "#F9F9F9",
@@ -368,6 +427,59 @@ export const Editor: FC<EditorProps> = ({
           )}
         </ReactFlow>
       </EditorContext.Provider>
+      <Dialog
+        open={dropLocation === null ? false : true}
+        handleOpenChange={(open) => {
+          if (open === false) setDropLocation(null);
+        }}
+      >
+        <div className="w-full h-full flex flex-col p-4">
+          <div className="w-full flex justify-between">
+            <p>Add a Shader</p>
+            <button
+              className="button-base"
+              onClick={() => {
+                setDropLocation(null);
+              }}
+            >
+              Close
+            </button>
+          </div>
+          <div className="w-full flex flex-col">
+            {shaders.map((shader) => (
+              <button
+                key={shader.id}
+                className="text-xs flex justify-start p-1 rounded-sm hover:bg-neutral-100 cursor-pointer text-neutral-500"
+                onClick={() => {
+                  if (dropLocation) {
+                    handleAppendShader(
+                      shader,
+                      dropLocation.sourceId,
+                      dropLocation.position,
+                    );
+                    setDropLocation(null);
+                  } else {
+                    setDropLocation(null);
+                  }
+                }}
+              >
+                {shader.id}
+              </button>
+            ))}
+          </div>
+        </div>
+      </Dialog>
     </div>
+  );
+};
+
+// ids are not random; add custom getId method to the editor context
+// modal shoudl close when clicking outside
+
+export const Editor: FC<EditorProps> = (props) => {
+  return (
+    <ReactFlowProvider>
+      <EditorAux {...props}></EditorAux>
+    </ReactFlowProvider>
   );
 };
