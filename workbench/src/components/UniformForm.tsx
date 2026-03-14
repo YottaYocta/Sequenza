@@ -46,7 +46,7 @@ const ColorPickerButton: FC<{
     <div className="relative">
       <button
         onClick={() => inputRef.current?.click()}
-        className="w-8 h-5.5 rounded border border-neutral-500 cursor-pointer"
+        className="w-8 h-5.5 rounded border-2 border-neutral-200 cursor-pointer"
         style={{ backgroundColor: color }}
         title={color}
       />
@@ -524,13 +524,13 @@ const GradientFieldComponent: FC<{
           ref={canvasRef}
           width={128}
           height={16}
-          className="w-32 h-4 rounded-sm"
+          className="w-32 h-4 rounded-sm border-2 border-neutral-200"
         />
         {stops.map((stop, idx) => (
           <button
             key={idx}
             aria-label={`gradient stop ${idx}`}
-            className="absolute w-3 h-2 -translate-x-1/2 -bottom-3 rounded-sm border border-neutral-400 cursor-ew-resize"
+            className="absolute w-4 h-4 -translate-x-1/2 -bottom-2 rounded-sm border-2 border-neutral-200 cursor-ew-resize"
             style={{
               left: `${stop.position * 100}%`,
               backgroundColor: stop.color,
@@ -643,7 +643,7 @@ const UniformForm: FC<UniformFormProps> = ({
   }
 
   return (
-    <div className="rounded overflow-hidden">
+    <div className="rounded">
       {fields.map((field) => {
         const key = `${field.name}-${field.type}`;
         const update = (newValue: any) => {
