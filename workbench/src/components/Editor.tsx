@@ -338,6 +338,7 @@ const EditorAux: FC<EditorProps> = ({ shaders, initialState, handleSave }) => {
           source: sourceId,
           target: newNode.id,
           targetHandle: inputHandleName,
+          type: "insert",
         };
 
         setEdges((snapshot) => addEdge(newEdge, snapshot));
