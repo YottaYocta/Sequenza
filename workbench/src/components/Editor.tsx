@@ -6,14 +6,22 @@ import {
   useState,
   type FC,
 } from "react";
-import type { Connection, Patch, Shader, Uniforms } from "@sequenza/lib";
+import {
+  extractFields,
+  type Connection,
+  type Patch,
+  type Shader,
+  type Uniforms,
+} from "@sequenza/lib";
 import {
   addEdge,
   applyEdgeChanges,
   applyNodeChanges,
   Controls,
   getOutgoers,
+  getSimpleBezierPath,
   Panel,
+  Position,
   ReactFlow,
   type Edge,
   type Node,
@@ -23,6 +31,7 @@ import {
 } from "@xyflow/react";
 import { ShaderNode, type ShaderNodeData } from "./ShaderNode";
 import { EditorContext } from "./EditorContext";
+import CustomEdge from "./CustomEdge";
 
 interface EditorProps {
   shaders: Shader[];
@@ -74,10 +83,9 @@ export const Editor: FC<EditorProps> = ({
     [nodes, edges],
   );
 
-  const onConnect: OnConnect = useCallback(
-    (params) => setEdges((edgesSnapshot) => addEdge(params, edgesSnapshot)),
-    [],
-  );
+  const onConnect: OnConnect = useCallback((params) => {
+    setEdges((snapshot) => addEdge({ ...params, type: "insert" }, snapshot));
+  }, []);
 
   const uniformRef = useRef<Record<string, Uniforms>>(
     initialState?.uniforms ?? {},
@@ -97,10 +105,10 @@ export const Editor: FC<EditorProps> = ({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [nodes, edges]);
 
-  const handleAddShader = (shader: Shader) => {
+  const createShaderNode = (shader: Shader): ShaderNode => {
     const newId = `${Math.random() * 100000}`;
     const newShader: Shader = { ...shader, id: newId };
-    const shaderNode: ShaderNode = {
+    return {
       id: newId,
       position: { x: 0, y: 0 },
       data: {
@@ -111,8 +119,68 @@ export const Editor: FC<EditorProps> = ({
       },
       type: "shader",
     };
+  };
 
-    setNodes((snapshot) => [...snapshot, shaderNode]);
+  const handleAddShader = (shader: Shader) => {
+    setNodes((snapshot) => [...snapshot, createShaderNode(shader)]);
+  };
+
+  const handleInsertShader = (shader: Shader, edgeId: string) => {
+    const oldEdge = edges.find((edge) => edge.id === edgeId);
+    if (!oldEdge) return;
+    const edgeStartId = oldEdge.source;
+    const edgeEndId = oldEdge.target;
+    const startNode = nodes.find((node) => node.id === edgeStartId);
+    const endNode = nodes.find((node) => node.id === edgeEndId);
+    const endHandle = oldEdge.targetHandle;
+    if (startNode && endNode && endHandle) {
+      const newNode = createShaderNode(shader);
+      const fields = extractFields(newNode.data.shader);
+      let inputHandleName: string | undefined = undefined;
+      for (const field of fields) {
+        if (field.type === "sampler2D" && field.texture === undefined) {
+          inputHandleName = field.name;
+          break;
+        }
+      }
+      if (inputHandleName === undefined) return;
+
+      const [_, labelX, labelY] = getSimpleBezierPath({
+        sourceX: startNode.position.x,
+        sourceY: startNode.position.y,
+        sourcePosition: Position.Bottom,
+        targetX: endNode.position.x,
+        targetY: endNode.position.y,
+        targetPosition: Position.Top,
+      });
+
+      newNode.position.x = labelX;
+      newNode.position.y = labelY;
+
+      setNodes((snapshot) => [...snapshot, newNode]);
+      setEdges((snapshot) => {
+        const edgesWithoutConnection = snapshot.filter(
+          (edge) => edge.id !== edgeId,
+        );
+        const intoEdge: Edge = {
+          id: "" + Math.random() * 10000,
+          source: startNode.id,
+          target: newNode.id,
+          targetHandle: inputHandleName,
+        };
+
+        const outOfEdge: Edge = {
+          id: "" + Math.random() * 10000,
+          source: newNode.id,
+          target: endNode.id,
+          targetHandle: endHandle,
+        };
+
+        edgesWithoutConnection.push(intoEdge);
+        edgesWithoutConnection.push(outOfEdge);
+        return edgesWithoutConnection;
+      });
+    }
   };
 
   const [edgesHash, edgeMap] = useMemo(() => {
@@ -230,6 +298,7 @@ export const Editor: FC<EditorProps> = ({
           uniforms: uniformRef,
           handleUpdateUniforms,
           handleUpdateNode,
+          handleInsertShader,
         }}
       >
         <ReactFlow
@@ -238,6 +307,7 @@ export const Editor: FC<EditorProps> = ({
           nodes={nodes}
           nodeTypes={{ shader: ShaderNode }}
           edges={edges}
+          edgeTypes={{ insert: CustomEdge }}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}

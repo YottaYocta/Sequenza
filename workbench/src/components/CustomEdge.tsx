@@ -4,6 +4,9 @@ import {
   getBezierPath,
   type EdgeProps,
 } from "@xyflow/react";
+import { useContext, useState } from "react";
+import { Dialog } from "./Dialog";
+import { EditorContext } from "./EditorContext";
 
 export default function CustomEdge({
   sourceX,
@@ -14,6 +17,7 @@ export default function CustomEdge({
   targetPosition,
   style = {},
   markerEnd,
+  id,
 }: EdgeProps) {
   const [edgePath, labelX, labelY] = getBezierPath({
     sourceX,
@@ -24,8 +28,12 @@ export default function CustomEdge({
     targetPosition,
   });
 
+  const { shaders, handleInsertShader } = useContext(EditorContext);
+  const [showAddShadersModal, setShowModal] = useState(false);
+
   const onEdgeClick = () => {
-    console.log("add node requested");
+    console.log("d");
+    setShowModal(true);
   };
 
   return (
@@ -33,14 +41,50 @@ export default function CustomEdge({
       <BaseEdge path={edgePath} markerEnd={markerEnd} style={style} />
       <EdgeLabelRenderer>
         <div
-          className="button-edge__label nodrag nopan"
+          className="absolute -translate-1/2 origin-center pointer-events-auto"
           style={{
-            transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
+            transform: `translate(${labelX}px,${labelY}px)`,
           }}
         >
-          <button className="button-edge__button" onClick={onEdgeClick}>
+          <button
+            className="w-8 h-8 bg-neutral-200  rounded-full active:bg-neutral-200 z-10"
+            onClick={() => onEdgeClick()}
+          >
             +
           </button>
+          <Dialog
+            open={showAddShadersModal}
+            handleOpenChange={(open) => {
+              setShowModal(open);
+            }}
+          >
+            <div className="w-full h-full flex flex-col p-4">
+              <div className="w-full flex justify-between">
+                <p>Add a Shader</p>
+                <button
+                  className="button-base"
+                  onClick={() => {
+                    setShowModal(false);
+                  }}
+                >
+                  Close
+                </button>
+                <div className="w-full flex flex-col">
+                  {shaders.map((shader) => (
+                    <button
+                      key={shader.id}
+                      className="text-xs flex justify-start p-1 rounded-sm hover:bg-neutral-100 cursor-pointer text-neutral-500"
+                      onClick={() => {
+                        handleInsertShader(shader, id);
+                      }}
+                    >
+                      {shader.id}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </Dialog>
         </div>
       </EdgeLabelRenderer>
     </>

@@ -13,6 +13,7 @@ interface EditorContextType {
     nodeId: string,
     data: (snapshot: ShaderNodeData) => ShaderNodeData,
   ) => void;
+  handleInsertShader: (shader: Shader, edgeId: string) => void;
 }
 
 export const EditorContext = createContext<EditorContextType>({
@@ -23,4 +24,5 @@ export const EditorContext = createContext<EditorContextType>({
   uniforms: { current: {} },
   handleUpdateUniforms: () => {},
   handleUpdateNode: (snapshot) => snapshot,
+  handleInsertShader: () => {},
 });
