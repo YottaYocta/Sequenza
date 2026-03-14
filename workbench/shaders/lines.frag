@@ -40,7 +40,7 @@ vec2 rotateCenter(vec2 uv, float angle) {
 }
 
 void main() {
-    vec2 uv = vec2(vUv.x, 1.0 - vUv.y);
+    vec2 uv = vec2(vUv.x, vUv.y);
     vec2 uvInRotatedSpace = invRotate(uv, uRotation);
     vec2 targetPixInRot = vec2(floor(uvInRotatedSpace.x * uDensity + 0.5)/uDensity, uvInRotatedSpace.y);
     vec2 targetPixInRot2 = vec2(floor((uvInRotatedSpace.x) * uDensity + 0.5)/uDensity, uvInRotatedSpace.y  + sin(uMouse) / 20.0);
