@@ -163,7 +163,7 @@ const EditorAux: FC<EditorProps> = ({ shaders, initialState, handleSave }) => {
       const fields = extractFields(newNode.data.shader);
       let inputHandleName: string | undefined = undefined;
       for (const field of fields) {
-        if (field.type === "sampler2D" && field.texture === undefined) {
+        if (field.type === "sampler2D" && field.source === "input") {
           inputHandleName = field.name;
           break;
         }
@@ -326,7 +326,7 @@ const EditorAux: FC<EditorProps> = ({ shaders, initialState, handleSave }) => {
       const fields = extractFields(newNode.data.shader);
       let inputHandleName: string | undefined = undefined;
       for (const field of fields) {
-        if (field.type === "sampler2D" && field.texture === undefined) {
+        if (field.type === "sampler2D" && field.source === "input") {
           inputHandleName = field.name;
           break;
         }

@@ -12,6 +12,47 @@ export type TextureUniform = {
 	src: string | HTMLCanvasElement | HTMLImageElement | HTMLVideoElement | HTMLElement;
 };
 
+export type GradientStop = { position: number; color: string };
+
+export type GradientUniform = {
+	type: 'gradient';
+	stops: GradientStop[];
+};
+
+const hexToRgb = (hex: string): [number, number, number] => {
+	const h = hex.replace('#', '');
+	return [parseInt(h.substring(0, 2), 16), parseInt(h.substring(2, 4), 16), parseInt(h.substring(4, 6), 16)];
+};
+
+const interpolateHex = (c1: string, c2: string, t: number): string => {
+	const [r1, g1, b1] = hexToRgb(c1);
+	const [r2, g2, b2] = hexToRgb(c2);
+	const r = Math.round(r1 + (r2 - r1) * t).toString(16).padStart(2, '0');
+	const g = Math.round(g1 + (g2 - g1) * t).toString(16).padStart(2, '0');
+	const b = Math.round(b1 + (b2 - b1) * t).toString(16).padStart(2, '0');
+	return `#${r}${g}${b}`;
+};
+
+export const evalGradientAt = (stops: GradientStop[], t: number): string => {
+	const clamped = Math.max(0, Math.min(1, t));
+	const sorted = [...stops].sort((a, b) => a.position - b.position);
+	if (sorted.length === 0) return '#000000';
+	if (sorted.length === 1) return sorted[0].color;
+	if (clamped <= sorted[0].position) return sorted[0].color;
+	if (clamped >= sorted[sorted.length - 1].position) return sorted[sorted.length - 1].color;
+	let lower = sorted[0], upper = sorted[sorted.length - 1];
+	for (let i = 0; i < sorted.length - 1; i++) {
+		if (clamped >= sorted[i].position && clamped <= sorted[i + 1].position) {
+			lower = sorted[i];
+			upper = sorted[i + 1];
+			break;
+		}
+	}
+	const range = upper.position - lower.position;
+	const localT = range === 0 ? 0 : (clamped - lower.position) / range;
+	return interpolateHex(lower.color, upper.color, localT);
+};
+
 export type Connection = { from: string; to: string; input: string };
 
 export type Patch = {
@@ -24,6 +65,9 @@ const isTexture = (o: unknown): o is TextureUniform => {
 		typeof o === 'object' && o !== null && (o as TextureUniform).type === 'texture' && 'src' in o
 	);
 };
+
+const isGradient = (o: unknown): o is GradientUniform =>
+	typeof o === 'object' && o !== null && (o as GradientUniform).type === 'gradient';
 
 const DefaultVertexShader = `#version 300 es
 
@@ -52,6 +96,7 @@ export class Renderer {
 	private quad: twgl.BufferInfo;
 	private textures: Record<string, WebGLTexture> = {};
 	private textureSrcs: Record<string, string> = {};
+	private gradientCanvases: Record<string, HTMLCanvasElement> = {};
 	private defaultTexture: WebGLTexture;
 
 	readonly patch: Patch;
@@ -140,6 +185,22 @@ export class Renderer {
 		return this.textures[key];
 	}
 
+	private _updateGradientUniform(key: string, gradientUniform: GradientUniform): WebGLTexture {
+		let canvas = this.gradientCanvases[key];
+		if (!canvas) {
+			canvas = document.createElement('canvas');
+			canvas.width = 256;
+			canvas.height = 1;
+			this.gradientCanvases[key] = canvas;
+		}
+		const ctx = canvas.getContext('2d')!;
+		for (let i = 0; i < 256; i++) {
+			ctx.fillStyle = evalGradientAt(gradientUniform.stops, i / 255);
+			ctx.fillRect(i, 0, 1, 1);
+		}
+		return this._updateTextureUniform(key, { type: 'texture', src: canvas });
+	}
+
 	private _updateTextureUniform(key: string, textureUniform: TextureUniform): WebGLTexture {
 		const tex = this._getOrCreateTexture(key);
 		const src = textureUniform.src;
@@ -167,6 +228,8 @@ export class Renderer {
 			for (const [key, value] of Object.entries(uniforms)) {
 				if (isTexture(value)) {
 					uniforms[key] = this._updateTextureUniform(`${currentNode}::${key}`, value);
+				} else if (isGradient(value)) {
+					uniforms[key] = this._updateGradientUniform(`${currentNode}::${key}`, value);
 				}
 			}
 
@@ -204,6 +267,7 @@ export class Renderer {
 		}
 		this.textures = {};
 		this.textureSrcs = {};
+		this.gradientCanvases = {};
 		this.gl.deleteTexture(this.defaultTexture);
 
 		if (this.quad.indices) this.gl.deleteBuffer(this.quad.indices);

@@ -1,5 +1,6 @@
 export { Renderer } from './renderer';
-export type { Shader, Uniforms, TextureUniform, Connection, Patch } from './renderer';
+export type { Shader, Uniforms, TextureUniform, GradientStop, GradientUniform, Connection, Patch } from './renderer';
+export { evalGradientAt } from './renderer';
 export { RendererComponent } from './RendererComponent';
 export { extractFields } from './Field';
 export type { Field } from './Field';

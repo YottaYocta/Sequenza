@@ -139,7 +139,7 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
 
   const textureInputs = useMemo<string[]>(() => {
     return extractFields(data.shader)
-      .filter((f) => f.type === "sampler2D" && !f.texture)
+      .filter((f) => f.type === "sampler2D" && f.source === "input")
       .map((f) => f.name);
   }, [data.shader]);
 
