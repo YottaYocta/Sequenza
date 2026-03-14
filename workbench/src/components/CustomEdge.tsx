@@ -47,7 +47,7 @@ export default function CustomEdge({
           }}
         >
           <button
-            className="w-8 h-8 bg-neutral-200  rounded-full active:bg-neutral-200 z-10"
+            className="w-6 h-6 bg-neutral-200  rounded-full active:bg-neutral-200 z-10 flex items-center justify-center"
             onClick={() => onEdgeClick()}
           >
             +
@@ -69,19 +69,19 @@ export default function CustomEdge({
                 >
                   Close
                 </button>
-                <div className="w-full flex flex-col">
-                  {shaders.map((shader) => (
-                    <button
-                      key={shader.id}
-                      className="text-xs flex justify-start p-1 rounded-sm hover:bg-neutral-100 cursor-pointer text-neutral-500"
-                      onClick={() => {
-                        handleInsertShader(shader, id);
-                      }}
-                    >
-                      {shader.id}
-                    </button>
-                  ))}
-                </div>
+              </div>
+              <div className="w-full flex flex-col">
+                {shaders.map((shader) => (
+                  <button
+                    key={shader.id}
+                    className="text-xs flex justify-start p-1 rounded-sm hover:bg-neutral-100 cursor-pointer text-neutral-500"
+                    onClick={() => {
+                      handleInsertShader(shader, id);
+                    }}
+                  >
+                    {shader.id}
+                  </button>
+                ))}
               </div>
             </div>
           </Dialog>
