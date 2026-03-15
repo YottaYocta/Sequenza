@@ -205,6 +205,7 @@ const EditorAux: FC<EditorProps> = ({
           source: startNode.id,
           target: newNode.id,
           targetHandle: inputHandleName,
+          type: "insert",
         };
 
         const outOfEdge: Edge = {
@@ -212,6 +213,7 @@ const EditorAux: FC<EditorProps> = ({
           source: newNode.id,
           target: endNode.id,
           targetHandle: endHandle,
+          type: "insert",
         };
 
         edgesWithoutConnection.push(intoEdge);
@@ -429,8 +431,8 @@ const EditorAux: FC<EditorProps> = ({
             )}
           </Panel>
           {shaders.length > 0 && (
-            <Panel position="top-right">
-              <div className="p-4 flex flex-col rounded-sm border border-neutral-200 gap-4">
+            <Panel position="bottom-right">
+              <div className="p-4 flex flex-col rounded-sm bg-white gap-4">
                 <p className="text-sm p-1">Add Shader</p>
                 <div className="flex flex-col gap-1">
                   {shaders.map((shader) => (

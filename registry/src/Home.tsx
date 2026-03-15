@@ -1,9 +1,17 @@
 import { useState, useRef } from "react";
 import Dither1 from "./components/Dither1";
+import Hatching from "./components/Hatching";
+import HeatMap from "./components/HeatMap";
+import Dots1 from "./components/Dots1";
 import daffodil from "./assets/daffodil.png";
-import { Editor, type EditorInitialState } from "@sequenza/workbench";
+import {
+  Editor,
+  type EditorInitialState,
+  staticShaders,
+} from "@sequenza/workbench";
 import "@xyflow/react/dist/style.css";
 import "@sequenza/workbench/style.css";
+import type { Shader } from "@sequenza/lib";
 
 type MediaSource =
   | { url: string; isVideo: false; name: string; element?: undefined }
@@ -36,13 +44,19 @@ export default function Home() {
       vid.src = url;
       vid.play();
       setSources((prev) => {
-        const next: MediaSource[] = [...prev, { url, isVideo: true, name: file.name, element: vid }];
+        const next: MediaSource[] = [
+          ...prev,
+          { url, isVideo: true, name: file.name, element: vid },
+        ];
         setSourceIndex(next.length - 1);
         return next;
       });
     } else {
       setSources((prev) => {
-        const next: MediaSource[] = [...prev, { url, isVideo: false, name: file.name }];
+        const next: MediaSource[] = [
+          ...prev,
+          { url, isVideo: false, name: file.name },
+        ];
         setSourceIndex(next.length - 1);
         return next;
       });
@@ -63,14 +77,17 @@ export default function Home() {
           <video
             key={currentSource.url}
             src={currentSource.url}
-            className="h-48 w-64 rounded-lg object-cover"
+            className="h-48 w-64 rounded-sm object-cover"
             autoPlay
             muted
             loop
             playsInline
           />
         ) : (
-          <img src={currentSource.url} className="h-48 w-64 rounded-lg object-cover" />
+          <img
+            src={currentSource.url}
+            className="h-48 w-64 rounded-sm object-cover"
+          />
         )}
         <div className="flex items-center gap-2">
           <button
@@ -118,7 +135,16 @@ export default function Home() {
               Close
             </button>
             <Editor
-              shaders={[]}
+              shaders={Object.entries(staticShaders).map(
+                ([key, val]): Shader => {
+                  return {
+                    id: key,
+                    name: key,
+                    source: val,
+                    resolution: { width: 100, height: 100 },
+                  };
+                },
+              )}
               initialState={editorInitialState}
               handleSave={() => {}}
               className="rounded-md"
@@ -140,9 +166,16 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-[repeat(2,14rem)] lg:grid-cols-[repeat(3,14rem)] gap-x-4 gap-y-2">
-            {Array.from({ length: 12 }).map((_, i) => (
-              <div key={i} className="w-56 h-28 bg-blue-300">
-                <Dither1 source={currentSource.isVideo ? currentSource.element : currentSource.url} handleEdit={handleEdit} />
+            {[Dither1, Hatching, HeatMap, Dots1].map((Component, i) => (
+              <div key={i} className="w-56 h-28 rounded-sm overflow-clip">
+                <Component
+                  source={
+                    currentSource.isVideo
+                      ? currentSource.element
+                      : currentSource.url
+                  }
+                  handleEdit={handleEdit}
+                />
               </div>
             ))}
           </div>

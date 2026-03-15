@@ -27,3 +27,5 @@ export { Scrubber } from "./components/Scrubber";
 export { ShaderNode } from "./components/ShaderNode";
 import UniformForm from "./components/UniformForm";
 export { UniformForm };
+
+export { staticShaders } from "./shaders/index";
