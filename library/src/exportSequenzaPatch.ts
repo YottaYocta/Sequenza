@@ -7,9 +7,20 @@ export function exportSequenzaPatch(
 ): string {
   let content = templateContent;
 
+  const filteredUniformKeys = Object.keys(uniforms).filter((key) => {
+    const matchingShader = patch.shaders.find((shader) => shader.id === key);
+    if (matchingShader) return true;
+    else return false;
+  });
+
+  const filteredUniforms: Record<string, Uniforms> = {};
+  for (const key of filteredUniformKeys) {
+    filteredUniforms[key] = uniforms[key];
+  }
+
   content = content.replace(
     `throw new Error("placeholder for initial uniforms");`,
-    `return ${JSON.stringify(uniforms, null, 2)};`,
+    `return ${JSON.stringify(filteredUniforms, null, 2)};`,
   );
 
   content = content.replace(
