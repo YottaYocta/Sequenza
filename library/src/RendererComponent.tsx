@@ -49,6 +49,7 @@ export const RendererComponent = forwardRef<
             animationFrameId = requestAnimationFrame(renderLoop);
           });
         } else {
+          renderer.onTextureLoaded = render;
           render();
         }
 

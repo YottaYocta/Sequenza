@@ -126,6 +126,7 @@ export class Renderer {
   readonly gl: WebGL2RenderingContext;
 
   uniforms: Record<string, Uniforms>;
+  onTextureLoaded?: () => void;
 
   constructor(context: WebGL2RenderingContext, patch: Patch) {
     this.patch = patch;
@@ -276,6 +277,7 @@ export class Renderer {
             wrap: this.gl.CLAMP_TO_EDGE,
             auto: false,
           });
+          this.onTextureLoaded?.();
         };
         img.src = src;
       }

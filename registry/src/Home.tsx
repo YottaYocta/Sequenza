@@ -5,18 +5,50 @@ import { Editor, type EditorInitialState } from "@sequenza/workbench";
 import "@xyflow/react/dist/style.css";
 import "@sequenza/workbench/style.css";
 
+type MediaSource =
+  | { url: string; isVideo: false; name: string; element?: undefined }
+  | { url: string; isVideo: true; name: string; element: HTMLVideoElement };
+
 export default function Home() {
-  const [imageUrl, setImageUrl] = useState<string>(daffodil);
+  const [sources, setSources] = useState<MediaSource[]>([
+    { url: daffodil, isVideo: false, name: "daffodil.png" },
+  ]);
+  const [sourceIndex, setSourceIndex] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [editorOpen, setEditorOpen] = useState(false);
   const [editorInitialState, setEditorInitialState] = useState<
     EditorInitialState | undefined
   >(undefined);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const currentSource = sources[sourceIndex];
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) setImageUrl(URL.createObjectURL(file));
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    const isVideo = file.type.startsWith("video/");
+    if (isVideo) {
+      const vid = document.createElement("video");
+      vid.autoplay = true;
+      vid.muted = true;
+      vid.loop = true;
+      vid.playsInline = true;
+      vid.src = url;
+      vid.play();
+      setSources((prev) => {
+        const next: MediaSource[] = [...prev, { url, isVideo: true, name: file.name, element: vid }];
+        setSourceIndex(next.length - 1);
+        return next;
+      });
+    } else {
+      setSources((prev) => {
+        const next: MediaSource[] = [...prev, { url, isVideo: false, name: file.name }];
+        setSourceIndex(next.length - 1);
+        return next;
+      });
+    }
     setEditorOpen(false);
+    e.target.value = "";
   };
 
   const handleEdit = (initialState: EditorInitialState) => {
@@ -27,19 +59,52 @@ export default function Home() {
   return (
     <div className="flex w-screen h-screen antialiased font-sans items-center">
       <div className="w-2/5 h-full flex flex-col items-end justify-center gap-3 px-12 bg-neutral-100">
-        <img src={imageUrl} className="h-48 w-64 rounded-lg object-cover" />
-        <button
-          className="bg-neutral-100 text-neutral-600 w-min text-nowrap text-xs rounded-sm px-2 py-1 border-none cursor-pointer transition-all duration-75 hover:bg-neutral-200"
-          onClick={() => fileInputRef.current?.click()}
-        >
-          Replace image
-        </button>
+        {currentSource.isVideo ? (
+          <video
+            key={currentSource.url}
+            src={currentSource.url}
+            className="h-48 w-64 rounded-lg object-cover"
+            autoPlay
+            muted
+            loop
+            playsInline
+          />
+        ) : (
+          <img src={currentSource.url} className="h-48 w-64 rounded-lg object-cover" />
+        )}
+        <div className="flex items-center gap-2">
+          <button
+            className="button-base"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            Add source
+          </button>
+          <div className="flex items-center gap-1">
+            <button
+              className="button-base"
+              disabled={sourceIndex === 0}
+              onClick={() => setSourceIndex((i) => i - 1)}
+            >
+              ↑
+            </button>
+            <span className="text-xs font-mono text-neutral-400 tabular-nums">
+              {sourceIndex + 1}/{sources.length}
+            </span>
+            <button
+              className="button-base"
+              disabled={sourceIndex === sources.length - 1}
+              onClick={() => setSourceIndex((i) => i + 1)}
+            >
+              ↓
+            </button>
+          </div>
+        </div>
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*"
+          accept="image/*,video/*"
           className="hidden"
-          onChange={handleImageChange}
+          onChange={handleFileChange}
         />
       </div>
 
@@ -77,7 +142,7 @@ export default function Home() {
           <div className="grid grid-cols-[repeat(2,14rem)] lg:grid-cols-[repeat(3,14rem)] gap-x-4 gap-y-2">
             {Array.from({ length: 12 }).map((_, i) => (
               <div key={i} className="w-56 h-28 bg-blue-300">
-                <Dither1 sourceImage={imageUrl} handleEdit={handleEdit} />
+                <Dither1 source={currentSource.isVideo ? currentSource.element : currentSource.url} handleEdit={handleEdit} />
               </div>
             ))}
           </div>

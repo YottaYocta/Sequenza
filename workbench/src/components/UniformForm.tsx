@@ -392,19 +392,53 @@ const ImageUploadFieldComponent: FC<{
   handleUpdateUniformField: (value: TextureUniform | null) => void;
 }> = ({ field, initialValue, handleUpdateUniformField }) => {
   const [focused, setFocused] = useState(false);
-  const initialSrc = typeof initialValue?.src === "string" ? initialValue.src : null;
-  const [imageSrc, setImageSrc] = useState<string | null>(initialSrc);
+
+  const initVideo = initialValue?.src instanceof HTMLVideoElement ? initialValue.src : null;
+  const initStrSrc = typeof initialValue?.src === "string" ? initialValue.src : initVideo?.src ?? null;
+  const initIsVideo = initVideo !== null;
+
+  const [mediaSrc, setMediaSrc] = useState<string | null>(initStrSrc);
+  const [isVideo, setIsVideo] = useState(initIsVideo);
   const [fileName, setFileName] = useState<string | null>(
-    initialSrc ? (initialSrc.split("/").pop() ?? null) : null,
+    initStrSrc ? (initStrSrc.split("/").pop() ?? null) : null,
   );
+  const [resolution, setResolution] = useState<[number, number] | null>(() => {
+    if (!initVideo) return null;
+    if (initVideo.readyState >= 1) return [initVideo.videoWidth, initVideo.videoHeight];
+    return null;
+  });
+
+  useEffect(() => {
+    if (!initVideo || resolution !== null) return;
+    const apply = () => setResolution([initVideo.videoWidth, initVideo.videoHeight]);
+    if (initVideo.readyState >= 1) apply();
+    else initVideo.addEventListener("loadedmetadata", apply, { once: true });
+  }, []);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const upload = (file: File | null) => {
-    if (file) {
-      const src = URL.createObjectURL(file);
-      setImageSrc(src);
-      setFileName(file.name);
-      handleUpdateUniformField({ type: "texture", src });
+    if (!file) return;
+    const objectUrl = URL.createObjectURL(file);
+    const fileIsVideo = file.type.startsWith("video/");
+    setMediaSrc(objectUrl);
+    setIsVideo(fileIsVideo);
+    setFileName(file.name);
+    setResolution(null);
+    if (fileIsVideo) {
+      const vid = document.createElement("video");
+      vid.autoplay = true;
+      vid.muted = true;
+      vid.loop = true;
+      vid.playsInline = true;
+      vid.onloadedmetadata = () => setResolution([vid.videoWidth, vid.videoHeight]);
+      vid.src = objectUrl;
+      vid.play();
+      handleUpdateUniformField({ type: "texture", src: vid });
+    } else {
+      const img = new Image();
+      img.onload = () => setResolution([img.naturalWidth, img.naturalHeight]);
+      img.src = objectUrl;
+      handleUpdateUniformField({ type: "texture", src: objectUrl });
     }
   };
 
@@ -413,7 +447,7 @@ const ImageUploadFieldComponent: FC<{
     const handlePaste = (e: ClipboardEvent) => {
       if (!e.clipboardData) return;
       for (const item of e.clipboardData.items) {
-        if (item.type.startsWith("image/")) {
+        if (item.type.startsWith("image/") || item.type.startsWith("video/")) {
           upload(item.getAsFile());
           break;
         }
@@ -437,8 +471,12 @@ const ImageUploadFieldComponent: FC<{
               : "bg-neutral-100 border-neutral-50"
           }`}
         >
-          {imageSrc ? (
-            <img src={imageSrc} className="w-full h-full object-contain" />
+          {mediaSrc ? (
+            isVideo ? (
+              <video src={mediaSrc} className="w-full h-full object-contain" autoPlay muted loop playsInline />
+            ) : (
+              <img src={mediaSrc} className="w-full h-full object-contain" />
+            )
           ) : focused ? (
             "cmd+V"
           ) : (
@@ -449,20 +487,25 @@ const ImageUploadFieldComponent: FC<{
           )}
         </div>
 
-        <div className="flex items-center gap-2 w-32">
-          <button className="button-base shrink-0" onClick={() => inputRef.current?.click()}>
-            {imageSrc ? "Replace" : "Upload"}
+        <div className="flex flex-col items-start gap-0.5">
+          <button className="button-base" onClick={() => inputRef.current?.click()}>
+            {mediaSrc ? "Replace" : "Upload"}
           </button>
           {fileName && (
-            <span className="text-xs text-neutral-400 font-mono truncate" title={fileName}>
+            <span className="text-[10px] text-neutral-400 font-mono truncate max-w-32" title={fileName}>
               {fileName}
+            </span>
+          )}
+          {resolution && (
+            <span className="text-[10px] text-neutral-400 font-mono">
+              {resolution[0]}×{resolution[1]}
             </span>
           )}
         </div>
         <input
           ref={inputRef}
           type="file"
-          accept="image/*"
+          accept="image/*,video/*"
           className="hidden"
           onChange={(e) => upload(e.target.files?.[0] ?? null)}
         />

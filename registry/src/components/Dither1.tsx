@@ -8,29 +8,38 @@ import "@sequenza/lib/style.css";
 import { useEffect, useRef, useState, type FC } from "react";
 
 interface Dither1Props {
-  sourceImage: string;
+  source: string | HTMLVideoElement;
   handleEdit?: (initialState: EditorInitialState) => void;
 }
 
 const TARGET_WIDTH = 200;
 
-const Dither1: FC<Dither1Props> = ({ sourceImage, handleEdit }) => {
+const Dither1: FC<Dither1Props> = ({ source, handleEdit }) => {
   const uniformRef = useRef<Record<string, Uniforms>>(
-    getInitialUniforms(sourceImage),
+    getInitialUniforms(source),
   );
   const [height, setHeight] = useState(175);
   const [exportOpen, setExportOpen] = useState(false);
 
   useEffect(() => {
-    uniformRef.current = getInitialUniforms(sourceImage);
-    const img = new Image();
-    img.onload = () => {
-      setHeight(
-        Math.round((img.naturalHeight / img.naturalWidth) * TARGET_WIDTH),
-      );
-    };
-    img.src = sourceImage;
-  }, [sourceImage]);
+    uniformRef.current = getInitialUniforms(source);
+    if (typeof source === "string") {
+      const img = new Image();
+      img.onload = () => {
+        setHeight(
+          Math.round((img.naturalHeight / img.naturalWidth) * TARGET_WIDTH),
+        );
+      };
+      img.src = source;
+    } else {
+      const apply = () =>
+        setHeight(
+          Math.round((source.videoHeight / source.videoWidth) * TARGET_WIDTH),
+        );
+      if (source.readyState >= 1) apply();
+      else source.addEventListener("loadedmetadata", apply, { once: true });
+    }
+  }, [source]);
 
   const patch = getPatch();
 
@@ -42,7 +51,6 @@ const Dither1: FC<Dither1Props> = ({ sourceImage, handleEdit }) => {
         width={TARGET_WIDTH}
         height={height}
         className={"w-full h-full object-cover object-center"}
-        animate
       />
       <div className="absolute top-1.5 right-1.5 flex gap-1 group-hover:opacity-100 opacity-0 transition group-hover:transition-none duration-200">
         <button className="button-base" onClick={() => setExportOpen(true)}>
@@ -57,10 +65,7 @@ const Dither1: FC<Dither1Props> = ({ sourceImage, handleEdit }) => {
         <button
           className="button-base"
           onClick={() => {
-            console.log(getInitialUniforms(sourceImage));
-            handleEdit?.(
-              buildEditorState(patch, getInitialUniforms(sourceImage)),
-            );
+            handleEdit?.(buildEditorState(patch, getInitialUniforms(source)));
           }}
         >
           Edit
@@ -72,12 +77,14 @@ const Dither1: FC<Dither1Props> = ({ sourceImage, handleEdit }) => {
 
 export default Dither1;
 
-function getInitialUniforms(sourceImage: string): Record<string, Uniforms> {
+function getInitialUniforms(
+  source: string | HTMLVideoElement,
+): Record<string, Uniforms> {
   return {
     "69135.73029281368": {
       imageSource: {
         type: "texture",
-        src: sourceImage,
+        src: source,
       },
     },
     "54532.324203761804": {
