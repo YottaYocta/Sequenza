@@ -8,7 +8,7 @@ export function exportSequenzaPatch(
   let content = templateContent;
 
   content = content.replace(
-    "throw new Error('placeholder for initial uniforms');",
+    `throw new Error("placeholder for initial uniforms");`,
     `return ${JSON.stringify(uniforms, null, 2)};`,
   );
 
