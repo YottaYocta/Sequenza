@@ -35,7 +35,7 @@ const Dither1: FC<Dither1Props> = ({ sourceImage, handleEdit }) => {
   const patch = getPatch();
 
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-full group">
       <RendererComponent
         patch={patch}
         uniforms={uniformRef}
@@ -44,11 +44,8 @@ const Dither1: FC<Dither1Props> = ({ sourceImage, handleEdit }) => {
         className={"w-full h-full object-cover object-center"}
         animate
       />
-      <div className="absolute top-1.5 right-1.5 flex gap-1">
-        <button
-          className="button-base"
-          onClick={() => setExportOpen(true)}
-        >
+      <div className="absolute top-1.5 right-1.5 flex gap-1 group-hover:opacity-100 opacity-0 transition group-hover:transition-none duration-200">
+        <button className="button-base" onClick={() => setExportOpen(true)}>
           Export
         </button>
         <ExportDialog

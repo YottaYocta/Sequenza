@@ -51,9 +51,15 @@ interface EditorProps {
     edges: Edge[];
     uniforms: Record<string, Uniforms>;
   }) => void;
+  className?: string;
 }
 
-const EditorAux: FC<EditorProps> = ({ shaders, initialState, handleSave }) => {
+const EditorAux: FC<EditorProps> = ({
+  shaders,
+  initialState,
+  handleSave,
+  className,
+}) => {
   const [nodes, setNodes] = useState<Node[]>(initialState?.nodes ?? []);
   const [edges, setEdges] = useState<Edge[]>(initialState?.edges ?? []);
 
@@ -356,7 +362,7 @@ const EditorAux: FC<EditorProps> = ({ shaders, initialState, handleSave }) => {
   const [showStats, setShowStats] = useState(false);
 
   return (
-    <div className="w-full h-full">
+    <div className={`w-full h-full ${className}`}>
       <EditorContext.Provider
         value={{
           currentTime: timeRef,

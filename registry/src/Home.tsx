@@ -16,6 +16,7 @@ export default function Home() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) setImageUrl(URL.createObjectURL(file));
+    setEditorOpen(false);
   };
 
   const handleEdit = (initialState: EditorInitialState) => {
@@ -25,7 +26,7 @@ export default function Home() {
 
   return (
     <div className="flex w-screen h-screen antialiased font-sans items-center">
-      <div className="w-2/5 h-full flex flex-col items-center justify-center gap-3 px-12 bg-neutral-100">
+      <div className="w-2/5 h-full flex flex-col items-end justify-center gap-3 px-12 bg-neutral-100">
         <img src={imageUrl} className="h-48 w-64 rounded-lg object-cover" />
         <button
           className="bg-neutral-100 text-neutral-600 w-min text-nowrap text-xs rounded-sm px-2 py-1 border-none cursor-pointer transition-all duration-75 hover:bg-neutral-200"
@@ -43,12 +44,21 @@ export default function Home() {
       </div>
 
       {editorOpen ? (
-        <div className="w-3/5 h-full">
-          <Editor
-            shaders={[]}
-            initialState={editorInitialState}
-            handleSave={() => {}}
-          />
+        <div className="w-3/5 h-full p-4">
+          <div className="w-full h-full rounded-sm overflow-clip relative">
+            <button
+              className="top-4 right-4 button-base absolute z-10"
+              onClick={() => setEditorOpen(false)}
+            >
+              Close
+            </button>
+            <Editor
+              shaders={[]}
+              initialState={editorInitialState}
+              handleSave={() => {}}
+              className="rounded-md"
+            />
+          </div>
         </div>
       ) : (
         <div className="w-3/5 h-full flex flex-col items-start gap-20 pt-28 pl-12 overflow-x-visible overflow-y-auto">
