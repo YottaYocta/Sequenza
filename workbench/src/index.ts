@@ -14,6 +14,7 @@ export type {
 } from "@sequenza/lib";
 export { Editor } from "./components/Editor";
 export { Dialog } from "./components/Dialog";
+export { ExportDialog } from "./components/ExportDialog";
 
 import CustomHandle from "./components/CustomHandle";
 export { CustomHandle };

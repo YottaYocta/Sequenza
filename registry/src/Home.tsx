@@ -1,16 +1,32 @@
+import { useState, useRef } from "react";
 import Dither1 from "./components/Dither1";
 import daffodil from "./assets/daffodil.png";
 
 export default function Home() {
+  const [imageUrl, setImageUrl] = useState<string>(daffodil);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) setImageUrl(URL.createObjectURL(file));
+  };
+
   return (
     <div className="flex w-screen h-screen antialiased font-sans items-center">
-      <div className="w-2/5 h-full flex items-center justify-end px-12 bg-neutral-100">
-        <div
-          className="h-48 w-64 rounded-lg"
-          style={{
-            backgroundImage:
-              "linear-gradient(in oklab 204.7deg, oklab(97.9% 0 0) 6.27%, oklab(86.4% 0 0) 50.92%, oklab(93.4% 0 0) 76.55%)",
-          }}
+      <div className="w-2/5 h-full flex flex-col items-center justify-center gap-3 px-12 bg-neutral-100">
+        <img src={imageUrl} className="h-48 w-64 rounded-lg object-cover" />
+        <button
+          className="bg-neutral-100 text-neutral-600 w-min text-nowrap text-xs rounded-sm px-2 py-1 border-none cursor-pointer transition-all duration-75 hover:bg-neutral-200"
+          onClick={() => fileInputRef.current?.click()}
+        >
+          Replace image
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleImageChange}
         />
       </div>
 
@@ -30,7 +46,7 @@ export default function Home() {
         <div className="grid grid-cols-[repeat(2,14rem)] lg:grid-cols-[repeat(3,14rem)] gap-x-4 gap-y-2">
           {Array.from({ length: 12 }).map((_, i) => (
             <div key={i} className="w-56 h-28 bg-blue-300">
-              <Dither1 sourceImage={daffodil}></Dither1>
+              <Dither1 sourceImage={imageUrl}></Dither1>
             </div>
           ))}
         </div>

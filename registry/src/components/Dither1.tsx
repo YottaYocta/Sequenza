@@ -1,22 +1,36 @@
 import { RendererComponent, type Uniforms, type Patch } from "@sequenza/lib";
 import "@sequenza/lib/style.css";
-import { useRef, type FC } from "react";
+import { useEffect, useRef, useState, type FC } from "react";
 
 interface Dither1Props {
   sourceImage: string;
 }
 
+const TARGET_WIDTH = 200;
+
 const Dither1: FC<Dither1Props> = ({ sourceImage }) => {
   const uniformRef = useRef<Record<string, Uniforms>>(
     getInitialUniforms(sourceImage),
   );
+  const [height, setHeight] = useState(175);
+
+  useEffect(() => {
+    uniformRef.current = getInitialUniforms(sourceImage);
+    const img = new Image();
+    img.onload = () => {
+      setHeight(
+        Math.round((img.naturalHeight / img.naturalWidth) * TARGET_WIDTH),
+      );
+    };
+    img.src = sourceImage;
+  }, [sourceImage]);
 
   return (
     <RendererComponent
       patch={getPatch()}
       uniforms={uniformRef}
-      width={200}
-      height={175}
+      width={TARGET_WIDTH}
+      height={height}
       className={"w-full h-full object-cover object-center"}
       animate
     ></RendererComponent>
