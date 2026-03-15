@@ -161,7 +161,7 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
         </div>
         <div className="flex gap-2">
           <button
-            className="button-base hover:bg-neutral-300"
+            className="button-base"
             onClick={() => setExportOpen(true)}
           >
             Export
@@ -173,13 +173,13 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
             onOpenChange={setExportOpen}
           />
           <button
-            className="button-base hover:bg-neutral-300"
+            className="button-base"
             onClick={copyImage}
           >
             Copy
           </button>
           <button
-            className="button-base hover:bg-neutral-300"
+            className="button-base"
             onClick={saveImage}
           >
             Save

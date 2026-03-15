@@ -36,6 +36,7 @@ import {
 import { ShaderNode, type ShaderNodeData } from "./ShaderNode";
 import { EditorContext } from "./EditorContext";
 import CustomEdge from "./CustomEdge";
+import ConnectionLine from "./ConnectionLine";
 import { Dialog } from "./Dialog";
 
 interface EditorProps {
@@ -380,6 +381,7 @@ const EditorAux: FC<EditorProps> = ({ shaders, initialState, handleSave }) => {
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           onConnectEnd={onConnectEnd}
+          connectionLineComponent={ConnectionLine}
           isValidConnection={isValidConnection}
           style={{
             background: "#F9F9F9",

@@ -23,6 +23,7 @@
     "dev": "vite",
     "watch": "nodemon --exec tsx server.ts",
     "build": "vite build",
+    "build:watch": "vite build --watch",
     "build:app": "vite build --config vite.app.config.ts",
     "lint": "eslint .",
     "preview": "vite preview"

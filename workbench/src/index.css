@@ -11,6 +11,9 @@
 	border: none;
 	cursor: pointer;
 	transition: all 0.05s;
+	&:hover {
+		background-color: var(--color-neutral-200);
+	}
 }
 
 @utility image-crisp {

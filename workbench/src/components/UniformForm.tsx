@@ -64,10 +64,10 @@ const ColorPickerButton: FC<{
 const ResetButton: FC<{ onClick: () => void }> = ({ onClick }) => (
   <button
     onClick={onClick}
-    className="text-xs text-neutral-600 hover:text-neutral-400 font-mono leading-none select-none px-2"
+    className="w-6 h-6 flex items-center justify-center text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 rounded-sm select-none shrink-0"
     title="Reset to default"
   >
-    R
+    ↺
   </button>
 );
 
@@ -388,16 +388,22 @@ const MouseFieldComponent: FC<{
 
 const ImageUploadFieldComponent: FC<{
   field: Field & { type: "sampler2D" };
+  initialValue?: TextureUniform;
   handleUpdateUniformField: (value: TextureUniform | null) => void;
-}> = ({ field, handleUpdateUniformField }) => {
+}> = ({ field, initialValue, handleUpdateUniformField }) => {
   const [focused, setFocused] = useState(false);
-  const [imageSrc, setImageSrc] = useState<string | null>(null);
+  const initialSrc = typeof initialValue?.src === "string" ? initialValue.src : null;
+  const [imageSrc, setImageSrc] = useState<string | null>(initialSrc);
+  const [fileName, setFileName] = useState<string | null>(
+    initialSrc ? (initialSrc.split("/").pop() ?? null) : null,
+  );
   const inputRef = useRef<HTMLInputElement>(null);
 
   const upload = (file: File | null) => {
     if (file) {
       const src = URL.createObjectURL(file);
       setImageSrc(src);
+      setFileName(file.name);
       handleUpdateUniformField({ type: "texture", src });
     }
   };
@@ -443,11 +449,21 @@ const ImageUploadFieldComponent: FC<{
           )}
         </div>
 
+        <div className="flex items-center gap-2 w-32">
+          <button className="button-base shrink-0" onClick={() => inputRef.current?.click()}>
+            {imageSrc ? "Replace" : "Upload"}
+          </button>
+          {fileName && (
+            <span className="text-xs text-neutral-400 font-mono truncate" title={fileName}>
+              {fileName}
+            </span>
+          )}
+        </div>
         <input
           ref={inputRef}
           type="file"
           accept="image/*"
-          className="text-xs text-neutral-500 file:button-base hover:file:bg-neutral-200 file:transition w-32"
+          className="hidden"
           onChange={(e) => upload(e.target.files?.[0] ?? null)}
         />
       </div>
@@ -748,6 +764,7 @@ const UniformForm: FC<UniformFormProps> = ({
                 <ImageUploadFieldComponent
                   key={key}
                   field={field}
+                  initialValue={initialUniformValues[field.name] as TextureUniform | undefined}
                   handleUpdateUniformField={updateTexture}
                 />
               );

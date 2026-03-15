@@ -46,7 +46,7 @@ const Dither1: FC<Dither1Props> = ({ sourceImage, handleEdit }) => {
       />
       <div className="absolute top-1.5 right-1.5 flex gap-1">
         <button
-          className="bg-neutral-100 text-neutral-600 w-min text-nowrap text-xs rounded-sm px-2 py-1 border-none cursor-pointer transition-all duration-75 hover:bg-neutral-200"
+          className="button-base"
           onClick={() => setExportOpen(true)}
         >
           Export
@@ -58,7 +58,7 @@ const Dither1: FC<Dither1Props> = ({ sourceImage, handleEdit }) => {
           onOpenChange={setExportOpen}
         />
         <button
-          className="bg-neutral-100 text-neutral-600 w-min text-nowrap text-xs rounded-sm px-2 py-1 border-none cursor-pointer transition-all duration-75 hover:bg-neutral-200"
+          className="button-base"
           onClick={() => {
             console.log(getInitialUniforms(sourceImage));
             handleEdit?.(
