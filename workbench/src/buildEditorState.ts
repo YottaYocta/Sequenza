@@ -17,7 +17,7 @@ export function buildEditorState(
   const nodes: ShaderNode[] = patch.shaders.map((shader, i) => ({
     id: shader.id,
     type: "shader",
-    position: { x: 0, y: i * 200 },
+    position: { x: 0, y: -i * 500 },
     data: {
       shader,
       uniforms: uniformRef,
