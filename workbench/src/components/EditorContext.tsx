@@ -8,6 +8,7 @@ interface EditorContextType {
   shaders: Shader[];
   patches: Record<string, Patch>;
   uniforms: RefObject<Record<string, Uniforms>>;
+  showStats: boolean;
   handleUpdateUniforms: (shaderId: string, newUniforms: Uniforms) => void;
   handleUpdateNode: (
     nodeId: string,
@@ -21,6 +22,7 @@ export const EditorContext = createContext<EditorContextType>({
   mousePosition: { current: [0, 0] },
   shaders: [],
   patches: {},
+  showStats: false,
   uniforms: { current: {} },
   handleUpdateUniforms: () => {},
   handleUpdateNode: (snapshot) => snapshot,

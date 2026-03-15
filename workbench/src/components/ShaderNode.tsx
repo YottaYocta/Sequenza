@@ -25,8 +25,13 @@ export type ShaderNodeData = {
 
 export type ShaderNode = Node<ShaderNodeData, "shader">;
 export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
-  const { patches, uniforms, handleUpdateUniforms, handleUpdateNode } =
-    useContext(EditorContext);
+  const {
+    patches,
+    uniforms,
+    handleUpdateUniforms,
+    handleUpdateNode,
+    showStats,
+  } = useContext(EditorContext);
 
   if (!patches || patches[data.shader.id] === undefined) return null;
 
@@ -80,12 +85,16 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
 				${selected ? "outline-4" : "outline-0"}
 			`}
     >
-      <p className="text-xs text-neutral-500 absolute -top-6">
-        ID: {data.shader.id}
-      </p>
-      <p className="text-xs text-neutral-500 absolute -top-10">
-        {data.shader.name}
-      </p>
+      {showStats && (
+        <>
+          <p className="text-xs text-neutral-500 absolute -top-6">
+            ID: {data.shader.id}
+          </p>
+          <p className="text-xs text-neutral-500 absolute -top-10">
+            {data.shader.name}
+          </p>
+        </>
+      )}
       {textureInputs.map((input) => (
         <CustomHandle
           key={input}

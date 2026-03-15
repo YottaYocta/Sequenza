@@ -352,6 +352,8 @@ const EditorAux: FC<EditorProps> = ({ shaders, initialState, handleSave }) => {
     }
   };
 
+  const [showStats, setShowStats] = useState(false);
+
   return (
     <div className="w-full h-full">
       <EditorContext.Provider
@@ -360,6 +362,7 @@ const EditorAux: FC<EditorProps> = ({ shaders, initialState, handleSave }) => {
           mousePosition: mousePosRef,
           shaders,
           patches,
+          showStats,
           uniforms: uniformRef,
           handleUpdateUniforms,
           handleUpdateNode,
@@ -392,39 +395,51 @@ const EditorAux: FC<EditorProps> = ({ shaders, initialState, handleSave }) => {
             }
           ></Controls>
           <Panel position="top-left" className="flex flex-col gap-4">
-            <div className="flex flex-col gap-2">
-              {nodes.map((node) => (
-                <p className="text-xs text-neutral-400" key={node.id}>
-                  {node.id}
-                </p>
-              ))}
-            </div>
-            <div className="flex flex-col gap-2">
-              {edges.map((edge) => (
-                <p className="text-xs text-neutral-400" key={edge.id}>
-                  {edge.source} {">"} {edge.target} {edge.targetHandle}
-                </p>
-              ))}
-            </div>
+            <button
+              className="button-base"
+              onClick={() => setShowStats(!showStats)}
+            >
+              {showStats ? "Hide Stats" : "Show Stats"}
+            </button>
+            {showStats && (
+              <>
+                <div className="flex flex-col gap-2">
+                  {nodes.map((node) => (
+                    <p className="text-xs text-neutral-400" key={node.id}>
+                      {node.id}
+                    </p>
+                  ))}
+                </div>
+                <div className="flex flex-col gap-2">
+                  {edges.map((edge) => (
+                    <p className="text-xs text-neutral-400" key={edge.id}>
+                      {edge.source} {">"} {edge.target} {edge.targetHandle}
+                    </p>
+                  ))}
+                </div>
+              </>
+            )}
           </Panel>
-          <Panel position="top-right">
-            <div className="p-4 flex flex-col rounded-sm border border-neutral-200 gap-4">
-              <p className="text-sm p-1">Add Shader</p>
-              <div className="flex flex-col gap-1">
-                {shaders.map((shader) => (
-                  <button
-                    key={shader.id}
-                    className="text-xs flex justify-start p-1 rounded-sm hover:bg-neutral-100 cursor-pointer text-neutral-500"
-                    onClick={() => {
-                      handleAddShader(shader);
-                    }}
-                  >
-                    {shader.id}
-                  </button>
-                ))}
+          {shaders.length > 0 && (
+            <Panel position="top-right">
+              <div className="p-4 flex flex-col rounded-sm border border-neutral-200 gap-4">
+                <p className="text-sm p-1">Add Shader</p>
+                <div className="flex flex-col gap-1">
+                  {shaders.map((shader) => (
+                    <button
+                      key={shader.id}
+                      className="text-xs flex justify-start p-1 rounded-sm hover:bg-neutral-100 cursor-pointer text-neutral-500"
+                      onClick={() => {
+                        handleAddShader(shader);
+                      }}
+                    >
+                      {shader.id}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-          </Panel>
+            </Panel>
+          )}
           {savedAt && (
             <Panel position="bottom-center">
               <p className="text-xs text-neutral-400">
