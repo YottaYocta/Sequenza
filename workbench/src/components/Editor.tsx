@@ -362,6 +362,7 @@ const EditorAux: FC<EditorProps> = ({
   };
 
   const [showStats, setShowStats] = useState(false);
+  const [shaderPanelOpen, setShaderPanelOpen] = useState(true);
 
   return (
     <div className={`w-full h-full ${className}`}>
@@ -432,21 +433,29 @@ const EditorAux: FC<EditorProps> = ({
           </Panel>
           {shaders.length > 0 && (
             <Panel position="bottom-right">
-              <div className="p-4 flex flex-col rounded-sm bg-white gap-4">
-                <p className="text-sm p-1">Add Shader</p>
-                <div className="flex flex-col gap-1">
-                  {shaders.map((shader) => (
-                    <button
-                      key={shader.id}
-                      className="text-xs flex justify-start p-1 rounded-sm hover:bg-neutral-100 cursor-pointer text-neutral-500"
-                      onClick={() => {
-                        handleAddShader(shader);
-                      }}
-                    >
-                      {shader.id}
-                    </button>
-                  ))}
+              <div className="w-56 flex flex-col rounded-sm bg-white overflow-hidden">
+                <div className="flex items-center justify-between px-3 py-2">
+                  <p className="text-sm">Add Shader</p>
+                  <button
+                    className="button-base"
+                    onClick={() => setShaderPanelOpen(!shaderPanelOpen)}
+                  >
+                    {shaderPanelOpen ? "Hide" : "Show"}
+                  </button>
                 </div>
+                {shaderPanelOpen && (
+                  <div className="flex flex-col gap-1 px-2 pb-2">
+                    {shaders.map((shader) => (
+                      <button
+                        key={shader.id}
+                        className="text-xs flex justify-start p-1 rounded-sm hover:bg-neutral-100 cursor-pointer text-neutral-500"
+                        onClick={() => handleAddShader(shader)}
+                      >
+                        {shader.id}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </Panel>
           )}
