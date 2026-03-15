@@ -115,6 +115,12 @@ const EditorAux: FC<EditorProps> = ({ shaders, initialState, handleSave }) => {
   const uniformRef = useRef<Record<string, Uniforms>>(
     initialState?.uniforms ?? {},
   );
+
+  useEffect(() => {
+    console.log(initialState);
+    if (initialState?.uniforms) uniformRef.current = initialState.uniforms;
+  }, [initialState]);
+
   const [savedAt, setSavedAt] = useState<Date | null>(null);
 
   useEffect(() => {

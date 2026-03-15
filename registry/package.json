@@ -13,6 +13,7 @@
     "@sequenza/lib": "workspace:*",
     "@sequenza/workbench": "workspace:*",
     "@tailwindcss/vite": "^4.2.1",
+    "@xyflow/react": "^12.10.1",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-router": "^7.13.1",

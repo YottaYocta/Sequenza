@@ -462,9 +462,12 @@ const DEFAULT_GRADIENT_STOPS: GradientStop[] = [
 
 const GradientFieldComponent: FC<{
   field: Field & { type: "sampler2D"; source: "gradient" };
+  initialValue?: GradientUniform;
   handleUpdateUniformField: (value: GradientUniform) => void;
-}> = ({ field, handleUpdateUniformField }) => {
-  const [stops, setStops] = useState<GradientStop[]>(DEFAULT_GRADIENT_STOPS);
+}> = ({ field, initialValue, handleUpdateUniformField }) => {
+  const [stops, setStops] = useState<GradientStop[]>(
+    initialValue?.stops ?? DEFAULT_GRADIENT_STOPS,
+  );
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rampRef = useRef<HTMLDivElement>(null);
 
@@ -755,6 +758,7 @@ const UniformForm: FC<UniformFormProps> = ({
                   field={
                     field as Field & { type: "sampler2D"; source: "gradient" }
                   }
+                  initialValue={initialUniformValues[field.name] as GradientUniform | undefined}
                   handleUpdateUniformField={update}
                 />
               );

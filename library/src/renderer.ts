@@ -270,6 +270,7 @@ export class Renderer {
         this.textureSrcs[key] = src;
         const img = new Image();
         img.onload = () => {
+          if (this.textures[key] !== tex) return;
           twgl.setTextureFromElement(this.gl, tex, img, {
             minMag: this.gl.NEAREST,
             wrap: this.gl.CLAMP_TO_EDGE,

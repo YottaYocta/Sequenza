@@ -1,18 +1,25 @@
 import { RendererComponent, type Uniforms, type Patch } from "@sequenza/lib";
+import {
+  ExportDialog,
+  buildEditorState,
+  type EditorInitialState,
+} from "@sequenza/workbench";
 import "@sequenza/lib/style.css";
 import { useEffect, useRef, useState, type FC } from "react";
 
 interface Dither1Props {
   sourceImage: string;
+  handleEdit?: (initialState: EditorInitialState) => void;
 }
 
 const TARGET_WIDTH = 200;
 
-const Dither1: FC<Dither1Props> = ({ sourceImage }) => {
+const Dither1: FC<Dither1Props> = ({ sourceImage, handleEdit }) => {
   const uniformRef = useRef<Record<string, Uniforms>>(
     getInitialUniforms(sourceImage),
   );
   const [height, setHeight] = useState(175);
+  const [exportOpen, setExportOpen] = useState(false);
 
   useEffect(() => {
     uniformRef.current = getInitialUniforms(sourceImage);
@@ -25,15 +32,44 @@ const Dither1: FC<Dither1Props> = ({ sourceImage }) => {
     img.src = sourceImage;
   }, [sourceImage]);
 
+  const patch = getPatch();
+
   return (
-    <RendererComponent
-      patch={getPatch()}
-      uniforms={uniformRef}
-      width={TARGET_WIDTH}
-      height={height}
-      className={"w-full h-full object-cover object-center"}
-      animate
-    ></RendererComponent>
+    <div className="relative w-full h-full">
+      <RendererComponent
+        patch={patch}
+        uniforms={uniformRef}
+        width={TARGET_WIDTH}
+        height={height}
+        className={"w-full h-full object-cover object-center"}
+        animate
+      />
+      <div className="absolute top-1.5 right-1.5 flex gap-1">
+        <button
+          className="bg-neutral-100 text-neutral-600 w-min text-nowrap text-xs rounded-sm px-2 py-1 border-none cursor-pointer transition-all duration-75 hover:bg-neutral-200"
+          onClick={() => setExportOpen(true)}
+        >
+          Export
+        </button>
+        <ExportDialog
+          uniforms={uniformRef.current}
+          patch={patch}
+          open={exportOpen}
+          onOpenChange={setExportOpen}
+        />
+        <button
+          className="bg-neutral-100 text-neutral-600 w-min text-nowrap text-xs rounded-sm px-2 py-1 border-none cursor-pointer transition-all duration-75 hover:bg-neutral-200"
+          onClick={() => {
+            console.log(getInitialUniforms(sourceImage));
+            handleEdit?.(
+              buildEditorState(patch, getInitialUniforms(sourceImage)),
+            );
+          }}
+        >
+          Edit
+        </button>
+      </div>
+    </div>
   );
 };
 

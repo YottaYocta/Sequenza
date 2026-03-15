@@ -2,7 +2,7 @@ import type { Edge, Node } from "@xyflow/react";
 import type { Patch, Uniforms } from "@sequenza/lib";
 import type { ShaderNode } from "./components/ShaderNode";
 
-type EditorInitialState = {
+export type EditorInitialState = {
   nodes: Node[];
   edges: Edge[];
   uniforms: Record<string, Uniforms>;
@@ -36,6 +36,8 @@ export function buildEditorState(
     targetHandle: connection.input,
     type: "insert",
   }));
+
+  console.log("build", { nodes, edges, uniforms });
 
   return { nodes, edges, uniforms };
 }

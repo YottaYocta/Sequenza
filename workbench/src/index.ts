@@ -13,6 +13,8 @@ export type {
   Field,
 } from "@sequenza/lib";
 export { Editor } from "./components/Editor";
+export { buildEditorState } from "./buildEditorState";
+export type { EditorInitialState } from "./buildEditorState";
 export { Dialog } from "./components/Dialog";
 export { ExportDialog } from "./components/ExportDialog";
 
