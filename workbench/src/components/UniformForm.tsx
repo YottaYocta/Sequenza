@@ -603,7 +603,7 @@ const GradientFieldComponent: FC<{
     setStops((prev) => prev.map((s, i) => (i === idx ? { ...s, color } : s)));
 
   return (
-    <div className="flex flex-col  gap-3">
+    <div className="flex flex-col  gap-3 p-2">
       <div ref={rampRef} className="relative w-32 h-4 nodrag nopan">
         <canvas
           ref={canvasRef}
