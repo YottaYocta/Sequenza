@@ -108,7 +108,7 @@ export const PreviewDialog: FC<PreviewDialogProps> = ({
               }
             />
           </div>
-          <div className="flex flex-col gap-2 items-center">
+          <div className="flex flex-col gap-2 ">
             <div className="flex gap-1 bg-neutral-100 p-1 rounded-md w-min">
               <Scrubber
                 label="w"

@@ -158,7 +158,7 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
             />
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-1">
           <button className="button-base" onClick={() => setExportOpen(true)}>
             Export
           </button>
