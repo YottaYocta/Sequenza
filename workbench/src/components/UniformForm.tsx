@@ -77,7 +77,12 @@ const FieldLabel: FC<{ name: string; type: string }> = ({ name, type }) => {
 
   return (
     <div className=" min-w-40 flex flex-col gap-0.5 items-end">
-      <span className="font-mono text-xs text-neutral-900">{name}</span>
+      <span className="font-mono text-xs text-neutral-900">
+        {name
+          .replace("u_", "")
+          .replaceAll("_", " ")
+          .replace(/\b\w/g, (s) => s.toUpperCase())}
+      </span>
       {showStats && (
         <span className="font-mono text-[10px] text-neutral-500">{type}</span>
       )}
@@ -821,7 +826,9 @@ const UniformForm: FC<UniformFormProps> = ({
                 />
               ) : field.special === "resolution" ? (
                 <ResolutionFieldComponent
-                  field={field as Field & { type: "vec2"; special: "resolution" }}
+                  field={
+                    field as Field & { type: "vec2"; special: "resolution" }
+                  }
                   width={shader.resolution.width}
                   height={shader.resolution.height}
                   handleUpdateUniformField={update}
