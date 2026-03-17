@@ -2,8 +2,8 @@
 precision mediump float;
 
 uniform sampler2D u_texture;
-uniform float u_size;
-uniform vec2 u_resolution;
+uniform float u_size; // [1, 100, 5]
+uniform vec2 u_resolution; // resolution
 
 in vec2 vUv;
 out vec4 fragColor;

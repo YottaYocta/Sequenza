@@ -15,7 +15,7 @@ uniform float u_ring_radius; // [-1, 10, 2]
 uniform float u_rotation_offset; // [1, 10, 5]
 uniform float u_mouse_rotation; // [0, 2, 0.1]
 uniform float u_mouse_scale_factor; // [0, 1, 0.1]
-uniform vec3 uOrigin; // [0, 0.5, -20]
+uniform vec3 u_origin; // [0, 0.5, -20]
 
 in vec2 vUv;
 out vec4 fragColor;
@@ -223,7 +223,7 @@ void main()
     float aspect = u_resolution.x / u_resolution.y;
     vec2 resolution = vec2(uv.x * aspect, uv.y) * 0.5;
 
-    vec3 ray_origin = vec3(0, (1.0-u_mouse.y * u_mouse_scale_factor) * 1.0, (1.0-u_mouse.y * u_mouse_scale_factor) * 7.0) + uOrigin;
+    vec3 ray_origin = vec3(0, (1.0-u_mouse.y * u_mouse_scale_factor) * 1.0, (1.0-u_mouse.y * u_mouse_scale_factor) * 7.0) + u_origin;
     vec3 ray_direction = normalize(vec3(resolution, 1.0));
 
     float MAX_DIST = 20.0 + 10.0 * (1.0-u_mouse.y * u_mouse_scale_factor);
