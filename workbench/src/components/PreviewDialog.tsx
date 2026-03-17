@@ -77,10 +77,39 @@ export const PreviewDialog: FC<PreviewDialogProps> = ({
         </button>
       </div>
 
-      <div className="flex gap-6 px-6 pb-6 overflow-y-auto flex-1 min-h-0 ">
+      <div className="flex gap-16 px-6 pb-6  flex-1 min-h-0 items-center">
         <div className="flex flex-col gap-8">
           <div className="flex flex-col gap-2">
-            <div className="flex gap-2">
+            <UniformForm
+              shader={shader}
+              initialUniforms={uniforms.current[shader.id]}
+              handleUpdateUniform={(newUniforms) =>
+                handleUpdateUniforms(shader.id, newUniforms)
+              }
+            />
+          </div>
+        </div>
+        <div className="h-full w-full flex flex-col gap-4 ">
+          <div
+            ref={containerRef}
+            className={`flex bg-neutral-50 rounded w-4/5 items-center justify-center h-full`}
+          >
+            <RendererComponent
+              ref={canvasRef}
+              animate
+              width={width}
+              height={height}
+              patch={patch}
+              uniforms={uniforms}
+              className={
+                width / height > containerSize.w / containerSize.h
+                  ? "w-full"
+                  : "h-full"
+              }
+            />
+          </div>
+          <div className="flex flex-col gap-2 items-center">
+            <div className="flex gap-1 bg-neutral-100 p-1 rounded-md w-min">
               <Scrubber
                 label="w"
                 value={width}
@@ -107,7 +136,7 @@ export const PreviewDialog: FC<PreviewDialogProps> = ({
               />
             </div>
 
-            <div className="flex gap-2 h-min">
+            <div className="flex gap-1 h-min w-min">
               <button
                 className="button-base"
                 onClick={() => setExportOpen(true)}
@@ -128,35 +157,6 @@ export const PreviewDialog: FC<PreviewDialogProps> = ({
               </button>
             </div>
           </div>
-
-          <div className="flex flex-col gap-2">
-            <p className="text-xs text-neutral-500">Uniforms</p>
-            <UniformForm
-              shader={shader}
-              initialUniforms={uniforms.current[shader.id]}
-              handleUpdateUniform={(newUniforms) =>
-                handleUpdateUniforms(shader.id, newUniforms)
-              }
-            />
-          </div>
-        </div>
-        <div
-          ref={containerRef}
-          className="flex bg-neutral-50 rounded overflow-hidden w-1/2  items-center justify-center w-full"
-        >
-          <RendererComponent
-            ref={canvasRef}
-            animate
-            width={width}
-            height={height}
-            patch={patch}
-            uniforms={uniforms}
-            className={
-              width / height > containerSize.w / containerSize.h
-                ? "w-full"
-                : "h-full"
-            }
-          />
         </div>
       </div>
     </Dialog>

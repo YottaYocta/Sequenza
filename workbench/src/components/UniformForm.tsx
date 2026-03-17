@@ -5,6 +5,7 @@ import {
   useContext,
   useMemo,
   type FC,
+  type ReactNode,
 } from "react";
 import type {
   Shader,
@@ -71,12 +72,18 @@ const ResetButton: FC<{ onClick: () => void }> = ({ onClick }) => (
   </button>
 );
 
-const FieldLabel: FC<{ name: string; type: string }> = ({ name, type }) => (
-  <div className="min-w-30 flex flex-col gap-0.5">
-    <span className="font-mono text-xs text-neutral-900">{name}</span>
-    <span className="font-mono text-[10px] text-neutral-500">{type}</span>
-  </div>
-);
+const FieldLabel: FC<{ name: string; type: string }> = ({ name, type }) => {
+  const { showStats } = useContext(EditorContext);
+
+  return (
+    <div className=" min-w-40 flex flex-col gap-0.5 items-end">
+      <span className="font-mono text-xs text-neutral-900">{name}</span>
+      {showStats && (
+        <span className="font-mono text-[10px] text-neutral-500">{type}</span>
+      )}
+    </div>
+  );
+};
 
 const FloatFieldComponent: FC<{
   field: Field & { type: "float" };
@@ -89,8 +96,7 @@ const FloatFieldComponent: FC<{
     handleUpdateUniformField(v);
   };
   return (
-    <div className="flex items-center py-1.5">
-      <FieldLabel name={field.name} type="float" />
+    <div className="flex items-center ">
       <Scrubber
         value={value}
         min={field.min}
@@ -120,9 +126,8 @@ const Vec2FieldComponent: FC<{
     handleUpdateUniformField(next);
   };
   return (
-    <div className="flex items-center py-1.5">
-      <FieldLabel name={field.name} type="vec2" />
-      <div className="flex gap-2 flex-wrap">
+    <div className="flex items-center ">
+      <div className="flex gap-2 flex-wrap flex-col">
         {(["x", "y"] as const).map((axis, i) => (
           <Scrubber
             key={axis}
@@ -157,8 +162,7 @@ const Vec3ColorFieldComponent: FC<{
     handleUpdateUniformField(v);
   };
   return (
-    <div className="flex items-center py-1.5">
-      <FieldLabel name={field.name} type="vec3 color" />
+    <div className="flex items-center ">
       <ColorPickerButton
         color={vec3ToHex(value)}
         onChange={(hex) => update(hexToVec3(hex))}
@@ -184,8 +188,7 @@ const Vec4ColorFieldComponent: FC<{
     handleUpdateUniformField(v);
   };
   return (
-    <div className="flex items-center py-1.5">
-      <FieldLabel name={field.name} type="vec4 color" />
+    <div className="flex items-center ">
       <ColorPickerButton
         color={vec3ToHex([r, g, b])}
         onChange={(hex) => {
@@ -223,9 +226,8 @@ const Vec3FieldComponent: FC<{
     handleUpdateUniformField(next);
   };
   return (
-    <div className="flex items-center py-1.5">
-      <FieldLabel name={field.name} type="vec3" />
-      <div className="flex gap-2 flex-wrap">
+    <div className="flex items-center ">
+      <div className="flex flex-col gap-2">
         {(["x", "y", "z"] as const).map((axis, i) => (
           <Scrubber
             key={axis}
@@ -262,9 +264,8 @@ const Vec4FieldComponent: FC<{
     handleUpdateUniformField(next);
   };
   return (
-    <div className="flex items-center gap-2 px-2 py-1.5">
-      <FieldLabel name={field.name} type="vec4" />
-      <div className="flex gap-2 flex-wrap">
+    <div className="flex items-center gap-2 px-2">
+      <div className="flex flex-col gap-2">
         {(["x", "y", "z", "w"] as const).map((axis, i) => (
           <Scrubber
             key={axis}
@@ -289,7 +290,7 @@ const Vec4FieldComponent: FC<{
 const TimeFieldComponent: FC<{
   field: Field & { type: "float"; special: "time" };
   handleUpdateUniformField: (value: number) => void;
-}> = ({ field, handleUpdateUniformField }) => {
+}> = ({ handleUpdateUniformField }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [display, setDisplay] = useState(0);
   const accumulatedRef = useRef(0);
@@ -324,8 +325,7 @@ const TimeFieldComponent: FC<{
   };
 
   return (
-    <div className="flex items-center py-1.5">
-      <FieldLabel name={field.name} type="float time" />
+    <div className="flex items-center ">
       <button
         onClick={toggle}
         className="text-xs font-mono text-neutral-500 bg-neutral-100 hover:bg-neutral-200 rounded-sm w-6 h-6 flex items-center justify-center select-none"
@@ -344,7 +344,7 @@ const TimeFieldComponent: FC<{
 const MouseFieldComponent: FC<{
   field: Field & { type: "vec2"; special: "mouse" };
   handleUpdateUniformField: (value: [number, number]) => void;
-}> = ({ field, handleUpdateUniformField }) => {
+}> = ({ handleUpdateUniformField }) => {
   const { mousePosition } = useContext(EditorContext);
   const [pos, setPos] = useState<[number, number]>([0, 0]);
   const handleRef = useRef(handleUpdateUniformField);
@@ -366,9 +366,8 @@ const MouseFieldComponent: FC<{
   }, []);
 
   return (
-    <div className="flex items-center py-1.5">
-      <FieldLabel name={field.name} type="vec2 mouse" />
-      <div className="flex gap-2">
+    <div className="flex items-center ">
+      <div className="flex gap-2 flex-col">
         {(["x", "y"] as const).map((axis, i) => (
           <div key={axis} className="flex items-center w-20 relative">
             <span className="absolute left-1 z-10 bg-neutral-200 h-4 w-4 grid place-items-center pointer-events-none rounded-sm">
@@ -390,11 +389,15 @@ const ImageUploadFieldComponent: FC<{
   field: Field & { type: "sampler2D" };
   initialValue?: TextureUniform;
   handleUpdateUniformField: (value: TextureUniform | null) => void;
-}> = ({ field, initialValue, handleUpdateUniformField }) => {
+}> = ({ initialValue, handleUpdateUniformField }) => {
   const [focused, setFocused] = useState(false);
 
-  const initVideo = initialValue?.src instanceof HTMLVideoElement ? initialValue.src : null;
-  const initStrSrc = typeof initialValue?.src === "string" ? initialValue.src : initVideo?.src ?? null;
+  const initVideo =
+    initialValue?.src instanceof HTMLVideoElement ? initialValue.src : null;
+  const initStrSrc =
+    typeof initialValue?.src === "string"
+      ? initialValue.src
+      : (initVideo?.src ?? null);
   const initIsVideo = initVideo !== null;
 
   const [mediaSrc, setMediaSrc] = useState<string | null>(initStrSrc);
@@ -404,14 +407,16 @@ const ImageUploadFieldComponent: FC<{
   );
   const [resolution, setResolution] = useState<[number, number] | null>(() => {
     if (!initVideo) return null;
-    if (initVideo.readyState >= 1) return [initVideo.videoWidth, initVideo.videoHeight];
+    if (initVideo.readyState >= 1)
+      return [initVideo.videoWidth, initVideo.videoHeight];
     return null;
   });
 
   useEffect(() => {
     if (resolution !== null) return;
     if (initVideo) {
-      const apply = () => setResolution([initVideo.videoWidth, initVideo.videoHeight]);
+      const apply = () =>
+        setResolution([initVideo.videoWidth, initVideo.videoHeight]);
       if (initVideo.readyState >= 1) apply();
       else initVideo.addEventListener("loadedmetadata", apply, { once: true });
     } else if (initStrSrc && !initIsVideo) {
@@ -436,7 +441,8 @@ const ImageUploadFieldComponent: FC<{
       vid.muted = true;
       vid.loop = true;
       vid.playsInline = true;
-      vid.onloadedmetadata = () => setResolution([vid.videoWidth, vid.videoHeight]);
+      vid.onloadedmetadata = () =>
+        setResolution([vid.videoWidth, vid.videoHeight]);
       vid.src = objectUrl;
       vid.play();
       handleUpdateUniformField({ type: "texture", src: vid });
@@ -464,8 +470,7 @@ const ImageUploadFieldComponent: FC<{
   }, [focused]);
 
   return (
-    <div className="flex items-center py-1.5">
-      <FieldLabel name={field.name} type="sampler2D texture" />
+    <div className="flex items-center ">
       <div className="flex flex-col items-start gap-2">
         <div
           tabIndex={0}
@@ -479,7 +484,14 @@ const ImageUploadFieldComponent: FC<{
         >
           {mediaSrc ? (
             isVideo ? (
-              <video src={mediaSrc} className="w-full h-full object-contain" autoPlay muted loop playsInline />
+              <video
+                src={mediaSrc}
+                className="w-full h-full object-contain"
+                autoPlay
+                muted
+                loop
+                playsInline
+              />
             ) : (
               <img src={mediaSrc} className="w-full h-full object-contain" />
             )
@@ -494,11 +506,17 @@ const ImageUploadFieldComponent: FC<{
         </div>
 
         <div className="flex flex-col items-start gap-0.5">
-          <button className="button-base" onClick={() => inputRef.current?.click()}>
+          <button
+            className="button-base"
+            onClick={() => inputRef.current?.click()}
+          >
             {mediaSrc ? "Replace" : "Upload"}
           </button>
           {fileName && (
-            <span className="text-[10px] text-neutral-400 font-mono truncate max-w-32" title={fileName}>
+            <span
+              className="text-[10px] text-neutral-400 font-mono truncate max-w-32"
+              title={fileName}
+            >
               {fileName}
             </span>
           )}
@@ -529,7 +547,7 @@ const GradientFieldComponent: FC<{
   field: Field & { type: "sampler2D"; source: "gradient" };
   initialValue?: GradientUniform;
   handleUpdateUniformField: (value: GradientUniform) => void;
-}> = ({ field, initialValue, handleUpdateUniformField }) => {
+}> = ({ initialValue, handleUpdateUniformField }) => {
   const [stops, setStops] = useState<GradientStop[]>(
     initialValue?.stops ?? DEFAULT_GRADIENT_STOPS,
   );
@@ -585,8 +603,7 @@ const GradientFieldComponent: FC<{
     setStops((prev) => prev.map((s, i) => (i === idx ? { ...s, color } : s)));
 
   return (
-    <div className="flex flex-col py-1.5 gap-3">
-      <FieldLabel name={field.name} type="sampler2D gradient" />
+    <div className="flex flex-col  gap-3">
       <div ref={rampRef} className="relative w-32 h-4 nodrag nopan">
         <canvas
           ref={canvasRef}
@@ -679,6 +696,23 @@ const buildInitialUniforms = (
   return u;
 };
 
+function fieldLabelType(field: Field): string {
+  switch (field.type) {
+    case "float":
+      return field.special === "time" ? "float time" : "float";
+    case "vec2":
+      return field.special === "mouse" ? "vec2 mouse" : "vec2";
+    case "vec3":
+      return field.color ? "vec3 color" : "vec3";
+    case "vec4":
+      return field.color ? "vec4 color" : "vec4";
+    case "sampler2D":
+      return field.source === "gradient"
+        ? "sampler2D gradient"
+        : "sampler2D texture";
+  }
+}
+
 const UniformForm: FC<UniformFormProps> = ({
   shader,
   initialUniforms,
@@ -711,7 +745,7 @@ const UniformForm: FC<UniformFormProps> = ({
   }
 
   return (
-    <div className="rounded">
+    <div className="rounded flex flex-col gap-1">
       {fields.map((field) => {
         const key = `${field.name}-${field.type}`;
         const update = (newValue: any) => {
@@ -724,43 +758,43 @@ const UniformForm: FC<UniformFormProps> = ({
           handleUpdateUniform(uniformRef.current);
         };
 
+        let control: ReactNode = null;
         switch (field.type) {
           case "float":
-            return field.special === "time" ? (
-              <TimeFieldComponent
-                key={key}
-                field={field as Field & { type: "float"; special: "time" }}
-                handleUpdateUniformField={update}
-              />
-            ) : (
-              <FloatFieldComponent
-                key={key}
-                field={field}
-                initialValue={initialUniformValues[field.name] as number}
-                handleUpdateUniformField={update}
-              />
-            );
+            control =
+              field.special === "time" ? (
+                <TimeFieldComponent
+                  field={field as Field & { type: "float"; special: "time" }}
+                  handleUpdateUniformField={update}
+                />
+              ) : (
+                <FloatFieldComponent
+                  field={field}
+                  initialValue={initialUniformValues[field.name] as number}
+                  handleUpdateUniformField={update}
+                />
+              );
+            break;
           case "vec2":
-            return field.special === "mouse" ? (
-              <MouseFieldComponent
-                key={key}
-                field={field as Field & { type: "vec2"; special: "mouse" }}
-                handleUpdateUniformField={update}
-              />
-            ) : (
-              <Vec2FieldComponent
-                key={key}
-                field={field}
-                initialValue={
-                  initialUniformValues[field.name] as [number, number]
-                }
-                handleUpdateUniformField={update}
-              />
-            );
+            control =
+              field.special === "mouse" ? (
+                <MouseFieldComponent
+                  field={field as Field & { type: "vec2"; special: "mouse" }}
+                  handleUpdateUniformField={update}
+                />
+              ) : (
+                <Vec2FieldComponent
+                  field={field}
+                  initialValue={
+                    initialUniformValues[field.name] as [number, number]
+                  }
+                  handleUpdateUniformField={update}
+                />
+              );
+            break;
           case "vec3":
-            return field.color ? (
+            control = field.color ? (
               <Vec3ColorFieldComponent
-                key={key}
                 field={field}
                 initialValue={
                   initialUniformValues[field.name] as [number, number, number]
@@ -769,7 +803,6 @@ const UniformForm: FC<UniformFormProps> = ({
               />
             ) : (
               <Vec3FieldComponent
-                key={key}
                 field={field}
                 initialValue={
                   initialUniformValues[field.name] as [number, number, number]
@@ -777,10 +810,10 @@ const UniformForm: FC<UniformFormProps> = ({
                 handleUpdateUniformField={update}
               />
             );
+            break;
           case "vec4":
-            return field.color ? (
+            control = field.color ? (
               <Vec4ColorFieldComponent
-                key={key}
                 field={field}
                 initialValue={
                   initialUniformValues[field.name] as [
@@ -794,7 +827,6 @@ const UniformForm: FC<UniformFormProps> = ({
               />
             ) : (
               <Vec4FieldComponent
-                key={key}
                 field={field}
                 initialValue={
                   initialUniformValues[field.name] as [
@@ -807,29 +839,44 @@ const UniformForm: FC<UniformFormProps> = ({
                 handleUpdateUniformField={update}
               />
             );
+            break;
           case "sampler2D":
             if (field.source === "texture")
-              return (
+              control = (
                 <ImageUploadFieldComponent
-                  key={key}
                   field={field}
-                  initialValue={initialUniformValues[field.name] as TextureUniform | undefined}
+                  initialValue={
+                    initialUniformValues[field.name] as
+                      | TextureUniform
+                      | undefined
+                  }
                   handleUpdateUniformField={updateTexture}
                 />
               );
-            if (field.source === "gradient")
-              return (
+            else if (field.source === "gradient")
+              control = (
                 <GradientFieldComponent
-                  key={key}
                   field={
                     field as Field & { type: "sampler2D"; source: "gradient" }
                   }
-                  initialValue={initialUniformValues[field.name] as GradientUniform | undefined}
+                  initialValue={
+                    initialUniformValues[field.name] as
+                      | GradientUniform
+                      | undefined
+                  }
                   handleUpdateUniformField={update}
                 />
               );
-            return null;
+            break;
         }
+
+        if (control === null) return null;
+        return (
+          <div key={key} className="flex items-center gap-4 rounded-sm mb-1">
+            <FieldLabel name={field.name} type={fieldLabelType(field)} />
+            <div className="bg-neutral-100 p-1 rounded-md">{control}</div>
+          </div>
+        );
       })}
     </div>
   );
