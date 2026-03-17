@@ -143,7 +143,7 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
               style={{ maxWidth: `${(width / height) * 24}rem` }}
             ></RendererComponent>
           </div>
-          <div className="flex gap-1 bg-neutral-100 rounded-md p-1">
+          <div className="flex gap-1 bg-neutral-100 rounded-md p-1 w-min">
             <Scrubber
               label="w"
               value={width}
