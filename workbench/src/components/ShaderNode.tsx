@@ -8,6 +8,7 @@ import { RendererComponent } from "@sequenza/lib";
 import { EditorContext } from "./EditorContext";
 import { extractFields } from "@sequenza/lib";
 import { ExportDialog } from "./ExportDialog";
+import { PreviewDialog } from "./PreviewDialog";
 
 export type ShaderNodeData = {
   shader: Shader;
@@ -29,6 +30,7 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
 
   const { width, height } = data.shader.resolution;
   const [exportOpen, setExportOpen] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const copyImage = () => {
@@ -90,16 +92,34 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
       <div className="flex flex-col justify-center items-start gap-4 ">
         <div className="flex flex-col gap-2">
           <div className="relative max-w-96 group">
-            <button
-              className={`absolute top-2 right-2 button-base ${data.paused ? "opacity-100" : "group-hover:opacity-100 opacity-0"}`}
-              onClick={() => {
-                handleUpdateNode(id, (snapshot) => {
-                  return { ...snapshot, paused: !snapshot.paused };
-                });
-              }}
-            >
-              {data.paused ? "Resume" : "Pause"}
-            </button>
+            <div className="flex absolute top-2 right-2 gap-2">
+              <button
+                className={`button-base group-hover:opacity-100 opacity-0`}
+                onClick={() => setPreviewOpen(true)}
+              >
+                Expand
+              </button>
+              <PreviewDialog
+                open={previewOpen}
+                onOpenChange={setPreviewOpen}
+                shader={data.shader}
+                patch={patches[data.shader.id]}
+                uniforms={uniforms}
+                nodeId={id}
+                handleUpdateUniforms={handleUpdateUniforms}
+                handleUpdateNode={handleUpdateNode}
+              />
+              <button
+                className={`button-base ${data.paused ? "opacity-100" : "group-hover:opacity-100 opacity-0"}`}
+                onClick={() => {
+                  handleUpdateNode(id, (snapshot) => {
+                    return { ...snapshot, paused: !snapshot.paused };
+                  });
+                }}
+              >
+                {data.paused ? "Resume" : "Pause"}
+              </button>
+            </div>
             <RendererComponent
               ref={canvasRef}
               animate={!data.paused}
