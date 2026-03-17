@@ -54,16 +54,13 @@ interface EditorProps {
   className?: string;
 }
 
-function propagateWidthHeightUpdates(nodes: Node[], edges: Edge[]): Node[] {
+function propagateWidthHeightUpdates(
+  nodes: Node[],
+  edges: Edge[],
+  startNodeId: string,
+): Node[] {
   const nodeMap = new Map(nodes.map((n) => [n.id, n]));
-
-  const inDegree = new Map<string, number>();
-  for (const node of nodes) inDegree.set(node.id, 0);
-  for (const edge of edges)
-    inDegree.set(edge.target, (inDegree.get(edge.target) ?? 0) + 1);
-
-  const queue: string[] = [];
-  for (const [id, deg] of inDegree) if (deg === 0) queue.push(id);
+  const queue: string[] = [startNodeId];
 
   while (queue.length > 0) {
     const id = queue.shift()!;
@@ -90,8 +87,7 @@ function propagateWidthHeightUpdates(nodes: Node[], edges: Edge[]): Node[] {
         },
       };
       nodeMap.set(outgoer.id, updated);
-      inDegree.set(outgoer.id, (inDegree.get(outgoer.id) ?? 1) - 1);
-      if (inDegree.get(outgoer.id) === 0) queue.push(outgoer.id);
+      queue.push(outgoer.id);
     }
   }
 
@@ -138,7 +134,7 @@ const EditorAux: FC<EditorProps> = ({
   const onConnect: OnConnect = useCallback(
     (params) => {
       const newEdges = addEdge({ ...params, type: "insert" }, edges);
-      const newNodes = propagateWidthHeightUpdates(nodes, newEdges);
+      const newNodes = propagateWidthHeightUpdates(nodes, newEdges, params.source);
 
       setEdges(newEdges);
       setNodes(newNodes);
@@ -349,7 +345,7 @@ const EditorAux: FC<EditorProps> = ({
           }
           return node;
         });
-        return propagateWidthHeightUpdates(updated, edges);
+        return propagateWidthHeightUpdates(updated, edges, nodeId);
       });
     },
     [edges],
