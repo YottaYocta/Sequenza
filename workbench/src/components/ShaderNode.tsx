@@ -1,13 +1,7 @@
 import { Position, type Node, type NodeProps } from "@xyflow/react";
 import CustomHandle from "./CustomHandle";
 import type { Shader, Uniforms } from "@sequenza/lib";
-import {
-  useContext,
-  useMemo,
-  useRef,
-  useState,
-  type RefObject,
-} from "react";
+import { useContext, useMemo, useRef, useState, type RefObject } from "react";
 import { Scrubber } from "./Scrubber";
 import UniformForm from "./UniformForm";
 import { RendererComponent } from "@sequenza/lib";
@@ -53,7 +47,6 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
     a.click();
   };
 
-
   const textureInputs = useMemo<string[]>(() => {
     return extractFields(data.shader)
       .filter((f) => f.type === "sampler2D" && f.source === "input")
@@ -96,22 +89,16 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
       </div>
       <div className="flex flex-col justify-center items-start gap-4 ">
         <div className="flex flex-col gap-2">
-          <div className="relative max-w-96">
+          <div className="relative max-w-96 group">
             <button
-              className={`absolute w-full h-full group hover:bg-white/10 ${data.paused ? "bg-white/10" : "bg-transparent hover:opacity-100 opacity-0"} transition cursor-pointer flex items-center justify-center`}
+              className={`absolute top-2 right-2 button-base ${data.paused ? "opacity-100" : "group-hover:opacity-100 opacity-0"}`}
               onClick={() => {
                 handleUpdateNode(id, (snapshot) => {
                   return { ...snapshot, paused: !snapshot.paused };
                 });
               }}
             >
-              <span
-                className={` w-min px-1 h-6 group-hover:bg-white/80 ${data.paused ? "bg-white/50" : "bg-transparent"} rounded-sm transition flex items-center justify-center`}
-              >
-                <span className={`h-3 leading-3 text-xs `}>
-                  {data.paused ? "Resume" : "Pause"}
-                </span>
-              </span>
+              {data.paused ? "Resume" : "Pause"}
             </button>
             <RendererComponent
               ref={canvasRef}
