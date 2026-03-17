@@ -1,13 +1,7 @@
 import { Position, type Node, type NodeProps } from "@xyflow/react";
 import CustomHandle from "./CustomHandle";
 import type { Shader, Uniforms } from "@sequenza/lib";
-import {
-  useContext,
-  useMemo,
-  useRef,
-  useState,
-  type RefObject,
-} from "react";
+import { useContext, useMemo, useRef, useState, type RefObject } from "react";
 import { Scrubber } from "./Scrubber";
 import UniformForm from "./UniformForm";
 import { RendererComponent } from "@sequenza/lib";
@@ -114,7 +108,10 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
               <PreviewDialog
                 open={previewOpen}
                 onOpenChange={(open) => {
-                  localStorage.setItem(`shader-preview-open-${id}`, String(open));
+                  localStorage.setItem(
+                    `shader-preview-open-${id}`,
+                    String(open),
+                  );
                   setPreviewOpen(open);
                 }}
                 shader={data.shader}

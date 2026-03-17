@@ -543,6 +543,39 @@ const DEFAULT_GRADIENT_STOPS: GradientStop[] = [
   { position: 1, color: "#ffffff" },
 ];
 
+const ResolutionFieldComponent: FC<{
+  field: Field & { type: "vec2"; special: "resolution" };
+  width: number;
+  height: number;
+  handleUpdateUniformField: (value: [number, number]) => void;
+}> = ({ width, height, handleUpdateUniformField }) => {
+  const handleRef = useRef(handleUpdateUniformField);
+  handleRef.current = handleUpdateUniformField;
+
+  useEffect(() => {
+    handleRef.current([width, height]);
+  }, [width, height]);
+
+  return (
+    <div className="flex items-center ">
+      <div className="flex gap-2 flex-col">
+        {(["w", "h"] as const).map((axis, i) => (
+          <div key={axis} className="flex items-center w-20 relative">
+            <span className="absolute left-1 z-10 bg-neutral-200 h-4 w-4 grid place-items-center pointer-events-none rounded-sm">
+              <p className="text-[11px] font-mono w-3 text-neutral-500 leading-0 -translate-y-0.5 translate-x-0.5">
+                {axis}
+              </p>
+            </span>
+            <span className="text-xs font-mono text-neutral-500 pl-5 pointer-events-none bg-neutral-100 rounded-sm w-full h-6 flex items-center justify-end px-1 tabular-nums">
+              {i === 0 ? width : height}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const GradientFieldComponent: FC<{
   field: Field & { type: "sampler2D"; source: "gradient" };
   initialValue?: GradientUniform;
@@ -701,7 +734,11 @@ function fieldLabelType(field: Field): string {
     case "float":
       return field.special === "time" ? "float time" : "float";
     case "vec2":
-      return field.special === "mouse" ? "vec2 mouse" : "vec2";
+      return field.special === "mouse"
+        ? "vec2 mouse"
+        : field.special === "resolution"
+          ? "vec2 resolution"
+          : "vec2";
     case "vec3":
       return field.color ? "vec3 color" : "vec3";
     case "vec4":
@@ -718,7 +755,7 @@ const UniformForm: FC<UniformFormProps> = ({
   initialUniforms,
   handleUpdateUniform,
 }) => {
-  const fields = useMemo(() => extractFields(shader), [shader]);
+  const fields = useMemo(() => extractFields(shader), [shader.source]);
 
   const initialUniformValues = useMemo(
     () => buildInitialUniforms(fields, initialUniforms),
@@ -780,6 +817,13 @@ const UniformForm: FC<UniformFormProps> = ({
               field.special === "mouse" ? (
                 <MouseFieldComponent
                   field={field as Field & { type: "vec2"; special: "mouse" }}
+                  handleUpdateUniformField={update}
+                />
+              ) : field.special === "resolution" ? (
+                <ResolutionFieldComponent
+                  field={field as Field & { type: "vec2"; special: "resolution" }}
+                  width={shader.resolution.width}
+                  height={shader.resolution.height}
                   handleUpdateUniformField={update}
                 />
               ) : (
