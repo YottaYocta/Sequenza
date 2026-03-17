@@ -109,8 +109,20 @@ const EditorAux: FC<EditorProps> = ({
   initialShaderPanelOpen,
   onEditorStateChange,
 }) => {
-  const [nodes, setNodes] = useState<Node[]>(initialState?.nodes ?? []);
   const [edges, setEdges] = useState<Edge[]>(initialState?.edges ?? []);
+  const [nodes, setNodes] = useState<Node[]>(() => {
+    const initialNodes = initialState?.nodes ?? [];
+    const initialEdges = initialState?.edges ?? [];
+    const targetIds = new Set(initialEdges.map((e) => e.target));
+    const rootIds = initialNodes
+      .filter((n) => !targetIds.has(n.id))
+      .map((n) => n.id);
+    let result = initialNodes;
+    for (const rootId of rootIds) {
+      result = propagateWidthHeightUpdates(result, initialEdges, rootId);
+    }
+    return result;
+  });
 
   const onNodesChange: OnNodesChange = useCallback(
     (changes) =>
