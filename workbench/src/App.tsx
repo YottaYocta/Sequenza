@@ -113,10 +113,6 @@ function App() {
         else return true;
       });
 
-      localStorage.setItem("sequenza-nodes", JSON.stringify(nodes));
-      localStorage.setItem("sequenza-edges", JSON.stringify(edges));
-      localStorage.setItem("sequenza-uniforms", JSON.stringify(uniforms));
-
       if (nodes !== null && edges !== null && uniforms !== null)
         return { nodes, edges, uniforms };
     } catch (e) {
