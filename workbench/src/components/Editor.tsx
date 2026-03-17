@@ -421,7 +421,9 @@ const EditorAux: FC<EditorProps> = ({
   };
 
   const [showStats, setShowStats] = useState(initialShowStats ?? false);
-  const [shaderPanelOpen, setShaderPanelOpen] = useState(initialShaderPanelOpen ?? true);
+  const [shaderPanelOpen, setShaderPanelOpen] = useState(
+    initialShaderPanelOpen ?? true,
+  );
 
   useEffect(() => {
     onEditorStateChange?.({ showStats, shaderPanelOpen });
@@ -508,15 +510,17 @@ const EditorAux: FC<EditorProps> = ({
                 </div>
                 {shaderPanelOpen && (
                   <div className="flex flex-col gap-1 px-2 pb-2">
-                    {shaders.map((shader) => (
-                      <button
-                        key={shader.id}
-                        className="text-xs flex justify-start p-1 rounded-sm hover:bg-neutral-100 cursor-pointer text-neutral-500"
-                        onClick={() => handleAddShader(shader)}
-                      >
-                        {shader.id}
-                      </button>
-                    ))}
+                    {shaders
+                      .sort((a, b) => a.name.localeCompare(b.name))
+                      .map((shader) => (
+                        <button
+                          key={shader.id}
+                          className="text-xs flex justify-start p-1 rounded-sm hover:bg-neutral-100 cursor-pointer text-neutral-500"
+                          onClick={() => handleAddShader(shader)}
+                        >
+                          {shader.id}
+                        </button>
+                      ))}
                   </div>
                 )}
               </div>
