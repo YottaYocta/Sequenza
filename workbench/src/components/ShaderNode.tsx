@@ -3,7 +3,6 @@ import CustomHandle from "./CustomHandle";
 import type { Shader, Uniforms } from "@sequenza/lib";
 import {
   useContext,
-  useEffect,
   useMemo,
   useRef,
   useState,
@@ -19,7 +18,6 @@ import { ExportDialog } from "./ExportDialog";
 export type ShaderNodeData = {
   shader: Shader;
   paused: boolean;
-  resolution: [number, number];
   uniforms: RefObject<Record<string, Uniforms>>;
 };
 
@@ -35,8 +33,7 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
 
   if (!patches || patches[data.shader.id] === undefined) return null;
 
-  const [width, setWidth] = useState(data.resolution[0]);
-  const [height, setHeight] = useState(data.resolution[1]);
+  const { width, height } = data.shader.resolution;
   const [exportOpen, setExportOpen] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -56,21 +53,6 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
     a.click();
   };
 
-  useEffect(() => {
-    handleUpdateNode(id, (snapshot) => {
-      return {
-        ...snapshot,
-        resolution: [width, height],
-        shader: {
-          ...snapshot.shader,
-          resolution: {
-            width,
-            height,
-          },
-        },
-      };
-    });
-  }, [width, height]);
 
   const textureInputs = useMemo<string[]>(() => {
     return extractFields(data.shader)
@@ -148,22 +130,29 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
               value={width}
               min={1}
               step={1}
-              onChange={setWidth}
+              onChange={(w) =>
+                handleUpdateNode(id, (s) => ({
+                  ...s,
+                  shader: { ...s.shader, resolution: { width: w, height } },
+                }))
+              }
             />
             <Scrubber
               label="h"
               value={height}
               min={1}
               step={1}
-              onChange={setHeight}
+              onChange={(h) =>
+                handleUpdateNode(id, (s) => ({
+                  ...s,
+                  shader: { ...s.shader, resolution: { width, height: h } },
+                }))
+              }
             />
           </div>
         </div>
         <div className="flex gap-2">
-          <button
-            className="button-base"
-            onClick={() => setExportOpen(true)}
-          >
+          <button className="button-base" onClick={() => setExportOpen(true)}>
             Export
           </button>
           <ExportDialog
@@ -172,16 +161,10 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
             open={exportOpen}
             onOpenChange={setExportOpen}
           />
-          <button
-            className="button-base"
-            onClick={copyImage}
-          >
+          <button className="button-base" onClick={copyImage}>
             Copy
           </button>
-          <button
-            className="button-base"
-            onClick={saveImage}
-          >
+          <button className="button-base" onClick={saveImage}>
             Save
           </button>
         </div>

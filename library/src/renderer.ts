@@ -7,6 +7,7 @@ export type Shader = {
   source: string;
   resolution: { width: number; height: number };
 };
+
 export type TextureUniform = {
   type: "texture";
   src:

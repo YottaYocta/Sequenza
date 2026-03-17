@@ -54,6 +54,50 @@ interface EditorProps {
   className?: string;
 }
 
+function propagateWidthHeightUpdates(nodes: Node[], edges: Edge[]): Node[] {
+  const nodeMap = new Map(nodes.map((n) => [n.id, n]));
+
+  const inDegree = new Map<string, number>();
+  for (const node of nodes) inDegree.set(node.id, 0);
+  for (const edge of edges)
+    inDegree.set(edge.target, (inDegree.get(edge.target) ?? 0) + 1);
+
+  const queue: string[] = [];
+  for (const [id, deg] of inDegree) if (deg === 0) queue.push(id);
+
+  while (queue.length > 0) {
+    const id = queue.shift()!;
+    const node = nodeMap.get(id);
+    if (!node || node.type !== "shader") continue;
+    const shaderNode = node as ShaderNode;
+    const { width, height } = shaderNode.data.shader.resolution;
+
+    const outgoers = getOutgoers(
+      node,
+      [...nodeMap.values()],
+      edges,
+    ) as ShaderNode[];
+
+    for (const outgoer of outgoers) {
+      const updated: ShaderNode = {
+        ...outgoer,
+        data: {
+          ...outgoer.data,
+          shader: {
+            ...outgoer.data.shader,
+            resolution: { width: width, height: height },
+          },
+        },
+      };
+      nodeMap.set(outgoer.id, updated);
+      inDegree.set(outgoer.id, (inDegree.get(outgoer.id) ?? 1) - 1);
+      if (inDegree.get(outgoer.id) === 0) queue.push(outgoer.id);
+    }
+  }
+
+  return [...nodeMap.values()];
+}
+
 const EditorAux: FC<EditorProps> = ({
   shaders,
   initialState,
@@ -91,9 +135,16 @@ const EditorAux: FC<EditorProps> = ({
     [nodes, edges],
   );
 
-  const onConnect: OnConnect = useCallback((params) => {
-    setEdges((snapshot) => addEdge({ ...params, type: "insert" }, snapshot));
-  }, []);
+  const onConnect: OnConnect = useCallback(
+    (params) => {
+      const newEdges = addEdge({ ...params, type: "insert" }, edges);
+      const newNodes = propagateWidthHeightUpdates(nodes, newEdges);
+
+      setEdges(newEdges);
+      setNodes(newNodes);
+    },
+    [edges, nodes],
+  );
 
   const { screenToFlowPosition } = useReactFlow();
 
@@ -152,7 +203,6 @@ const EditorAux: FC<EditorProps> = ({
       data: {
         shader: newShader,
         uniforms: uniformRef,
-        resolution: [100, 100],
         paused: false,
       },
       type: "shader",
@@ -291,17 +341,18 @@ const EditorAux: FC<EditorProps> = ({
       nodeId: string,
       updateData: (snapshot: ShaderNodeData) => ShaderNodeData,
     ) => {
-      setNodes((snapshot) =>
-        snapshot.map((node) => {
+      setNodes((snapshot) => {
+        const updated = snapshot.map((node) => {
           if (node.id === nodeId && node.type === "shader") {
             const shaderNode = node as ShaderNode;
             return { ...shaderNode, data: updateData(shaderNode.data) };
           }
           return node;
-        }),
-      );
+        });
+        return propagateWidthHeightUpdates(updated, edges);
+      });
     },
-    [],
+    [edges],
   );
 
   const timeRef = useRef<number>(0);

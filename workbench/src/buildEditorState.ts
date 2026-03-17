@@ -21,10 +21,6 @@ export function buildEditorState(
     data: {
       shader,
       uniforms: uniformRef,
-      resolution: [shader.resolution.width, shader.resolution.height] as [
-        number,
-        number,
-      ],
       paused: false,
     },
   }));
