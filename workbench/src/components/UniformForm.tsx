@@ -409,10 +409,16 @@ const ImageUploadFieldComponent: FC<{
   });
 
   useEffect(() => {
-    if (!initVideo || resolution !== null) return;
-    const apply = () => setResolution([initVideo.videoWidth, initVideo.videoHeight]);
-    if (initVideo.readyState >= 1) apply();
-    else initVideo.addEventListener("loadedmetadata", apply, { once: true });
+    if (resolution !== null) return;
+    if (initVideo) {
+      const apply = () => setResolution([initVideo.videoWidth, initVideo.videoHeight]);
+      if (initVideo.readyState >= 1) apply();
+      else initVideo.addEventListener("loadedmetadata", apply, { once: true });
+    } else if (initStrSrc && !initIsVideo) {
+      const img = new Image();
+      img.onload = () => setResolution([img.naturalWidth, img.naturalHeight]);
+      img.src = initStrSrc;
+    }
   }, []);
   const inputRef = useRef<HTMLInputElement>(null);
 
