@@ -14,7 +14,7 @@ export const Dialog: FC<DialogProps> = ({
   handleOpenChange,
 }) => {
   const dialogRef = useRef<HTMLDialogElement | null>(null);
-  const [localOpen, setOpen] = useState<boolean>(false);
+  const [localOpen, setOpen] = useState<boolean>(open);
 
   useEffect(() => {
     setOpen(open ? true : false);

@@ -1,7 +1,13 @@
 import { Position, type Node, type NodeProps } from "@xyflow/react";
 import CustomHandle from "./CustomHandle";
 import type { Shader, Uniforms } from "@sequenza/lib";
-import { useContext, useMemo, useRef, useState, type RefObject } from "react";
+import {
+  useContext,
+  useMemo,
+  useRef,
+  useState,
+  type RefObject,
+} from "react";
 import { Scrubber } from "./Scrubber";
 import UniformForm from "./UniformForm";
 import { RendererComponent } from "@sequenza/lib";
@@ -30,7 +36,10 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
 
   const { width, height } = data.shader.resolution;
   const [exportOpen, setExportOpen] = useState(false);
-  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(
+    () => localStorage.getItem(`shader-preview-open-${id}`) === "true",
+  );
+
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const copyImage = () => {
@@ -95,13 +104,19 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
             <div className="flex absolute top-2 right-2 gap-2">
               <button
                 className={`button-base group-hover:opacity-100 opacity-0`}
-                onClick={() => setPreviewOpen(true)}
+                onClick={() => {
+                  localStorage.setItem(`shader-preview-open-${id}`, "true");
+                  setPreviewOpen(true);
+                }}
               >
                 Expand
               </button>
               <PreviewDialog
                 open={previewOpen}
-                onOpenChange={setPreviewOpen}
+                onOpenChange={(open) => {
+                  localStorage.setItem(`shader-preview-open-${id}`, String(open));
+                  setPreviewOpen(open);
+                }}
                 shader={data.shader}
                 patch={patches[data.shader.id]}
                 uniforms={uniforms}
