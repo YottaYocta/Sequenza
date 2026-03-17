@@ -166,7 +166,16 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-[repeat(2,14rem)] lg:grid-cols-[repeat(3,14rem)] gap-x-4 gap-y-2">
-            {[Dither1, Hatching, HeatMap, Dots1].map((Component, i) => (
+            {[
+              Dither1,
+              Hatching,
+              HeatMap,
+              Dots1,
+              Dither1,
+              Hatching,
+              HeatMap,
+              Dots1,
+            ].map((Component, i) => (
               <div key={i} className="w-56 h-28 rounded-sm overflow-clip">
                 <Component
                   source={
