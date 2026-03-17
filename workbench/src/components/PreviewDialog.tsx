@@ -1,4 +1,4 @@
-import { useRef, useState, type FC, type RefObject } from "react";
+import { useEffect, useRef, useState, type FC, type RefObject } from "react";
 import { RendererComponent } from "@sequenza/lib";
 import type { Patch, Shader, Uniforms } from "@sequenza/lib";
 import { Dialog } from "./Dialog";
@@ -32,8 +32,21 @@ export const PreviewDialog: FC<PreviewDialogProps> = ({
   handleUpdateNode,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const [exportOpen, setExportOpen] = useState(false);
+  const [containerSize, setContainerSize] = useState({ w: 1, h: 1 });
   const { width, height } = shader.resolution;
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver(([entry]) => {
+      const { width: w, height: h } = entry.contentRect;
+      setContainerSize({ w, h });
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   const copyImage = () => {
     canvasRef.current?.toBlob((blob) => {
@@ -127,7 +140,10 @@ export const PreviewDialog: FC<PreviewDialogProps> = ({
             />
           </div>
         </div>
-        <div className="flex bg-neutral-50 rounded overflow-hidden w-1/2 shrink-0 items-center justify-center">
+        <div
+          ref={containerRef}
+          className="flex bg-neutral-50 rounded overflow-hidden w-1/2  items-center justify-center w-full"
+        >
           <RendererComponent
             ref={canvasRef}
             animate
@@ -135,7 +151,11 @@ export const PreviewDialog: FC<PreviewDialogProps> = ({
             height={height}
             patch={patch}
             uniforms={uniforms}
-            className={`${width > height ? "w-full" : "h-full"}`}
+            className={
+              width / height > containerSize.w / containerSize.h
+                ? "w-full"
+                : "h-full"
+            }
           />
         </div>
       </div>
