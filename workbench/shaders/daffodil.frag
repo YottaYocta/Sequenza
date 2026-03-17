@@ -3,19 +3,18 @@
 precision highp float;
 
 
-uniform float uTime; // time
-uniform vec2 uResolution; // [100, 100]
-uniform vec3 uNotes;
-uniform vec2 uMouse;  //mouse
-uniform float uMouseDown; 
+uniform float u_time; // time
+uniform vec2 u_resolution; // resolution
+uniform vec3 u_notes;
+uniform vec2 u_mouse;  //mouse
 
-uniform float uFlowerCount; // [1, 10, 5]
-uniform float uFlowerRotation; // [-6, 10, 5]
+uniform float u_flower_count; // [1, 10, 5]
+uniform float u_flower_rotation; // [-6, 10, 5]
 
-uniform float uRingRadius; // [-1, 10, 2]
-uniform float uRotationOffset; // [1, 10, 5]
-uniform float uMouseRotationStrength; // [0, 2, 0.1]
-uniform float uMouseScaleFactor; // [0, 1, 0.1]
+uniform float u_ring_radius; // [-1, 10, 2]
+uniform float u_rotation_offset; // [1, 10, 5]
+uniform float u_mouse_rotation; // [0, 2, 0.1]
+uniform float u_mouse_scale_factor; // [0, 1, 0.1]
 uniform vec3 uOrigin; // [0, 0.5, -20]
 
 in vec2 vUv;
@@ -89,15 +88,15 @@ float petals(vec3 p)
         float dist_from_center = length(rp.xz) * 7.0;
 
         // adds dip near stem
-        rp.y -= 2.0 / pow(1.3 - (1.0-uMouse.y * uMouseScaleFactor) / 10.0, dist_from_center + abs(rp.x) * 5.0);
+        rp.y -= 2.0 / pow(1.3 - (1.0-u_mouse.y * u_mouse_scale_factor) / 10.0, dist_from_center + abs(rp.x) * 5.0);
 
         // adds tilt between leaves
         rp.y += smoothstep(-0.9, 0.9, rp.x / 4.0) + 1.0;
 
         // pushes petal tip out
-        rp.z += 1.0/(abs(rp.x) + 1.5) + 0.5 + (1.0-uMouse.y * uMouseScaleFactor) / 2.0;
+        rp.z += 1.0/(abs(rp.x) + 1.5) + 0.5 + (1.0-u_mouse.y * u_mouse_scale_factor) / 2.0;
 
-        float petal = sdEllipsoid(rp, vec3(0.1 + (1.0-uMouse.y * uMouseScaleFactor) / 10.0, 0.02, 0.2 + (1.0-uMouse.y * uMouseScaleFactor) / 10.0));
+        float petal = sdEllipsoid(rp, vec3(0.1 + (1.0-u_mouse.y * u_mouse_scale_factor) / 10.0, 0.02, 0.2 + (1.0-u_mouse.y * u_mouse_scale_factor) / 10.0));
         petals = smin(petals, petal, 0.1);
     }
     return petals;
@@ -108,10 +107,10 @@ float trumpet(vec3 p)
     float dist_from_center = length(p.xz);
     vec3 p_base = p;
     p_base.y +=1.0;
-    float trumpetbase = sdCappedCone(p_base, 0.6 + (1.0-uMouse.y * uMouseScaleFactor), 0.3, 0.1);
+    float trumpetbase = sdCappedCone(p_base, 0.6 + (1.0-u_mouse.y * u_mouse_scale_factor), 0.3, 0.1);
 
     vec3 p_flare = p;
-    p_flare.y -= 1.0 / (dist_from_center + 0.4) - 3.2 - (1.0-uMouse.y * uMouseScaleFactor);
+    p_flare.y -= 1.0 / (dist_from_center + 0.4) - 3.2 - (1.0-u_mouse.y * u_mouse_scale_factor);
 
     float r = length(p_flare.xz);
     float angle = atan(p_flare.z, p_flare.x);
@@ -123,8 +122,8 @@ float trumpet(vec3 p)
     p_flare.y += hyper * sin(angle * (angle - 1.6) * 2.0);
 
 
-    float flare = sdEllipsoid(p_flare, vec3(0.09 + (1.0-uMouse.y * uMouseScaleFactor) / 20.0, 0.01, 0.09 + (1.0-uMouse.y * uMouseScaleFactor) / 20.0));
-    float trumpet = smin(trumpetbase, flare, 0.6 + (1.0-uMouse.y * uMouseScaleFactor) / 2.0);
+    float flare = sdEllipsoid(p_flare, vec3(0.09 + (1.0-u_mouse.y * u_mouse_scale_factor) / 20.0, 0.01, 0.09 + (1.0-u_mouse.y * u_mouse_scale_factor) / 20.0));
+    float trumpet = smin(trumpetbase, flare, 0.6 + (1.0-u_mouse.y * u_mouse_scale_factor) / 2.0);
 
     return trumpet;
 }
@@ -146,15 +145,15 @@ float leaves(vec3 p) {
         rp.y += smoothstep(0.0,4.0, dist_from_center) * 20.0 - 15.0; 
         rp.z += angle / 4.0;
 
-        float leaf = sdEllipsoid(rp, vec3(0.5, 2.0, 0.5 + (1.0-uMouse.y * uMouseScaleFactor) / 2.0));
-        leaves = smin(leaves, leaf, (1.0-uMouse.y * uMouseScaleFactor));
+        float leaf = sdEllipsoid(rp, vec3(0.5, 2.0, 0.5 + (1.0-u_mouse.y * u_mouse_scale_factor) / 2.0));
+        leaves = smin(leaves, leaf, (1.0-u_mouse.y * u_mouse_scale_factor));
     }
     return leaves;
 }
 
 float single_flower(vec3 p)
 {
-    float scaledTime = uTime / 2.0;
+    float scaledTime = u_time / 2.0;
 
     float bendStart = 7.0;  
     float bendEnd   = 0.0;  
@@ -163,12 +162,12 @@ float single_flower(vec3 p)
 
     h = h * h;
 
-    float maxBend = sin(uTime / 2.0) / 10.0 + 0.6 - (gain(uNotes.x - uNotes.z / 2.0, 2.0)-0.5) / 5.0; 
+    float maxBend = sin(u_time / 2.0) / 10.0 + 0.6 - (gain(u_notes.x - u_notes.z / 2.0, 2.0)-0.5) / 5.0; 
 
     float bendAngle = h * maxBend;
 
     //p = rotateAroundAxis(p, vec3(1.0, 0.0, 0.0), 0.2);
-    p = rotateAroundAxis(p, vec3(0.0, 1.0, 0.0), uFlowerRotation);
+    p = rotateAroundAxis(p, vec3(0.0, 1.0, 0.0), u_flower_rotation);
 
     p = rotateAroundAxis(p, vec3(1.0, 0.0, 0.0), -bendAngle);
 
@@ -187,13 +186,13 @@ float single_flower(vec3 p)
 
 float sceneSDF(vec3 p)
 {
-    float radius = uRingRadius + (1.0-uMouse.y * uMouseScaleFactor) * 3.0;           
+    float radius = u_ring_radius + (1.0-u_mouse.y * u_mouse_scale_factor) * 3.0;           
 
     p = rotateAroundAxis(p, vec3(1.0, 0.0, 0.0), -0.5);
-    float angle = atan(p.z, p.x) +.4 + (sin(uTime / 4.0) ) / 10.0 - (gain(uMouse.x, 1.2) - 0.5) * uMouseRotationStrength + uRotationOffset;
+    float angle = atan(p.z, p.x) +.4 + (sin(u_time / 4.0) ) / 10.0 - (gain(u_mouse.x, 1.2) - 0.5) * u_mouse_rotation + u_rotation_offset;
     float r = length(p.xz);
 
-    float sectorAngle = 6.28318 / uFlowerCount;
+    float sectorAngle = 6.28318 / u_flower_count;
 
     float id = floor((angle + 3.14159) / sectorAngle);
 
@@ -221,13 +220,13 @@ float sceneSDF(vec3 p)
 void main()
 {
     vec2 uv = vec2(vUv.x * 2.0 - 1.0, (1.0 -vUv.y) * 2.0 - 1.0);
-    float aspect = uResolution.x / uResolution.y;
+    float aspect = u_resolution.x / u_resolution.y;
     vec2 resolution = vec2(uv.x * aspect, uv.y) * 0.5;
 
-    vec3 ray_origin = vec3(0, (1.0-uMouse.y * uMouseScaleFactor) * 1.0, (1.0-uMouse.y * uMouseScaleFactor) * 7.0) + uOrigin;
+    vec3 ray_origin = vec3(0, (1.0-u_mouse.y * u_mouse_scale_factor) * 1.0, (1.0-u_mouse.y * u_mouse_scale_factor) * 7.0) + uOrigin;
     vec3 ray_direction = normalize(vec3(resolution, 1.0));
 
-    float MAX_DIST = 20.0 + 10.0 * (1.0-uMouse.y * uMouseScaleFactor);
+    float MAX_DIST = 20.0 + 10.0 * (1.0-u_mouse.y * u_mouse_scale_factor);
     const int MAX_STEPS = 100;
     float dist_traveled = 0.0;
     int steps = 0;
@@ -259,8 +258,8 @@ void main()
         mix(
             vec3(
                 //0.0,
-                //pow(max(0.0,1.0 - float(min_dist)), 2.0 * uNotes.x + 1.0),
-                pow(max(0.0,1.0 - float(min_dist)), 0.5 * uNotes.x + 1.0) * 1.2
+                //pow(max(0.0,1.0 - float(min_dist)), 2.0 * u_notes.x + 1.0),
+                pow(max(0.0,1.0 - float(min_dist)), 0.5 * u_notes.x + 1.0) * 1.2
                 //pow(1.0 - float(steps) / float(MAX_STEPS), 2.0),
                 //1.0
                 ), 
@@ -269,7 +268,7 @@ void main()
                 //pow(1.0 - float(steps) / float(MAX_STEPS), 2.0)
                 //1.0
                 ), 
-                pow(min(1.0,(1.0 - uNotes.x - uNotes.z + uNotes.y) + 0.4), 2.0)
+                pow(min(1.0,(1.0 - u_notes.x - u_notes.z + u_notes.y) + 0.4), 2.0)
             //float(intersected)
         ), 
         1.0
