@@ -134,7 +134,11 @@ const EditorAux: FC<EditorProps> = ({
   const onConnect: OnConnect = useCallback(
     (params) => {
       const newEdges = addEdge({ ...params, type: "insert" }, edges);
-      const newNodes = propagateWidthHeightUpdates(nodes, newEdges, params.source);
+      const newNodes = propagateWidthHeightUpdates(
+        nodes,
+        newEdges,
+        params.source,
+      );
 
       setEdges(newEdges);
       setNodes(newNodes);
@@ -171,7 +175,6 @@ const EditorAux: FC<EditorProps> = ({
   );
 
   useEffect(() => {
-    console.log(initialState);
     if (initialState?.uniforms) uniformRef.current = initialState.uniforms;
   }, [initialState]);
 

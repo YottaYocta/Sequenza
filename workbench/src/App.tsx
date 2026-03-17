@@ -9,7 +9,11 @@ import "@xyflow/react/dist/style.css";
 import { Editor } from "./components/Editor";
 import type { Edge, Node } from "@xyflow/react";
 import type { ShaderNode } from "./components/ShaderNode";
-import { extractFields } from "@sequenza/lib";
+import {
+  extractFields,
+  typeMatchesField,
+  getFieldDefault,
+} from "@sequenza/lib";
 
 /**
  * a single node type; shaders
@@ -86,10 +90,35 @@ function App() {
               id: shaderNode.data.shader.id,
             };
             shaderNode.data.shader = newShader;
-
-            uniforms[newShader.id] = {};
+            console.log(shaderNode.data.shader.id);
           }
         }
+      }
+
+      const existingNodeIds = new Set(nodes.map((n) => n.id));
+      for (const key of Object.keys(uniforms)) {
+        if (!existingNodeIds.has(key)) delete uniforms[key];
+      }
+
+      for (const node of nodes) {
+        if (node.type !== "shader") continue;
+        const shaderNode = node as ShaderNode;
+        const nodeUniforms = uniforms[shaderNode.id];
+        if (!nodeUniforms) continue;
+
+        const fields = extractFields(shaderNode.data.shader);
+        const cleaned: Uniforms = {};
+        for (const field of fields) {
+          if (field.type === "sampler2D" && field.source === "input") continue;
+          const value = nodeUniforms[field.name];
+          if (value !== undefined && typeMatchesField(value, field)) {
+            cleaned[field.name] = value;
+          } else {
+            const def = getFieldDefault(field);
+            if (def !== undefined) cleaned[field.name] = def;
+          }
+        }
+        uniforms[shaderNode.id] = cleaned;
       }
 
       edges = edges.filter((edge) => {
@@ -121,18 +150,25 @@ function App() {
     return undefined;
   }, [shaderMap]);
 
+  const shadersReady = Object.keys(shaderMap).length > 0;
+
   return (
     <main className="">
       <div className="w-full min-h-screen h-screen ">
-        <Editor
-          shaders={[...Object.values(shaderMap)]}
-          initialState={initialState}
-          handleSave={({ nodes, edges, uniforms }) => {
-            localStorage.setItem("sequenza-nodes", JSON.stringify(nodes));
-            localStorage.setItem("sequenza-edges", JSON.stringify(edges));
-            localStorage.setItem("sequenza-uniforms", JSON.stringify(uniforms));
-          }}
-        ></Editor>
+        {shadersReady && (
+          <Editor
+            shaders={[...Object.values(shaderMap)]}
+            initialState={initialState}
+            handleSave={({ nodes, edges, uniforms }) => {
+              localStorage.setItem("sequenza-nodes", JSON.stringify(nodes));
+              localStorage.setItem("sequenza-edges", JSON.stringify(edges));
+              localStorage.setItem(
+                "sequenza-uniforms",
+                JSON.stringify(uniforms),
+              );
+            }}
+          ></Editor>
+        )}
       </div>
     </main>
   );

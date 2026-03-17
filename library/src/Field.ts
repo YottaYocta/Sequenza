@@ -230,3 +230,32 @@ export const extractFields = (shader: Shader): Field[] => {
 
   return fields;
 };
+
+export function typeMatchesField(value: unknown, field: Field): boolean {
+  switch (field.type) {
+    case "float":
+      return typeof value === "number";
+    case "vec2":
+      return Array.isArray(value) && value.length === 2;
+    case "vec3":
+      return Array.isArray(value) && value.length === 3;
+    case "vec4":
+      return Array.isArray(value) && value.length === 4;
+    case "sampler2D":
+      if (field.source === "gradient")
+        return (value as any)?.type === "gradient";
+      if (field.source === "texture")
+        return (value as any)?.type === "texture";
+      return false;
+  }
+}
+
+export function getFieldDefault(
+  field: Field,
+): number | number[] | undefined {
+  if (field.type === "float") return field.default;
+  if (field.type === "vec2") return field.default;
+  if (field.type === "vec3") return field.default;
+  if (field.type === "vec4") return field.default;
+  return undefined;
+}
