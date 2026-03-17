@@ -52,6 +52,12 @@ interface EditorProps {
     uniforms: Record<string, Uniforms>;
   }) => void;
   className?: string;
+  initialShowStats?: boolean;
+  initialShaderPanelOpen?: boolean;
+  onEditorStateChange?: (state: {
+    showStats: boolean;
+    shaderPanelOpen: boolean;
+  }) => void;
 }
 
 function propagateWidthHeightUpdates(
@@ -99,6 +105,9 @@ const EditorAux: FC<EditorProps> = ({
   initialState,
   handleSave,
   className,
+  initialShowStats,
+  initialShaderPanelOpen,
+  onEditorStateChange,
 }) => {
   const [nodes, setNodes] = useState<Node[]>(initialState?.nodes ?? []);
   const [edges, setEdges] = useState<Edge[]>(initialState?.edges ?? []);
@@ -411,8 +420,12 @@ const EditorAux: FC<EditorProps> = ({
     }
   };
 
-  const [showStats, setShowStats] = useState(false);
-  const [shaderPanelOpen, setShaderPanelOpen] = useState(true);
+  const [showStats, setShowStats] = useState(initialShowStats ?? false);
+  const [shaderPanelOpen, setShaderPanelOpen] = useState(initialShaderPanelOpen ?? true);
+
+  useEffect(() => {
+    onEditorStateChange?.({ showStats, shaderPanelOpen });
+  }, [showStats, shaderPanelOpen]);
 
   return (
     <div className={`w-full h-full ${className}`}>

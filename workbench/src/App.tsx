@@ -159,6 +159,22 @@ function App() {
           <Editor
             shaders={[...Object.values(shaderMap)]}
             initialState={initialState}
+            initialShowStats={
+              localStorage.getItem("sequenza-show-stats") === "true"
+            }
+            initialShaderPanelOpen={
+              localStorage.getItem("sequenza-shader-panel-open") !== "false"
+            }
+            onEditorStateChange={({ showStats, shaderPanelOpen }) => {
+              localStorage.setItem(
+                "sequenza-show-stats",
+                String(showStats),
+              );
+              localStorage.setItem(
+                "sequenza-shader-panel-open",
+                String(shaderPanelOpen),
+              );
+            }}
             handleSave={({ nodes, edges, uniforms }) => {
               localStorage.setItem("sequenza-nodes", JSON.stringify(nodes));
               localStorage.setItem("sequenza-edges", JSON.stringify(edges));
