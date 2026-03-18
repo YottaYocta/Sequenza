@@ -7,7 +7,6 @@ import UniformForm from "./UniformForm";
 import { RendererComponent } from "@sequenza/lib";
 import { EditorContext } from "./EditorContext";
 import { extractFields } from "@sequenza/lib";
-import { ExportDialog } from "./ExportDialog";
 import { PreviewDialog } from "./PreviewDialog";
 
 export type ShaderNodeData = {
@@ -24,6 +23,7 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
     handleUpdateUniforms,
     handleUpdateNode,
     showStats,
+    setOpenExportNodeId,
   } = useContext(EditorContext);
 
   if (!patches || patches[data.shader.id] === undefined) return null;
@@ -35,18 +35,21 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
     shaderName: string;
   } | null>(null);
 
-  const [exportOpen, setExportOpen] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(
     () => localStorage.getItem(`shader-preview-open-${id}`) === "true",
   );
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [imageCopied, setImageCopied] = useState<"idle" | "done">("idle");
+  const [errorCopied, setErrorCopied] = useState<"idle" | "done">("idle");
 
   const copyImage = () => {
     canvasRef.current?.toBlob((blob) => {
       if (blob)
         navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
     });
+    setImageCopied("done");
+    setTimeout(() => setImageCopied("idle"), 1800);
   };
 
   const saveImage = () => {
@@ -200,17 +203,14 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
             </div>
           </div>
           <div className="flex gap-1">
-            <button className="button-base" onClick={() => setExportOpen(true)}>
+            <button
+              className="button-base"
+              onClick={() => setOpenExportNodeId(id)}
+            >
               Export
             </button>
-            <ExportDialog
-              uniforms={uniforms.current}
-              patch={patches[data.shader.id]}
-              open={exportOpen}
-              onOpenChange={setExportOpen}
-            />
             <button className="button-base" onClick={copyImage}>
-              Copy
+              {imageCopied === "done" ? "Copied!" : "Copy"}
             </button>
             <button className="button-base" onClick={saveImage}>
               Save
@@ -228,9 +228,13 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
           </pre>
           <button
             className="self-start text-xs px-2 py-1 rounded border border-red-200 bg-white text-red-600 hover:bg-red-50 cursor-pointer"
-            onClick={() => navigator.clipboard.writeText(shaderError.message)}
+            onClick={() => {
+              navigator.clipboard.writeText(shaderError.message);
+              setErrorCopied("done");
+              setTimeout(() => setErrorCopied("idle"), 1800);
+            }}
           >
-            Copy error
+            {errorCopied === "done" ? "Copied!" : "Copy error"}
           </button>
         </div>
       )}

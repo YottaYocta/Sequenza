@@ -38,6 +38,7 @@ import { EditorContext } from "./EditorContext";
 import CustomEdge from "./CustomEdge";
 import ConnectionLine from "./ConnectionLine";
 import { Dialog } from "./Dialog";
+import { ExportDialog } from "./ExportDialog";
 
 interface EditorProps {
   shaders: Shader[];
@@ -436,6 +437,7 @@ const EditorAux: FC<EditorProps> = ({
   const [shaderPanelOpen, setShaderPanelOpen] = useState(
     initialShaderPanelOpen ?? true,
   );
+  const [openExportNodeId, setOpenExportNodeId] = useState<string | null>(null);
 
   useEffect(() => {
     onEditorStateChange?.({ showStats, shaderPanelOpen });
@@ -450,6 +452,8 @@ const EditorAux: FC<EditorProps> = ({
           shaders,
           patches,
           showStats,
+          openExportNodeId,
+          setOpenExportNodeId,
           uniforms: uniformRef,
           handleUpdateUniforms,
           handleUpdateNode,
@@ -547,6 +551,16 @@ const EditorAux: FC<EditorProps> = ({
           )}
         </ReactFlow>
       </EditorContext.Provider>
+      {openExportNodeId !== null && patches[openExportNodeId] && (
+        <ExportDialog
+          uniforms={uniformRef.current}
+          patch={patches[openExportNodeId]}
+          open={true}
+          onOpenChange={(open) => {
+            if (!open) setOpenExportNodeId(null);
+          }}
+        />
+      )}
       <Dialog
         open={dropLocation === null ? false : true}
         handleOpenChange={(open) => {
