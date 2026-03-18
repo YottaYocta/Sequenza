@@ -165,6 +165,9 @@ function App() {
             initialShaderPanelOpen={
               localStorage.getItem("sequenza-shader-panel-open") !== "false"
             }
+            initialOpenPreviewNodeId={
+              localStorage.getItem("sequenza-open-preview-node") || null
+            }
             onEditorStateChange={({ showStats, shaderPanelOpen }) => {
               localStorage.setItem(
                 "sequenza-show-stats",
@@ -174,6 +177,13 @@ function App() {
                 "sequenza-shader-panel-open",
                 String(shaderPanelOpen),
               );
+            }}
+            onOpenPreviewNodeIdChange={(nodeId) => {
+              if (nodeId) {
+                localStorage.setItem("sequenza-open-preview-node", nodeId);
+              } else {
+                localStorage.removeItem("sequenza-open-preview-node");
+              }
             }}
             handleSave={({ nodes, edges, uniforms }) => {
               localStorage.setItem("sequenza-nodes", JSON.stringify(nodes));
