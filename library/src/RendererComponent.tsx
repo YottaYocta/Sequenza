@@ -17,6 +17,7 @@ interface RendererComponentProps {
   width?: number;
   height?: number;
   animate?: boolean;
+  onError?: (error: { message: string; line: number; shaderName: string } | null) => void;
 }
 
 export const RendererComponent = forwardRef<
@@ -24,7 +25,7 @@ export const RendererComponent = forwardRef<
   RendererComponentProps
 >(
   (
-    { patch, uniforms, className, style, width = 100, height = 100, animate },
+    { patch, uniforms, className, style, width = 100, height = 100, animate, onError },
     ref,
   ) => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -35,6 +36,7 @@ export const RendererComponent = forwardRef<
           preserveDrawingBuffer: true,
         })!;
         const renderer = new Renderer(context, patch);
+        onError?.(renderer.error);
 
         let animationFrameId: number | null = null;
 

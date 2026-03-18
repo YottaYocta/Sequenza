@@ -34,6 +34,27 @@ export const PreviewDialog: FC<PreviewDialogProps> = ({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [exportOpen, setExportOpen] = useState(false);
+  const [shaderError, setShaderError] = useState<{
+    message: string;
+    line: number;
+    shaderName: string;
+  } | null>(null);
+
+  const getErrorSnippet = (message: string, line: number): string => {
+    const parts = message.split(/\n(?=\d+: )/);
+    const lineMap: Record<number, string> = {};
+    for (const part of parts) {
+      const m = part.match(/^(\d+): ([\s\S]*)/);
+      if (m) lineMap[parseInt(m[1], 10)] = m[2].trimEnd();
+    }
+    const start = Math.max(1, line - 3);
+    const end = line + 3;
+    const lines: string[] = [];
+    for (let i = start; i <= end; i++) {
+      if (lineMap[i] !== undefined) lines.push(`${i}: ${lineMap[i]}`);
+    }
+    return lines.join("\n");
+  };
   const [containerSize, setContainerSize] = useState({ w: 1, h: 1 });
   const { width, height } = shader.resolution;
 
@@ -106,6 +127,7 @@ export const PreviewDialog: FC<PreviewDialogProps> = ({
                   ? "w-full"
                   : "h-full"
               }
+              onError={(msg) => setShaderError(msg)}
             />
           </div>
           <div className="flex flex-col gap-2 ">
@@ -159,6 +181,22 @@ export const PreviewDialog: FC<PreviewDialogProps> = ({
           </div>
         </div>
       </div>
+      {shaderError && (
+        <div className="flex flex-col gap-2 mx-6 mb-6 p-2 bg-white border-2 border-red-100 rounded-md">
+          <p className="text-white w-min text-nowrap bg-red-700 px-2 py-1 rounded text-xs">
+            {shaderError.shaderName}
+          </p>
+          <pre className="text-xs text-red-600 font-mono whitespace-pre-wrap break-all">
+            {getErrorSnippet(shaderError.message, shaderError.line)}
+          </pre>
+          <button
+            className="self-start text-xs px-2 py-1 rounded border border-red-200 bg-white text-red-600 hover:bg-red-50 cursor-pointer"
+            onClick={() => navigator.clipboard.writeText(shaderError.message)}
+          >
+            Copy error
+          </button>
+        </div>
+      )}
     </Dialog>
   );
 };

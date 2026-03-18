@@ -13,7 +13,7 @@ export type Field =
       name: string;
       type: "vec2";
       default?: [number, number];
-      special?: "mouse";
+      special?: "mouse" | "resolution";
     }
   | {
       name: string;
@@ -196,6 +196,14 @@ export const extractFields = (shader: Shader): Field[] => {
     );
     if (vec2Mouse?.[1]) {
       fields.push({ name: vec2Mouse[1], type: "vec2", special: "mouse" });
+      continue;
+    }
+
+    const vec2Resolution = trimmed.match(
+      /^uniform\s+vec2\s+(\w+)\s*;.*\/\/\s*resolution\b/,
+    );
+    if (vec2Resolution?.[1]) {
+      fields.push({ name: vec2Resolution[1], type: "vec2", special: "resolution" });
       continue;
     }
 

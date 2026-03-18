@@ -128,6 +128,7 @@ export class Renderer {
 
   uniforms: Record<string, Uniforms>;
   onTextureLoaded?: () => void;
+  error: { message: string; line: number; shaderName: string } | null = null;
 
   constructor(context: WebGL2RenderingContext, patch: Patch) {
     this.patch = patch;
@@ -151,12 +152,23 @@ export class Renderer {
       },
     );
 
-    for (let i = 0; i < patch.shaders.length; i++) {
+    let compilationError = false;
+    for (let i = 0; i < patch.shaders.length && !compilationError; i++) {
       const currentShader = patch.shaders[i];
-      this.programs[currentShader.id] = twgl.createProgramInfo(this.gl, [
-        DefaultVertexShader,
-        currentShader.source,
-      ]);
+      this.programs[currentShader.id] = twgl.createProgramInfo(
+        this.gl,
+        [DefaultVertexShader, currentShader.source],
+        undefined,
+        (msg) => {
+          const lineMatch = msg.match(/ERROR:\s*\d+:(\d+):/);
+          const line = lineMatch ? parseInt(lineMatch[1], 10) : 0;
+          this.error = { message: msg, line, shaderName: currentShader.name };
+          compilationError = true;
+        },
+      );
+      if (compilationError) {
+        break;
+      }
       this.fbos[currentShader.id] = twgl.createFramebufferInfo(
         this.gl,
         [
@@ -294,6 +306,7 @@ export class Renderer {
   }
 
   render() {
+    if (this.error) return;
     for (let i = 0; i < this.renderOrder.length; i++) {
       const currentNode = this.renderOrder[i];
       const programInfo = this.programs[currentNode];
@@ -329,7 +342,8 @@ export class Renderer {
 
   dispose() {
     for (const programInfo of Object.values(this.programs)) {
-      this.gl.deleteProgram(programInfo.program);
+      if (programInfo && programInfo.program)
+        this.gl.deleteProgram(programInfo.program);
     }
     this.programs = {};
 
