@@ -58,7 +58,7 @@ void main() {
     // right
 
     vec2 source_right_uv = floor(
-        (rot_uv + vec2(2./u_dot_count, 0.0)) * u_dot_count
+        (rot_uv + vec2(1./u_dot_count, 0.0)) * u_dot_count
     ) / u_dot_count;
     source_right_uv = transpose(rotate2D(u_rotation)) * (source_right_uv - 0.5) + 0.5;
 
@@ -76,7 +76,7 @@ void main() {
     // left
 
     vec2 source_left_uv = floor(
-        (rot_uv - vec2(2./u_dot_count, 0.0)) * u_dot_count
+        (rot_uv - vec2(1./u_dot_count, 0.0)) * u_dot_count
     ) / u_dot_count;
     source_left_uv = transpose(rotate2D(u_rotation)) * (source_left_uv - 0.5) + 0.5;
 
@@ -94,7 +94,7 @@ void main() {
     // up
 
     vec2 source_up_uv = floor(
-        (rot_uv + vec2(0.0, 2./u_dot_count)) * u_dot_count
+        (rot_uv + vec2(0.0, 1./u_dot_count)) * u_dot_count
     ) / u_dot_count;
     source_up_uv = transpose(rotate2D(u_rotation)) * (source_up_uv - 0.5) + 0.5;
 
@@ -113,7 +113,7 @@ void main() {
     // down
 
     vec2 source_down_uv = floor(
-        (rot_uv - vec2(0.0, 2./u_dot_count)) * u_dot_count
+        (rot_uv - vec2(0.0, 1./u_dot_count)) * u_dot_count
     ) / u_dot_count;
     source_down_uv = transpose(rotate2D(u_rotation)) * (source_down_uv - 0.5) + 0.5;
 
@@ -147,7 +147,7 @@ void main() {
                 ),
                 distance_to_down_center,
                 u_smoothing
-            )
+            ) / 2.0
         )
     ), 1.0);
 
