@@ -42,6 +42,7 @@ app/
 Thumbs.db
 
 # Env
+env
 .env
 .env.*
 !.env.example
