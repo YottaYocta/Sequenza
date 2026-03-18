@@ -23,6 +23,7 @@ export const Scrubber: FC<ScrubberProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const clamp = (v: number) => Math.min(max, Math.max(min, v));
 
@@ -66,6 +67,22 @@ export const Scrubber: FC<ScrubberProps> = ({
     setIsEditing(false);
   };
 
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    if (isEditing) return;
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      setEditText(String(value));
+      setIsEditing(true);
+      setTimeout(() => inputRef.current?.select(), 0);
+    } else if (e.key === "ArrowRight" || e.key === "ArrowUp") {
+      e.preventDefault();
+      onChange(clamp(parseFloat((value + step).toFixed(6))));
+    } else if (e.key === "ArrowLeft" || e.key === "ArrowDown") {
+      e.preventDefault();
+      onChange(clamp(parseFloat((value - step).toFixed(6))));
+    }
+  };
+
   const displayValue = Number.isInteger(value)
     ? value.toFixed(1)
     : value.toFixed(3).replace(/0+$/, "");
@@ -80,11 +97,15 @@ export const Scrubber: FC<ScrubberProps> = ({
         </span>
       )}
       <div
+        ref={containerRef}
+        tabIndex={0}
         onMouseDown={onMouseDown}
         onDoubleClick={onDoubleClick}
+        onKeyDown={onKeyDown}
         className={[
           "flex items-center justify-center",
           "rounded overflow-hidden select-none w-full h-6",
+          "focus:outline-2 focus:outline-neutral-400 focus:outline-offset-1",
           isEditing ? "cursor-text" : "cursor-ew-resize",
         ].join(" ")}
       >

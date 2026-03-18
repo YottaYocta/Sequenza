@@ -1,4 +1,4 @@
-import { type FC } from "react";
+import { useState, type FC } from "react";
 import { exportSequenzaPatch } from "@sequenza/lib";
 import type { Patch, Uniforms } from "@sequenza/lib";
 import { Dialog } from "./Dialog";
@@ -19,6 +19,20 @@ export const ExportDialog: FC<ExportDialogProps> = ({
   onOpenChange,
 }) => {
   const generatedCode = exportSequenzaPatch(uniforms, patch);
+  const [installCopied, setInstallCopied] = useState<"idle" | "done">("idle");
+  const [codeCopied, setCodeCopied] = useState<"idle" | "done">("idle");
+
+  const copyInstall = () => {
+    navigator.clipboard.writeText(installCommand);
+    setInstallCopied("done");
+    setTimeout(() => setInstallCopied("idle"), 1800);
+  };
+
+  const copyCode = () => {
+    navigator.clipboard.writeText(generatedCode);
+    setCodeCopied("done");
+    setTimeout(() => setCodeCopied("idle"), 1800);
+  };
 
   return (
     <Dialog
@@ -40,11 +54,8 @@ export const ExportDialog: FC<ExportDialogProps> = ({
           <code className="text-xs text-neutral-700 w-full select-all">
             {installCommand}
           </code>
-          <button
-            className="button-base"
-            onClick={() => navigator.clipboard.writeText(installCommand)}
-          >
-            Copy
+          <button className="button-base" onClick={copyInstall}>
+            {installCopied === "done" ? "Copied!" : "Copy"}
           </button>
         </div>
       </div>
@@ -53,9 +64,9 @@ export const ExportDialog: FC<ExportDialogProps> = ({
         <div className="relative flex-1 min-h-0 bg-neutral-50 rounded">
           <button
             className="absolute top-4 right-4 button-base"
-            onClick={() => navigator.clipboard.writeText(generatedCode)}
+            onClick={copyCode}
           >
-            Copy
+            {codeCopied === "done" ? "Copied!" : "Copy"}
           </button>
           <textarea
             readOnly

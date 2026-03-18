@@ -9,6 +9,8 @@ interface EditorContextType {
   patches: Record<string, Patch>;
   uniforms: RefObject<Record<string, Uniforms>>;
   showStats: boolean;
+  openExportNodeId: string | null;
+  setOpenExportNodeId: (id: string | null) => void;
   handleUpdateUniforms: (shaderId: string, newUniforms: Uniforms) => void;
   handleUpdateNode: (
     nodeId: string,
@@ -23,6 +25,8 @@ export const EditorContext = createContext<EditorContextType>({
   shaders: [],
   patches: {},
   showStats: false,
+  openExportNodeId: null,
+  setOpenExportNodeId: () => {},
   uniforms: { current: {} },
   handleUpdateUniforms: () => {},
   handleUpdateNode: (snapshot) => snapshot,
