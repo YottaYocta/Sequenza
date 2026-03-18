@@ -24,6 +24,8 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
     handleUpdateNode,
     showStats,
     setOpenExportNodeId,
+    openPreviewNodeId,
+    setOpenPreviewNodeId,
   } = useContext(EditorContext);
 
   if (!patches || patches[data.shader.id] === undefined) return null;
@@ -34,10 +36,6 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
     line: number;
     shaderName: string;
   } | null>(null);
-
-  const [previewOpen, setPreviewOpen] = useState(
-    () => localStorage.getItem(`shader-preview-open-${id}`) === "true",
-  );
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [imageCopied, setImageCopied] = useState<"idle" | "done">("idle");
@@ -127,21 +125,14 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
               <div className="flex absolute top-2 right-2 gap-2">
                 <button
                   className={`button-base group-hover:opacity-100 opacity-0`}
-                  onClick={() => {
-                    localStorage.setItem(`shader-preview-open-${id}`, "true");
-                    setPreviewOpen(true);
-                  }}
+                  onClick={() => setOpenPreviewNodeId(id)}
                 >
                   Expand
                 </button>
                 <PreviewDialog
-                  open={previewOpen}
+                  open={openPreviewNodeId === id}
                   onOpenChange={(open) => {
-                    localStorage.setItem(
-                      `shader-preview-open-${id}`,
-                      String(open),
-                    );
-                    setPreviewOpen(open);
+                    setOpenPreviewNodeId(open ? id : null);
                   }}
                   shader={data.shader}
                   patch={patches[data.shader.id]}

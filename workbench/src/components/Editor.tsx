@@ -55,10 +55,12 @@ interface EditorProps {
   className?: string;
   initialShowStats?: boolean;
   initialShaderPanelOpen?: boolean;
+  initialOpenPreviewNodeId?: string | null;
   onEditorStateChange?: (state: {
     showStats: boolean;
     shaderPanelOpen: boolean;
   }) => void;
+  onOpenPreviewNodeIdChange?: (nodeId: string | null) => void;
 }
 
 function propagateWidthHeightUpdates(
@@ -108,7 +110,9 @@ const EditorAux: FC<EditorProps> = ({
   className,
   initialShowStats,
   initialShaderPanelOpen,
+  initialOpenPreviewNodeId,
   onEditorStateChange,
+  onOpenPreviewNodeIdChange,
 }) => {
   const [edges, setEdges] = useState<Edge[]>(initialState?.edges ?? []);
   const [nodes, setNodes] = useState<Node[]>(() => {
@@ -438,6 +442,13 @@ const EditorAux: FC<EditorProps> = ({
     initialShaderPanelOpen ?? true,
   );
   const [openExportNodeId, setOpenExportNodeId] = useState<string | null>(null);
+  const [openPreviewNodeId, setOpenPreviewNodeIdState] = useState<
+    string | null
+  >(initialOpenPreviewNodeId ?? null);
+  const setOpenPreviewNodeId = (id: string | null) => {
+    setOpenPreviewNodeIdState(id);
+    onOpenPreviewNodeIdChange?.(id);
+  };
 
   useEffect(() => {
     onEditorStateChange?.({ showStats, shaderPanelOpen });
@@ -454,6 +465,8 @@ const EditorAux: FC<EditorProps> = ({
           showStats,
           openExportNodeId,
           setOpenExportNodeId,
+          openPreviewNodeId,
+          setOpenPreviewNodeId,
           uniforms: uniformRef,
           handleUpdateUniforms,
           handleUpdateNode,
