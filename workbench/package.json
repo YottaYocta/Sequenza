@@ -20,6 +20,7 @@
     "sequenza": "bin/sequenza.js"
   },
   "scripts": {
+    "prepublishOnly": "pnpm run build:app",
     "dev": "vite",
     "watch": "nodemon --exec tsx server.ts",
     "build": "vite build",
