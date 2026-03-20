@@ -16,6 +16,9 @@
     "app",
     "bin"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "bin": {
     "sequenza": "bin/sequenza.js"
   },
