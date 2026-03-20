@@ -3,8 +3,6 @@ import type { Shader, Uniforms } from "@sequenza/lib";
 import { io } from "socket.io-client";
 import { staticShaders } from "./shaders";
 
-const STATIC_MODE = import.meta.env.VITE_STATIC_MODE === "true";
-
 import "@xyflow/react/dist/style.css";
 import { Editor } from "./components/Editor";
 import type { Edge, Node } from "@xyflow/react";
@@ -27,27 +25,23 @@ function App() {
   const shaderUniforms = useRef<Record<string, Uniforms>>({});
 
   useEffect(() => {
-    if (STATIC_MODE) {
-      const newShaders: Record<string, Shader> = {};
-      for (const [filepath, source] of Object.entries(staticShaders)) {
-        newShaders[filepath] = {
-          id: filepath,
-          source,
-          name: filepath,
-          resolution: { width: 100, height: 100 },
-        };
-        shaderUniforms.current[filepath] = {};
-      }
-      setShaderMap(newShaders);
-      return;
+    const newShaders: Record<string, Shader> = {};
+    for (const [filepath, source] of Object.entries(staticShaders)) {
+      newShaders[filepath] = {
+        id: filepath,
+        source,
+        name: filepath,
+        resolution: { width: 100, height: 100 },
+      };
+      shaderUniforms.current[filepath] = {};
     }
 
     console.log("[CONNECT]");
     const socket = io("http://localhost:3001");
     socket.on("shaders-found", (data: Record<string, string>) => {
-      const newShaders: Record<string, Shader> = {};
+      const localShaders: Record<string, Shader> = {};
       for (const [filepath, name] of Object.entries(data)) {
-        newShaders[filepath] = {
+        localShaders[filepath] = {
           id: filepath,
           source: name,
           name: filepath,
@@ -55,7 +49,7 @@ function App() {
         };
         shaderUniforms.current[filepath] = {};
       }
-      setShaderMap(newShaders);
+      setShaderMap({ ...localShaders, ...newShaders });
     });
     return () => {
       console.log("[DISCONNECT]");
@@ -169,10 +163,7 @@ function App() {
               localStorage.getItem("sequenza-open-preview-node") || null
             }
             onEditorStateChange={({ showStats, shaderPanelOpen }) => {
-              localStorage.setItem(
-                "sequenza-show-stats",
-                String(showStats),
-              );
+              localStorage.setItem("sequenza-show-stats", String(showStats));
               localStorage.setItem(
                 "sequenza-shader-panel-open",
                 String(shaderPanelOpen),

@@ -547,7 +547,7 @@ const EditorAux: FC<EditorProps> = ({
                           className="text-xs flex justify-start p-1 rounded-sm hover:bg-neutral-100 cursor-pointer text-neutral-500"
                           onClick={() => handleAddShader(shader)}
                         >
-                          {shader.id}
+                          {shader.id.length > 25 ? `${shader.id.slice(0, 11)}...${shader.id.slice(-11)}` : shader.id}
                         </button>
                       ))}
                   </div>
