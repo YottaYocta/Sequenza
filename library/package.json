@@ -14,7 +14,11 @@
   "files": [
     "dist"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
+    "prepublishOnly": "pnpm run build",
     "build": "vite build",
     "lint": "eslint ."
   },
