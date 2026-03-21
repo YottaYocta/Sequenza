@@ -33,7 +33,7 @@ export const Dialog: FC<DialogProps> = ({
       ref={dialogRef}
       className={`top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3xl h-5/6 border border-neutral-300 rounded-lg starting:opacity-0 opacity-100 transition-all transition-discrete ${localOpen ? "visible" : "hidden"} ${className} nopan nodrag nowheel`}
     >
-      {children}
+      {open && children}
     </dialog>
   );
 };
