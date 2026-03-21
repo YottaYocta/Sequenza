@@ -1,12 +1,14 @@
 #version 300 es
 precision mediump float;
 
-uniform sampler2D u_texture; // input
-uniform float u_resolution; // [1, 100, 20]
+uniform sampler2D u_texture; 
+uniform vec2 u_resolution; // resolution
 uniform float u_numColors;  // [2, 16, 2]
+uniform float u_dither_size; // [1, 100, 10]
 
 in vec2 vUv;
 out vec4 fragColor;
+
 
 int bayer(int x, int y) {
     int bayer64[64] = int[64](
@@ -23,8 +25,8 @@ int bayer(int x, int y) {
 }
 
 void main() {
-    vec2 cell = floor(vUv * u_resolution);
-    vec2 cellUv = cell / u_resolution;
+    vec2 cell = floor(vUv * u_resolution / u_dither_size);
+    vec2 cellUv = cell / u_resolution * u_dither_size;
 
     vec4 color = texture(u_texture, cellUv);
 

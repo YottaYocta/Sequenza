@@ -6,6 +6,11 @@ import { resolve } from "path";
 
 // https://vite.dev/config/
 export default defineConfig({
+  server: {
+    watch: {
+      ignored: ["**/*.glsl", "**/*.vert", "**/*.frag"],
+    },
+  },
   resolve: {
     alias: {
       "@sequenza/lib": resolve(__dirname, "../library/src/index.ts"),

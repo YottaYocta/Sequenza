@@ -84,7 +84,6 @@ function App() {
               id: shaderNode.data.shader.id,
             };
             shaderNode.data.shader = newShader;
-            console.log(shaderNode.data.shader.id);
           }
         }
       }

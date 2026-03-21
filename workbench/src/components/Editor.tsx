@@ -204,6 +204,32 @@ const EditorAux: FC<EditorProps> = ({
     if (initialState?.uniforms) uniformRef.current = initialState.uniforms;
   }, [initialState]);
 
+  useEffect(() => {
+    setNodes((snapshot) =>
+      snapshot.map((node) => {
+        if (node.type === "shader") {
+          const shaderNode: ShaderNode = node as ShaderNode;
+          for (const newShader of shaders) {
+            if (shaderNode.data.shader.name === newShader.name) {
+              return {
+                ...shaderNode,
+                data: {
+                  ...shaderNode.data,
+                  shader: {
+                    ...shaderNode.data.shader,
+                    source: newShader.source,
+                  },
+                },
+              };
+            }
+          }
+          return shaderNode;
+        }
+        return node;
+      }),
+    );
+  }, [shaders]);
+
   const [savedAt, setSavedAt] = useState<Date | null>(null);
 
   useEffect(() => {
@@ -356,6 +382,7 @@ const EditorAux: FC<EditorProps> = ({
 
   const handleUpdateUniforms = useCallback(
     (shaderId: string, uniforms: Uniforms) => {
+      //console.log(shaderId);
       uniformRef.current[shaderId] = uniforms;
     },
     [],
@@ -547,7 +574,9 @@ const EditorAux: FC<EditorProps> = ({
                           className="text-xs flex justify-start p-1 rounded-sm hover:bg-neutral-100 cursor-pointer text-neutral-500"
                           onClick={() => handleAddShader(shader)}
                         >
-                          {shader.id.length > 25 ? `${shader.id.slice(0, 11)}...${shader.id.slice(-11)}` : shader.id}
+                          {shader.id.length > 25
+                            ? `${shader.id.slice(0, 11)}...${shader.id.slice(-11)}`
+                            : shader.id}
                         </button>
                       ))}
                   </div>

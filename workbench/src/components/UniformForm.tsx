@@ -304,8 +304,10 @@ const TimeFieldComponent: FC<{
   const handleRef = useRef(handleUpdateUniformField);
   handleRef.current = handleUpdateUniformField;
 
+  const shouldRun = isPlaying;
+
   useEffect(() => {
-    if (!isPlaying) return;
+    if (!shouldRun) return;
     startRef.current = Date.now();
     const tick = () => {
       const secs =
@@ -319,7 +321,7 @@ const TimeFieldComponent: FC<{
       cancelAnimationFrame(rafRef.current);
       accumulatedRef.current += (Date.now() - startRef.current) / 1000;
     };
-  }, [isPlaying]);
+  }, [shouldRun]);
 
   const toggle = () => setIsPlaying((p) => !p);
   const reset = () => {
@@ -771,7 +773,6 @@ const UniformForm: FC<UniformFormProps> = ({
 
   useEffect(() => {
     uniformRef.current = { ...initialUniformValues };
-    handleUpdateUniform(uniformRef.current);
   }, [initialUniformValues]);
 
   if (fields.length === 0) {
