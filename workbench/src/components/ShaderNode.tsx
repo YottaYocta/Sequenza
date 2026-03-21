@@ -13,7 +13,7 @@ import { Scrubber } from "./Scrubber";
 import UniformForm from "./UniformForm";
 import { RendererComponent } from "@sequenza/lib";
 import { EditorContext } from "./EditorContext";
-import { extractFields } from "@sequenza/lib";
+import { extractFields, getFieldDefault } from "@sequenza/lib";
 import { PreviewDialog } from "./PreviewDialog";
 
 export type ShaderNodeData = {
@@ -36,8 +36,19 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
   } = useContext(EditorContext);
 
   const [localUniforms, setLocalUniforms] = useState<Uniforms>(() => {
-    return uniforms.current[data.shader.id] ?? {};
+    const saved = uniforms.current[data.shader.id];
+    if (saved && Object.keys(saved).length > 0) return saved;
+    const defaults: Uniforms = {};
+    for (const field of extractFields(data.shader)) {
+      const def = getFieldDefault(field);
+      if (def !== undefined) defaults[field.name] = def;
+    }
+    return defaults;
   });
+
+  useEffect(() => {
+    handleUpdateUniforms(id, () => localUniforms);
+  }, [localUniforms]);
 
   const { width, height } = data.shader.resolution;
   const [shaderError, setShaderError] = useState<{
@@ -127,7 +138,6 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
             uniforms={localUniforms}
             handleUpdateUniform={(newUniforms) => {
               setLocalUniforms(newUniforms);
-              handleUpdateUniforms(data.shader.id, newUniforms);
             }}
           />
         </div>
@@ -151,9 +161,8 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
                   uniforms={uniforms}
                   localUniforms={localUniforms}
                   nodeId={id}
-                  handleUpdateUniforms={(shaderId, newUniforms) => {
+                  handleUpdateUniforms={(_, newUniforms) => {
                     setLocalUniforms(newUniforms);
-                    handleUpdateUniforms(shaderId, newUniforms);
                   }}
                   handleUpdateNode={handleUpdateNode}
                 />

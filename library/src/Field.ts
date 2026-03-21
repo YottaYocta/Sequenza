@@ -261,9 +261,16 @@ export function typeMatchesField(value: unknown, field: Field): boolean {
 export function getFieldDefault(
   field: Field,
 ): number | number[] | undefined {
-  if (field.type === "float") return field.default;
-  if (field.type === "vec2") return field.default;
-  if (field.type === "vec3") return field.default;
-  if (field.type === "vec4") return field.default;
-  return undefined;
+  switch (field.type) {
+    case "float":
+      return field.default ?? 0;
+    case "vec2":
+      return field.default ?? [0, 0];
+    case "vec3":
+      return field.default ?? (field.color ? [1, 1, 1] : [0, 0, 0]);
+    case "vec4":
+      return field.default ?? (field.color ? [1, 1, 1, 1] : [0, 0, 0, 0]);
+    case "sampler2D":
+      return undefined;
+  }
 }
