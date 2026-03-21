@@ -1,13 +1,25 @@
-import { type FC } from "react";
+import { useState, useEffect, type FC } from "react";
 import type { Field } from "@sequenza/lib";
 import { Scrubber } from "../Scrubber";
 import { ResetButton } from "./shared";
 
 export const FloatField: FC<{
   field: Field & { type: "float" };
-  value: number;
+  initialValue: number;
   handleUpdateUniformField: (value: number) => void;
-}> = ({ field, value, handleUpdateUniformField }) => {
+}> = ({ field, initialValue, handleUpdateUniformField }) => {
+  const [value, setValue] = useState(initialValue);
+
+  useEffect(() => {
+    setValue(initialValue);
+    handleUpdateUniformField(initialValue);
+  }, [initialValue]);
+
+  const update = (v: number) => {
+    setValue(v);
+    handleUpdateUniformField(v);
+  };
+
   return (
     <div className="flex items-center ">
       <Scrubber
@@ -15,12 +27,10 @@ export const FloatField: FC<{
         min={field.min}
         max={field.max}
         step={0.01}
-        onChange={(val) => {
-          handleUpdateUniformField(val);
-        }}
+        onChange={update}
       />
       {field.default !== undefined && (
-        <ResetButton onClick={() => handleUpdateUniformField(field.default!)} />
+        <ResetButton onClick={() => update(field.default!)} />
       )}
     </div>
   );

@@ -5,7 +5,7 @@ import type {
   GradientUniform,
   Uniforms,
 } from "@sequenza/lib";
-import { extractFields, type Field } from "@sequenza/lib";
+import { extractFields, getFieldDefault, type Field } from "@sequenza/lib";
 import { FieldLabel } from "./UniformFields/shared";
 import { FloatField } from "./UniformFields/FloatField";
 import { TimeField } from "./UniformFields/TimeField";
@@ -19,10 +19,8 @@ import { GradientField } from "./UniformFields/GradientField";
 
 interface UniformFormProps {
   shader: Shader;
-  uniforms: Uniforms;
-  handleUpdateUniform: (
-    uniformCallback: (snapshot: Uniforms) => Uniforms,
-  ) => void;
+  savedUniforms: Uniforms;
+  handleUpdateUniform: (fieldName: string, value: any) => void;
 }
 
 function fieldLabelType(field: Field): string {
@@ -48,7 +46,7 @@ function fieldLabelType(field: Field): string {
 
 const UniformForm: FC<UniformFormProps> = ({
   shader,
-  uniforms,
+  savedUniforms,
   handleUpdateUniform,
 }) => {
   const fields = useMemo(() => extractFields(shader), [shader.source]);
@@ -69,19 +67,14 @@ const UniformForm: FC<UniformFormProps> = ({
       {fields.map((field) => {
         const key = `${field.name}-${field.type}`;
         const update = (newValue: any) =>
-          handleUpdateUniform((snapshot) => ({
-            ...snapshot,
-            [field.name]: newValue,
-          }));
+          handleUpdateUniform(field.name, newValue);
 
         const updateTexture = (newValue: TextureUniform | null) => {
-          handleUpdateUniform((snapshot) => {
-            const next = { ...snapshot };
-            if (newValue === null) delete next[field.name];
-            else next[field.name] = newValue;
-            return next
-          });
+          handleUpdateUniform(field.name, newValue);
         };
+
+        const saved = savedUniforms[field.name];
+        const fallback = getFieldDefault(field);
 
         let control: ReactNode = null;
         switch (field.type) {
@@ -95,7 +88,7 @@ const UniformForm: FC<UniformFormProps> = ({
               ) : (
                 <FloatField
                   field={field}
-                  value={(uniforms[field.name] as number) ?? field.default ?? 0}
+                  initialValue={(saved as number) ?? (fallback as number)}
                   handleUpdateUniformField={update}
                 />
               );
@@ -119,9 +112,9 @@ const UniformForm: FC<UniformFormProps> = ({
               ) : (
                 <Vec2Field
                   field={field}
-                  value={
-                    (uniforms[field.name] as [number, number]) ??
-                    field.default ?? [0, 0]
+                  initialValue={
+                    (saved as [number, number]) ??
+                    (fallback as [number, number])
                   }
                   handleUpdateUniformField={update}
                 />
@@ -131,18 +124,18 @@ const UniformForm: FC<UniformFormProps> = ({
             control = field.color ? (
               <Vec3ColorField
                 field={field}
-                value={
-                  (uniforms[field.name] as [number, number, number]) ??
-                  field.default ?? [1, 1, 1]
+                initialValue={
+                  (saved as [number, number, number]) ??
+                  (fallback as [number, number, number])
                 }
                 handleUpdateUniformField={update}
               />
             ) : (
               <Vec3Field
                 field={field}
-                value={
-                  (uniforms[field.name] as [number, number, number]) ??
-                  field.default ?? [0, 0, 0]
+                initialValue={
+                  (saved as [number, number, number]) ??
+                  (fallback as [number, number, number])
                 }
                 handleUpdateUniformField={update}
               />
@@ -152,18 +145,18 @@ const UniformForm: FC<UniformFormProps> = ({
             control = field.color ? (
               <Vec4ColorField
                 field={field}
-                value={
-                  (uniforms[field.name] as [number, number, number, number]) ??
-                  field.default ?? [1, 1, 1, 1]
+                initialValue={
+                  (saved as [number, number, number, number]) ??
+                  (fallback as [number, number, number, number])
                 }
                 handleUpdateUniformField={update}
               />
             ) : (
               <Vec4Field
                 field={field}
-                value={
-                  (uniforms[field.name] as [number, number, number, number]) ??
-                  field.default ?? [0, 0, 0, 0]
+                initialValue={
+                  (saved as [number, number, number, number]) ??
+                  (fallback as [number, number, number, number])
                 }
                 handleUpdateUniformField={update}
               />
@@ -174,7 +167,7 @@ const UniformForm: FC<UniformFormProps> = ({
               control = (
                 <ImageUploadField
                   field={field}
-                  value={uniforms[field.name] as TextureUniform | undefined}
+                  value={saved as TextureUniform | undefined}
                   handleUpdateUniformField={updateTexture}
                 />
               );
@@ -184,7 +177,7 @@ const UniformForm: FC<UniformFormProps> = ({
                   field={
                     field as Field & { type: "sampler2D"; source: "gradient" }
                   }
-                  value={uniforms[field.name] as GradientUniform | undefined}
+                  value={saved as GradientUniform | undefined}
                   handleUpdateUniformField={update}
                 />
               );

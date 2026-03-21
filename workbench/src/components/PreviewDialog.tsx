@@ -13,12 +13,9 @@ interface PreviewDialogProps {
   shader: Shader;
   patch: Patch;
   uniforms: RefObject<Record<string, Uniforms>>;
-  localUniforms: Uniforms;
+  savedUniforms: Uniforms;
   nodeId: string;
-  handleUpdateUniforms: (
-    shaderId: string,
-    uniformCallback: (snapshot: Uniforms) => Uniforms,
-  ) => void;
+  handleFieldUpdate: (fieldName: string, value: any) => void;
   handleUpdateNode: (
     nodeId: string,
     fn: (s: ShaderNodeData) => ShaderNodeData,
@@ -31,9 +28,9 @@ export const PreviewDialog: FC<PreviewDialogProps> = ({
   shader,
   patch,
   uniforms,
-  localUniforms,
+  savedUniforms,
   nodeId,
-  handleUpdateUniforms,
+  handleFieldUpdate,
   handleUpdateNode,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -108,10 +105,8 @@ export const PreviewDialog: FC<PreviewDialogProps> = ({
           <div className="flex flex-col gap-2">
             <UniformForm
               shader={shader}
-              uniforms={localUniforms}
-              handleUpdateUniform={(newUniforms) =>
-                handleUpdateUniforms(shader.id, newUniforms)
-              }
+              savedUniforms={savedUniforms}
+              handleUpdateUniform={handleFieldUpdate}
             />
           </div>
         </div>

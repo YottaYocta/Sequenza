@@ -3,7 +3,6 @@ import CustomHandle from "./CustomHandle";
 import type { Shader, Uniforms } from "@sequenza/lib";
 import {
   useContext,
-  useEffect,
   useMemo,
   useRef,
   useState,
@@ -13,7 +12,7 @@ import { Scrubber } from "./Scrubber";
 import UniformForm from "./UniformForm";
 import { RendererComponent } from "@sequenza/lib";
 import { EditorContext } from "./EditorContext";
-import { extractFields, getFieldDefault } from "@sequenza/lib";
+import { extractFields } from "@sequenza/lib";
 import { PreviewDialog } from "./PreviewDialog";
 
 export type ShaderNodeData = {
@@ -35,20 +34,16 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
     setOpenPreviewNodeId,
   } = useContext(EditorContext);
 
-  const [localUniforms, setLocalUniforms] = useState<Uniforms>(() => {
-    const saved = uniforms.current[data.shader.id];
-    if (saved && Object.keys(saved).length > 0) return saved;
-    const defaults: Uniforms = {};
-    for (const field of extractFields(data.shader)) {
-      const def = getFieldDefault(field);
-      if (def !== undefined) defaults[field.name] = def;
-    }
-    return defaults;
-  });
+  const [uniformSource, setUniformSource] = useState<Uniforms>(
+    () => uniforms.current[data.shader.id] ?? {},
+  );
 
-  useEffect(() => {
-    handleUpdateUniforms(id, () => localUniforms);
-  }, [localUniforms]);
+  const handleFieldUpdate = (fieldName: string, value: any) => {
+    handleUpdateUniforms(data.shader.id, (current) => ({
+      ...current,
+      [fieldName]: value,
+    }));
+  };
 
   const { width, height } = data.shader.resolution;
   const [shaderError, setShaderError] = useState<{
@@ -135,10 +130,8 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
         <div className="flex flex-col gap-2">
           <UniformForm
             shader={data.shader}
-            uniforms={localUniforms}
-            handleUpdateUniform={(newUniforms) => {
-              setLocalUniforms(newUniforms);
-            }}
+            savedUniforms={uniformSource}
+            handleUpdateUniform={handleFieldUpdate}
           />
         </div>
         <div className="flex flex-col justify-center items-start gap-4 ">
@@ -154,16 +147,15 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
                 <PreviewDialog
                   open={openPreviewNodeId === id}
                   onOpenChange={(open) => {
+                    setUniformSource(uniforms.current[data.shader.id] ?? {});
                     setOpenPreviewNodeId(open ? id : null);
                   }}
                   shader={data.shader}
                   patch={patches[data.shader.id]}
                   uniforms={uniforms}
-                  localUniforms={localUniforms}
+                  savedUniforms={uniformSource}
                   nodeId={id}
-                  handleUpdateUniforms={(_, newUniforms) => {
-                    setLocalUniforms(newUniforms);
-                  }}
+                  handleFieldUpdate={handleFieldUpdate}
                   handleUpdateNode={handleUpdateNode}
                 />
                 <button
