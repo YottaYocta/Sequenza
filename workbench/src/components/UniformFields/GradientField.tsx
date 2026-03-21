@@ -21,6 +21,10 @@ export const GradientField: FC<{
   const rampRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    setStops(initialValue?.stops ?? DEFAULT_GRADIENT_STOPS);
+  }, [initialValue]);
+
+  useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");

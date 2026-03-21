@@ -1,13 +1,7 @@
 import { Position, type Node, type NodeProps } from "@xyflow/react";
 import CustomHandle from "./CustomHandle";
 import type { Shader, Uniforms } from "@sequenza/lib";
-import {
-  useContext,
-  useMemo,
-  useRef,
-  useState,
-  type RefObject,
-} from "react";
+import { useContext, useMemo, useRef, useState, type RefObject } from "react";
 import { Scrubber } from "./Scrubber";
 import UniformForm from "./UniformForm";
 import { RendererComponent } from "@sequenza/lib";
@@ -140,7 +134,10 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
               <div className="flex absolute top-2 right-2 gap-2">
                 <button
                   className={`button-base group-hover:opacity-100 opacity-0`}
-                  onClick={() => setOpenPreviewNodeId(id)}
+                  onClick={() => {
+                    setOpenPreviewNodeId(id);
+                    setUniformSource(uniforms.current[data.shader.id] ?? {});
+                  }}
                 >
                   Expand
                 </button>
