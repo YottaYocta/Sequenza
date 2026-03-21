@@ -13,7 +13,10 @@ interface EditorContextType {
   setOpenExportNodeId: (id: string | null) => void;
   openPreviewNodeId: string | null;
   setOpenPreviewNodeId: (id: string | null) => void;
-  handleUpdateUniforms: (shaderId: string, newUniforms: Uniforms) => void;
+  handleUpdateUniforms: (
+    shaderId: string,
+    uniformUpdateCallback: (current: Uniforms) => Uniforms,
+  ) => void;
   handleUpdateNode: (
     nodeId: string,
     data: (snapshot: ShaderNodeData) => ShaderNodeData,

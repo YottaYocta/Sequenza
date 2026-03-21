@@ -248,6 +248,7 @@ const EditorAux: FC<EditorProps> = ({
   const createShaderNode = (shader: Shader): ShaderNode => {
     const newId = `${Math.random() * 100000}`;
     const newShader: Shader = { ...shader, id: newId };
+    uniformRef.current[newId] = {};
     return {
       id: newId,
       position: { x: 0, y: 0 },
@@ -381,9 +382,13 @@ const EditorAux: FC<EditorProps> = ({
   }, [shaderHash, edgesHash]);
 
   const handleUpdateUniforms = useCallback(
-    (shaderId: string, uniforms: Uniforms) => {
-      //console.log(shaderId);
-      uniformRef.current[shaderId] = uniforms;
+    (
+      shaderId: string,
+      updateUniformCallback: (current: Uniforms) => Uniforms,
+    ) => {
+      uniformRef.current[shaderId] = updateUniformCallback(
+        uniformRef.current[shaderId],
+      );
     },
     [],
   );

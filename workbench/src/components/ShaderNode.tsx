@@ -1,7 +1,14 @@
 import { Position, type Node, type NodeProps } from "@xyflow/react";
 import CustomHandle from "./CustomHandle";
 import type { Shader, Uniforms } from "@sequenza/lib";
-import { useContext, useMemo, useRef, useState, type RefObject } from "react";
+import {
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type RefObject,
+} from "react";
 import { Scrubber } from "./Scrubber";
 import UniformForm from "./UniformForm";
 import { RendererComponent } from "@sequenza/lib";
@@ -28,7 +35,9 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
     setOpenPreviewNodeId,
   } = useContext(EditorContext);
 
-  if (!patches || patches[data.shader.id] === undefined) return null;
+  const [localUniforms, setLocalUniforms] = useState<Uniforms>(() => {
+    return uniforms.current[data.shader.id] ?? {};
+  });
 
   const { width, height } = data.shader.resolution;
   const [shaderError, setShaderError] = useState<{
@@ -81,6 +90,8 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
     return lines.join("\n");
   };
 
+  if (!patches || patches[data.shader.id] === undefined) return null;
+
   return (
     <div
       className={`
@@ -113,11 +124,12 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
         <div className="flex flex-col gap-2">
           <UniformForm
             shader={data.shader}
-            initialUniforms={uniforms.current[data.shader.id]}
+            uniforms={localUniforms}
             handleUpdateUniform={(newUniforms) => {
+              setLocalUniforms(newUniforms);
               handleUpdateUniforms(data.shader.id, newUniforms);
             }}
-          ></UniformForm>
+          />
         </div>
         <div className="flex flex-col justify-center items-start gap-4 ">
           <div className="flex flex-col gap-2">
@@ -137,8 +149,12 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
                   shader={data.shader}
                   patch={patches[data.shader.id]}
                   uniforms={uniforms}
+                  localUniforms={localUniforms}
                   nodeId={id}
-                  handleUpdateUniforms={handleUpdateUniforms}
+                  handleUpdateUniforms={(shaderId, newUniforms) => {
+                    setLocalUniforms(newUniforms);
+                    handleUpdateUniforms(shaderId, newUniforms);
+                  }}
                   handleUpdateNode={handleUpdateNode}
                 />
                 <button
