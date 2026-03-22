@@ -50,16 +50,12 @@ const UniformForm: FC<UniformFormProps> = ({
   handleUpdateUniform,
 }) => {
   const fields = useMemo(() => extractFields(shader), [shader.source]);
-  if (fields.length === 0) {
-    return (
-      <p className="px-2 py-3 font-mono text-xs">
-        No uniforms found.{" "}
-        <span>
-          Add <code className="">// [min, max, default]</code> comments to float
-          uniforms.
-        </span>
-      </p>
-    );
+  if (
+    fields.filter((field) => {
+      return !(field.type === "sampler2D" && field.source === "input");
+    }).length === 0
+  ) {
+    return <></>;
   }
 
   return (

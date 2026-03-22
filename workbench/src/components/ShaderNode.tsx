@@ -125,13 +125,11 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
         />
       ))}
       <div className="flex gap-8">
-        <div className="flex flex-col gap-2">
-          <UniformForm
-            shader={data.shader}
-            savedUniforms={uniformSource}
-            handleUpdateUniform={handleFieldUpdate}
-          />
-        </div>
+        <UniformForm
+          shader={data.shader}
+          savedUniforms={uniformSource}
+          handleUpdateUniform={handleFieldUpdate}
+        />
         <div className="flex flex-col justify-center items-start gap-4 ">
           <div className="flex flex-col gap-2">
             <div className="relative max-w-96 group">

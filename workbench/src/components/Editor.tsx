@@ -524,7 +524,7 @@ const EditorAux: FC<EditorProps> = ({
           connectionLineComponent={ConnectionLine}
           isValidConnection={isValidConnection}
           style={{
-            background: "#F9F9F9",
+            background: "#F3F3F3",
           }}
           fitView
         >
