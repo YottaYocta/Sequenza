@@ -230,8 +230,10 @@ export class Renderer {
       }
     }
 
-    if (this.renderOrder.length < this.patch.shaders.length)
+    if (this.renderOrder.length < this.patch.shaders.length) {
+      console.log(this.patch, this.renderOrder);
       throw Error("Cycle detected in graph");
+    }
   }
 
   private _getOrCreateTexture(key: string): WebGLTexture {

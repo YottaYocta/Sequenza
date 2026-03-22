@@ -373,7 +373,12 @@ const EditorAux: FC<EditorProps> = ({
           const dependencyNodeId = incomingConnection.from;
           queue.push(dependencyNodeId);
           const dependencyShader = shaderMap[dependencyNodeId];
-          patches[nodeId].shaders.push(dependencyShader);
+          if (
+            !patches[nodeId].shaders.find(
+              (shader) => shader.id === dependencyShader.id,
+            )
+          )
+            patches[nodeId].shaders.push(dependencyShader);
           patches[nodeId].connections.push(incomingConnection);
         }
       }
