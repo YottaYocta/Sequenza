@@ -9,6 +9,7 @@ uniform float u_blur_dist; // [0, 1, 0.1]
 uniform vec2 u_resolution; // resolution
 uniform float u_angle; // [0, 10, 0]
 uniform float u_blur_sample_count; // [2, 50, 5]
+uniform float u_start_offset; // [0, 1, 0.5]
 
 
 mat2 rotate2D(float angle) {
@@ -36,8 +37,10 @@ void main() {
 
     vec4 result = vec4(0.0);
 
+    float offset_bias = u_blur_dist * u_start_offset;
+
     for (int i = 0; i < count; i++) {
-        float offset = float(i) / float(count) * u_blur_dist;
+        float offset = float(i) / float(count) * u_blur_dist - offset_bias;
         vec2 target_pos = rotated_uv + vec2(offset, 0.0);
 
         result += texture(
