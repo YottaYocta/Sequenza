@@ -20,3 +20,8 @@
 	image-rendering: crisp-edges;
 	image-rendering: pixelated;
 }
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #d4d4d4 transparent;
+}

@@ -474,6 +474,8 @@ const EditorAux: FC<EditorProps> = ({
     }
   };
 
+  const [shaderSearch, setShaderSearch] = useState("");
+  const [shaderDialogSearch, setShaderDialogSearch] = useState("");
   const [showStats, setShowStats] = useState(initialShowStats ?? false);
   const [shaderPanelOpen, setShaderPanelOpen] = useState(
     initialShaderPanelOpen ?? true,
@@ -576,19 +578,33 @@ const EditorAux: FC<EditorProps> = ({
                 </div>
                 {shaderPanelOpen && (
                   <div className="flex flex-col gap-1 px-2 pb-2">
-                    {shaders
-                      .sort((a, b) => a.name.localeCompare(b.name))
-                      .map((shader) => (
-                        <button
-                          key={shader.id}
-                          className="text-xs flex justify-start p-1 rounded-sm hover:bg-neutral-100 cursor-pointer text-neutral-500"
-                          onClick={() => handleAddShader(shader)}
-                        >
-                          {shader.id.length > 25
-                            ? `${shader.id.slice(0, 11)}...${shader.id.slice(-11)}`
-                            : shader.id}
-                        </button>
-                      ))}
+                    <input
+                      type="text"
+                      value={shaderSearch}
+                      onChange={(e) => setShaderSearch(e.target.value)}
+                      placeholder="Search shaders..."
+                      className="text-xs p-1 rounded-sm border border-neutral-200 outline-none mb-1"
+                    />
+                    <div className="flex flex-col gap-1 pb-2 h-[50vh] overflow-y-auto">
+                      {shaders
+                        .filter((s) =>
+                          s.name
+                            .toLowerCase()
+                            .includes(shaderSearch.toLowerCase()),
+                        )
+                        .sort((a, b) => a.name.localeCompare(b.name))
+                        .map((shader) => (
+                          <button
+                            key={shader.id}
+                            className="text-xs flex justify-start p-1 rounded-sm hover:bg-neutral-100 cursor-pointer text-neutral-500"
+                            onClick={() => handleAddShader(shader)}
+                          >
+                            {shader.id.length > 25
+                              ? `${shader.id.slice(0, 11)}...${shader.id.slice(-11)}`
+                              : shader.id}
+                          </button>
+                        ))}
+                    </div>
                   </div>
                 )}
               </div>
@@ -619,7 +635,7 @@ const EditorAux: FC<EditorProps> = ({
           if (open === false) setDropLocation(null);
         }}
       >
-        <div className="w-full h-full flex flex-col p-4">
+        <div className="w-full h-full flex flex-col p-4 gap-4">
           <div className="w-full flex justify-between">
             <p>Add a Shader</p>
             <button
@@ -631,27 +647,42 @@ const EditorAux: FC<EditorProps> = ({
               Close
             </button>
           </div>
-          <div className="w-full flex flex-col">
-            {shaders.map((shader) => (
-              <button
-                key={shader.id}
-                className="text-xs flex justify-start p-1 rounded-sm hover:bg-neutral-100 cursor-pointer text-neutral-500"
-                onClick={() => {
-                  if (dropLocation) {
-                    handleAppendShader(
-                      shader,
-                      dropLocation.sourceId,
-                      dropLocation.position,
-                    );
-                    setDropLocation(null);
-                  } else {
-                    setDropLocation(null);
-                  }
-                }}
-              >
-                {shader.id}
-              </button>
-            ))}
+          <div className="w-full flex flex-col h-full overflow-hidden gap-2">
+            <input
+              type="text"
+              value={shaderDialogSearch}
+              onChange={(e) => setShaderDialogSearch(e.target.value)}
+              placeholder="Search shaders..."
+              className="text-xs p-1 rounded-sm border border-neutral-200 outline-none mb-1"
+            />
+            <div className="h-full flex flex-col overflow-y-auto">
+              {shaders
+                .filter((s) =>
+                  s.name
+                    .toLowerCase()
+                    .includes(shaderDialogSearch.toLowerCase()),
+                )
+                .map((shader) => (
+                  <button
+                    key={shader.id}
+                    className="text-xs flex justify-start p-1 rounded-sm hover:bg-neutral-100 cursor-pointer text-neutral-500"
+                    onClick={() => {
+                      if (dropLocation) {
+                        handleAppendShader(
+                          shader,
+                          dropLocation.sourceId,
+                          dropLocation.position,
+                        );
+                        setDropLocation(null);
+                      } else {
+                        setDropLocation(null);
+                      }
+                    }}
+                  >
+                    {shader.id}
+                  </button>
+                ))}
+            </div>
           </div>
         </div>
       </Dialog>

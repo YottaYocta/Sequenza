@@ -1,4 +1,4 @@
-import chromakey from "../../shaders/chromakey.frag?raw";
+import chromakey from "../../shaders/key.frag?raw";
 import daffodil from "../../shaders/daffodil.frag?raw";
 import dither_bayer from "../../shaders/dither_bayer.frag?raw";
 import dots from "../../shaders/dots.frag?raw";
@@ -10,18 +10,28 @@ import imageViewer from "../../shaders/imageViewer.frag?raw";
 import linear from "../../shaders/linear.frag?raw";
 import lines from "../../shaders/lines.frag?raw";
 import rgb from "../../shaders/rgb.frag?raw";
+import add from "../../shaders/add.frag?raw";
+import subtract from "../../shaders/subtract.frag?raw";
+import mix from "../../shaders/mix.frag?raw";
+import multiply from "../../shaders/multiply.frag?raw";
+import divide from "../../shaders/divide.frag?raw";
 
 export const staticShaders: Record<string, string> = {
-  "chromakey.frag": chromakey,
-  "dither_bayer.frag": dither_bayer,
-  "dots.frag": dots,
-  "daffodil.frag": daffodil,
-  "diamonds.frag": diamonds,
-  "gaussian.frag": gaussian,
-  "gradientmap.frag": gradientmap,
-  "hsl.frag": hsl,
-  "imageViewer.frag": imageViewer,
-  "linear.frag": linear,
-  "lines.frag": lines,
-  "rgb.frag": rgb,
+  key: chromakey,
+  dither: dither_bayer,
+  dots: dots,
+  daffodil: daffodil,
+  diamonds: diamonds,
+  "blur (gaussian)": gaussian,
+  "gradient map": gradientmap,
+  "hue/saturation/value": hsl,
+  "image viewer": imageViewer,
+  "blur (linear)": linear,
+  lines: lines,
+  "color adjust": rgb,
+  "mix (add)": add,
+  "mix (subtract)": subtract,
+  "mix (multiply)": multiply,
+  "mix (linear)": mix,
+  "mix (divide)": divide,
 };
