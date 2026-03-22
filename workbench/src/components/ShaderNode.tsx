@@ -112,12 +112,16 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
           </p>
         </>
       )}
-      {textureInputs.map((input) => (
+      {textureInputs.map((input, idx) => (
         <CustomHandle
           key={input}
           id={input}
           type="target"
           position={Position.Top}
+          count={{
+            total: textureInputs.length,
+            index: idx,
+          }}
         />
       ))}
       <div className="flex gap-8">
