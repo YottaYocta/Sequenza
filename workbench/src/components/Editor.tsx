@@ -440,39 +440,47 @@ const EditorAux: FC<EditorProps> = ({
     };
   }, []);
 
-  const handleAppendShader = (
-    shader: Shader,
-    sourceId: string,
-    position: XYPosition,
-  ) => {
-    const sourceNode = nodes.find((node) => node.id === sourceId);
-    if (sourceNode) {
-      const newNode = createShaderNode(shader);
+  const handleAppendShader = useCallback(
+    (shader: Shader, sourceId: string, position: XYPosition) => {
+      const sourceNode = nodes.find((node) => node.id === sourceId);
+      if (sourceNode) {
+        const newNode = createShaderNode(shader);
 
-      newNode.position = position;
+        newNode.position = position;
 
-      const fields = extractFields(newNode.data.shader);
-      let inputHandleName: string | undefined = undefined;
-      for (const field of fields) {
-        if (field.type === "sampler2D" && field.source === "input") {
-          inputHandleName = field.name;
-          break;
+        const fields = extractFields(newNode.data.shader);
+        let inputHandleName: string | undefined = undefined;
+        for (const field of fields) {
+          if (field.type === "sampler2D" && field.source === "input") {
+            inputHandleName = field.name;
+            break;
+          }
+        }
+
+        if (inputHandleName !== undefined) {
+          const newEdge: Edge = {
+            id: "" + Math.random(),
+            source: sourceId,
+            target: newNode.id,
+            targetHandle: inputHandleName,
+            type: "insert",
+          };
+
+          const newEdges = addEdge(newEdge, edges);
+          const newNodes = propagateWidthHeightUpdates(
+            [...nodes, newNode],
+            newEdges,
+            sourceNode.id,
+          );
+          console.log(newEdges);
+          console.log(newNodes);
+          setEdges(newEdges);
+          setNodes(newNodes);
         }
       }
-      setNodes((snapshot) => [...snapshot, newNode]);
-      if (inputHandleName !== undefined) {
-        const newEdge: Edge = {
-          id: "" + Math.random(),
-          source: sourceId,
-          target: newNode.id,
-          targetHandle: inputHandleName,
-          type: "insert",
-        };
-
-        setEdges((snapshot) => addEdge(newEdge, snapshot));
-      }
-    }
-  };
+    },
+    [nodes, edges],
+  );
 
   const [shaderSearch, setShaderSearch] = useState("");
   const [shaderDialogSearch, setShaderDialogSearch] = useState("");
