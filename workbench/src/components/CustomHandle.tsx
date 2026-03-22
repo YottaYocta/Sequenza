@@ -28,7 +28,7 @@ const CustomHandle: FC<CustomHandleProps> = ({ id, type, position, count }) => {
       id={id}
       type={type}
       position={position}
-      className={`${position === Position.Top ? "top-0 -translate-y-1/2" : position === Position.Bottom ? "bottom-0" : ""}`}
+      className={`${position === Position.Top ? "top-0 " : position === Position.Bottom ? "bottom-0" : ""}`}
       style={{
         background: "none",
         border: "none",
