@@ -176,9 +176,9 @@ const EditorAux: FC<EditorProps> = ({
 
   const { screenToFlowPosition } = useReactFlow();
 
-  const [dropLocation, setDropLocation] = useState<null | {
+  const [addShaderLocation, setAddShaderLocation] = useState<null | {
     position: XYPosition;
-    sourceId: string;
+    sourceId?: string;
   }>(null);
 
   const onConnectEnd: OnConnectEnd = useCallback(
@@ -186,13 +186,14 @@ const EditorAux: FC<EditorProps> = ({
       if (!connectionState.isValid && connectionState.fromNode) {
         const { clientX, clientY } =
           "changedTouches" in event ? event.changedTouches[0] : event;
-        setDropLocation({
+        setAddShaderLocation({
           position: screenToFlowPosition({
             x: clientX,
             y: clientY,
           }),
           sourceId: connectionState.fromNode.id,
         });
+        setAddShaderDialogOpen(true);
       }
     },
     [screenToFlowPosition],
@@ -265,14 +266,11 @@ const EditorAux: FC<EditorProps> = ({
   };
 
   const store = useStoreApi();
-  const [addShaderPosition, setAddShaderPosition] = useState<XYPosition | null>(
-    null,
-  );
   const handleAddShader = useCallback(
     (shader: Shader) => {
       const newNode = createShaderNode(shader);
 
-      if (addShaderPosition === null) {
+      if (addShaderLocation === null) {
         const domNode = store.getState().domNode;
         if (domNode) {
           const domRect = domNode.getBoundingClientRect();
@@ -282,14 +280,21 @@ const EditorAux: FC<EditorProps> = ({
           });
           newNode.position = pos;
         }
+      } else if (addShaderLocation.sourceId) {
+        handleAppendShader(
+          shader,
+          addShaderLocation.sourceId,
+          addShaderLocation.position,
+        );
+        return;
       } else {
-        newNode.position = addShaderPosition;
-        setAddShaderPosition(null);
+        newNode.position = addShaderLocation.position;
       }
 
+      setAddShaderLocation(null);
       setNodes((snapshot) => [...snapshot, newNode]);
     },
-    [addShaderPosition],
+    [addShaderLocation],
   );
 
   const handleInsertShader = useCallback(
@@ -505,8 +510,6 @@ const EditorAux: FC<EditorProps> = ({
             newEdges,
             sourceNode.id,
           );
-          console.log(newEdges);
-          console.log(newNodes);
           setEdges(newEdges);
           setNodes(newNodes);
         }
@@ -521,6 +524,7 @@ const EditorAux: FC<EditorProps> = ({
   const [addShaderPanelOpen, setAddShaderPanelOpen] = useState(
     initialShaderPanelOpen ?? true,
   );
+  const [addShaderDialogOpen, setAddShaderDialogOpen] = useState(false);
   const [openExportNodeId, setOpenExportNodeId] = useState<string | null>(null);
   const [openPreviewNodeId, setOpenPreviewNodeIdState] = useState<
     string | null
@@ -687,9 +691,9 @@ const EditorAux: FC<EditorProps> = ({
                 />
               )}
               <Dialog
-                open={dropLocation === null ? false : true}
+                open={addShaderDialogOpen}
                 handleOpenChange={(open) => {
-                  if (open === false) setDropLocation(null);
+                  setAddShaderDialogOpen(open);
                 }}
               >
                 <div className="w-full h-full flex flex-col p-4 gap-4">
@@ -698,7 +702,7 @@ const EditorAux: FC<EditorProps> = ({
                     <button
                       className="button-base"
                       onClick={() => {
-                        setDropLocation(null);
+                        setAddShaderDialogOpen(false);
                       }}
                     >
                       Close
@@ -724,16 +728,8 @@ const EditorAux: FC<EditorProps> = ({
                             key={shader.id}
                             className="text-xs flex justify-start p-1 rounded-sm hover:bg-neutral-100 cursor-pointer text-neutral-500"
                             onClick={() => {
-                              if (dropLocation) {
-                                handleAppendShader(
-                                  shader,
-                                  dropLocation.sourceId,
-                                  dropLocation.position,
-                                );
-                                setDropLocation(null);
-                              } else {
-                                setDropLocation(null);
-                              }
+                              handleAddShader(shader);
+                              setAddShaderDialogOpen(false);
                             }}
                           >
                             {shader.id}
@@ -752,12 +748,12 @@ const EditorAux: FC<EditorProps> = ({
             <ContextMenu.Popup className="w-32 h-min bg-white outline-none">
               <ContextMenu.Item
                 onClick={(e) => {
-                  setAddShaderPanelOpen(true);
                   const pos = screenToFlowPosition({
                     x: e.clientX,
                     y: e.clientY,
                   });
-                  setAddShaderPosition(pos);
+                  setAddShaderLocation({ position: pos });
+                  setAddShaderDialogOpen(true);
                 }}
               >
                 Add Node
