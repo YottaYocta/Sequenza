@@ -129,7 +129,7 @@ export default function Home() {
         <div className="w-3/5 h-full p-4">
           <div className="w-full h-full rounded-sm overflow-clip relative">
             <button
-              className="top-4 right-4 button-base absolute z-10"
+              className="top-4 left-4 button-base absolute z-10"
               onClick={() => setEditorOpen(false)}
             >
               Close
