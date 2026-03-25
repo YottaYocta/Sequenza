@@ -5,7 +5,7 @@ precision highp float;
 
 uniform float u_time; // time
 uniform vec2 u_resolution; // resolution
-uniform vec3 u_notes;
+uniform float u_vitality;
 uniform vec2 u_mouse;  //mouse
 
 uniform float u_flower_count; // [1, 10, 5]
@@ -15,7 +15,7 @@ uniform float u_ring_radius; // [-1, 10, 2]
 uniform float u_rotation_offset; // [1, 10, 5]
 uniform float u_mouse_rotation; // [0, 2, 0.1]
 uniform float u_mouse_scale_factor; // [0, 1, 0.1]
-uniform vec3 u_origin; // [0, 0.5, -20]
+uniform vec3 u_transform; // [0, 0.5, -20]
 
 in vec2 vUv;
 out vec4 fragColor;
@@ -162,7 +162,7 @@ float single_flower(vec3 p)
 
     h = h * h;
 
-    float maxBend = sin(u_time / 2.0) / 10.0 + 0.6 - (gain(u_notes.x - u_notes.z / 2.0, 2.0)-0.5) / 5.0; 
+    float maxBend = sin(u_time / 2.0) / 10.0 + 0.6 - (gain(u_vitality / 2.0, 2.0)-0.5) / 5.0; 
 
     float bendAngle = h * maxBend;
 
@@ -223,7 +223,7 @@ void main()
     float aspect = u_resolution.x / u_resolution.y;
     vec2 resolution = vec2(uv.x * aspect, uv.y) * 0.5;
 
-    vec3 ray_origin = vec3(0, (1.0-u_mouse.y * u_mouse_scale_factor) * 1.0, (1.0-u_mouse.y * u_mouse_scale_factor) * 7.0) + u_origin;
+    vec3 ray_origin = vec3(0, (1.0-u_mouse.y * u_mouse_scale_factor) * 1.0, (1.0-u_mouse.y * u_mouse_scale_factor) * 7.0) + u_transform;
     vec3 ray_direction = normalize(vec3(resolution, 1.0));
 
     float MAX_DIST = 20.0 + 10.0 * (1.0-u_mouse.y * u_mouse_scale_factor);
@@ -258,8 +258,8 @@ void main()
         mix(
             vec3(
                 //0.0,
-                //pow(max(0.0,1.0 - float(min_dist)), 2.0 * u_notes.x + 1.0),
-                pow(max(0.0,1.0 - float(min_dist)), 0.5 * u_notes.x + 1.0) * 1.2
+                //pow(max(0.0,1.0 - float(min_dist)), 2.0 * u_vitality + 1.0),
+                pow(max(0.0,1.0 - float(min_dist)), 0.5 * u_vitality + 1.0) * 1.2
                 //pow(1.0 - float(steps) / float(MAX_STEPS), 2.0),
                 //1.0
                 ), 
@@ -268,7 +268,7 @@ void main()
                 //pow(1.0 - float(steps) / float(MAX_STEPS), 2.0)
                 //1.0
                 ), 
-                pow(min(1.0,(1.0 - u_notes.x - u_notes.z + u_notes.y) + 0.4), 2.0)
+                pow(min(1.0,(1.0 - u_vitality) + 0.4), 2.0)
             //float(intersected)
         ), 
         1.0
