@@ -95,13 +95,13 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
   return (
     <div
       className={`
-				flex flex-col gap-4 bg-white rounded-lg p-6 relative  outline-neutral-200
+				flex flex-col gap-8 bg-white rounded-lg p-6 relative  outline-neutral-200
 				${selected ? "outline-neutral-300 outline-4" : "outline-0"}
-        group
+        group min-w-96 items-center justify-center 
 			`}
     >
       <div className="w-full flex justify-between">
-        <p className="text-sm w-min py-1 px-2 bg-neutral-100 rounded-md text-neutral-500 text-nowrap">
+        <p className="text-sm w-min py-1 px-2 text-lg rounded-md text-neutral-500 text-nowrap">
           {data.shader.name}
         </p>
         <div className="flex gap-2">
