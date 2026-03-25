@@ -55,6 +55,7 @@ export const Vec4ColorField: FC<{
 
   useEffect(() => {
     setValue(initialValue);
+    handleUpdateUniformField(initialValue);
   }, [initialValue]);
 
   const [r, g, b, a] = value;
