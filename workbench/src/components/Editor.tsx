@@ -511,6 +511,56 @@ const EditorAux: FC<EditorProps> = ({
     [nodes, edges],
   );
 
+  const handleImport = useCallback(
+    (json: string) => {
+      try {
+        const data = JSON.parse(json) as {
+          uniforms: Record<string, Uniforms>;
+          shader: Patch;
+        };
+
+        const idMap = new Map<string, string>();
+        for (const shader of data.shader.shaders) {
+          idMap.set(shader.id, `${Math.random() * 100000}`);
+        }
+
+        const newNodes: Node[] = data.shader.shaders.map((shader) => {
+          const newId = idMap.get(shader.id)!;
+          const remapped: Shader = { ...shader, id: newId };
+
+          if (data.uniforms[shader.id]) {
+            uniformRef.current[newId] = data.uniforms[shader.id];
+          } else {
+            uniformRef.current[newId] = {};
+          }
+
+          return {
+            id: newId,
+            position: { x: Math.random() * 400, y: Math.random() * 400 },
+            data: { shader: remapped, uniforms: uniformRef, paused: false },
+            type: "shader",
+          };
+        });
+
+        const newEdges: Edge[] = data.shader.connections.map((conn) => ({
+          id: `${Math.random() * 100000}`,
+          source: idMap.get(conn.from) ?? conn.from,
+          target: idMap.get(conn.to) ?? conn.to,
+          targetHandle: conn.input,
+          type: "insert",
+        }));
+
+        setNodes((prev) => [...prev, ...newNodes]);
+        setEdges((prev) => [...prev, ...newEdges]);
+      } catch {
+        // invalid JSON — silently ignore
+      }
+    },
+    [],
+  );
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [showStats, setShowStats] = useState(initialShowStats ?? false);
   const [addShaderDialogOpen, setAddShaderDialogOpen] = useState(false);
   const [openExportNodeId, setOpenExportNodeId] = useState<string | null>(null);
@@ -591,6 +641,24 @@ const EditorAux: FC<EditorProps> = ({
                       >
                         Add Shader
                       </button>
+                      <button
+                        className="button-base"
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        Import
+                      </button>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".json"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          file.text().then((text) => handleImport(text));
+                          e.target.value = "";
+                        }}
+                      />
                     </div>
                     {showStats && (
                       <>
