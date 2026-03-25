@@ -38,8 +38,8 @@ import { ShaderNode, type ShaderNodeData } from "./ShaderNode";
 import { EditorContext } from "./EditorContext";
 import CustomEdge from "./CustomEdge";
 import ConnectionLine from "./ConnectionLine";
-import { Dialog } from "./Dialog";
 import { ExportDialog } from "./ExportDialog";
+import { AddShaderDialog } from "./AddShaderDialog";
 import { ContextMenu } from "@base-ui/react/context-menu";
 
 interface EditorProps {
@@ -519,7 +519,6 @@ const EditorAux: FC<EditorProps> = ({
   );
 
   const [shaderSearch, setShaderSearch] = useState("");
-  const [shaderDialogSearch, setShaderDialogSearch] = useState("");
   const [showStats, setShowStats] = useState(initialShowStats ?? false);
   const [addShaderPanelOpen, setAddShaderPanelOpen] = useState(
     initialShaderPanelOpen ?? true,
@@ -690,55 +689,12 @@ const EditorAux: FC<EditorProps> = ({
                   }}
                 />
               )}
-              <Dialog
+              <AddShaderDialog
                 open={addShaderDialogOpen}
-                handleOpenChange={(open) => {
-                  setAddShaderDialogOpen(open);
-                }}
-              >
-                <div className="w-full h-full flex flex-col p-4 gap-4">
-                  <div className="w-full flex justify-between">
-                    <p>Add a Shader</p>
-                    <button
-                      className="button-base"
-                      onClick={() => {
-                        setAddShaderDialogOpen(false);
-                      }}
-                    >
-                      Close
-                    </button>
-                  </div>
-                  <div className="w-full flex flex-col h-full overflow-hidden gap-2">
-                    <input
-                      type="text"
-                      value={shaderDialogSearch}
-                      onChange={(e) => setShaderDialogSearch(e.target.value)}
-                      placeholder="Search shaders..."
-                      className="text-xs p-1 rounded-sm border border-neutral-200 outline-none mb-1"
-                    />
-                    <div className="h-full flex flex-col overflow-y-auto">
-                      {shaders
-                        .filter((s) =>
-                          s.name
-                            .toLowerCase()
-                            .includes(shaderDialogSearch.toLowerCase()),
-                        )
-                        .map((shader) => (
-                          <button
-                            key={shader.id}
-                            className="text-xs flex justify-start p-1 rounded-sm hover:bg-neutral-100 cursor-pointer text-neutral-500"
-                            onClick={() => {
-                              handleAddShader(shader);
-                              setAddShaderDialogOpen(false);
-                            }}
-                          >
-                            {shader.id}
-                          </button>
-                        ))}
-                    </div>
-                  </div>
-                </div>
-              </Dialog>
+                handleOpenChange={setAddShaderDialogOpen}
+                shaders={shaders}
+                handleAddShader={handleAddShader}
+              />
             </div>
           }
         />
