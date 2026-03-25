@@ -77,15 +77,37 @@ function propagateWidthHeightUpdates(
     incomingEdges.set(edge.target, list);
   }
 
+  const adjacency = new Map<string, string[]>();
+  for (const node of nodes) adjacency.set(node.id, []);
+  for (const edge of edges) adjacency.get(edge.source)?.push(edge.target);
+
+  let reachable: Set<string> | null = null;
+  if (startId !== undefined) {
+    reachable = new Set<string>();
+    const bfs = [startId];
+    while (bfs.length > 0) {
+      const id = bfs.shift()!;
+      if (reachable.has(id)) continue;
+      reachable.add(id);
+      for (const neighbor of adjacency.get(id) ?? []) bfs.push(neighbor);
+    }
+  }
+
   return topologicalMap(
     nodes,
     edges,
     (node, nodeMap) => {
+      if (node.id === startId) return node;
       if (node.type !== "shader") return node;
       const incoming = incomingEdges.get(node.id);
       if (!incoming || incoming.length === 0) return node;
 
-      const sourceNode = nodeMap.get(incoming[0].source);
+      const edge = reachable
+        ? incoming.find((e) => reachable!.has(e.source))
+        : incoming[0];
+      if (!edge) return node;
+
+      const sourceNode = nodeMap.get(edge.source);
       if (!sourceNode || sourceNode.type !== "shader") return node;
       const { width, height } = (sourceNode as ShaderNode).data.shader
         .resolution;
@@ -432,7 +454,8 @@ const EditorAux: FC<EditorProps> = ({
         const updated = snapshot.map((node) => {
           if (node.id === nodeId && node.type === "shader") {
             const shaderNode = node as ShaderNode;
-            return { ...shaderNode, data: updateData(shaderNode.data) };
+            const newNodeData = updateData(shaderNode.data);
+            return { ...shaderNode, data: newNodeData };
           }
           return node;
         });
@@ -505,84 +528,89 @@ const EditorAux: FC<EditorProps> = ({
     [nodes, edges],
   );
 
-  const handleImport = useCallback((json: string) => {
-    try {
-      const data = JSON.parse(json) as {
-        uniforms: Record<string, Uniforms>;
-        shader: Patch;
-      };
+  const handleImport = useCallback(
+    (json: string) => {
+      try {
+        const data = JSON.parse(json) as {
+          uniforms: Record<string, Uniforms>;
+          shader: Patch;
+        };
 
-      const idMap = new Map<string, string>();
-      for (const shader of data.shader.shaders) {
-        idMap.set(shader.id, `${Math.random() * 100000}`);
-      }
-
-      const domNode = store.getState().domNode;
-      const center = domNode
-        ? (() => {
-            const rect = domNode.getBoundingClientRect();
-            return screenToFlowPosition({
-              x: rect.x + rect.width / 2,
-              y: rect.y + rect.height / 2,
-            });
-          })()
-        : { x: 0, y: 0 };
-
-      const shaderById = new Map(
-        data.shader.shaders.map((s) => [s.id, s]),
-      );
-
-      const tempNodes: Node[] = data.shader.shaders.map((s) => ({
-        id: s.id,
-        position: { x: 0, y: 0 },
-        data: {},
-      }));
-      const tempEdges: Edge[] = data.shader.connections.map((c) => ({
-        id: `${c.from}-${c.to}`,
-        source: c.from,
-        target: c.to,
-      }));
-
-      let idx = 0;
-      const sortedNodes = topologicalMap(tempNodes, tempEdges, (node) => {
-        const shader = shaderById.get(node.id)!;
-        const newId = idMap.get(node.id)!;
-        const remapped: Shader = { ...shader, id: newId };
-
-        if (data.uniforms[node.id]) {
-          uniformRef.current[newId] = data.uniforms[node.id];
-        } else {
-          uniformRef.current[newId] = {};
+        const idMap = new Map<string, string>();
+        for (const shader of data.shader.shaders) {
+          idMap.set(shader.id, `${Math.random() * 100000}`);
         }
 
-        return {
-          id: newId,
-          position: { x: center.x, y: center.y + idx++ * 300 },
-          data: { shader: remapped, uniforms: uniformRef, paused: false },
-          type: "shader",
-        };
-      });
+        const domNode = store.getState().domNode;
+        const center = domNode
+          ? (() => {
+              const rect = domNode.getBoundingClientRect();
+              return screenToFlowPosition({
+                x: rect.x + rect.width / 2,
+                y: rect.y + rect.height / 2,
+              });
+            })()
+          : { x: 0, y: 0 };
 
-      const newNodes = sortedNodes;
+        const shaderById = new Map(data.shader.shaders.map((s) => [s.id, s]));
 
-      const newEdges: Edge[] = data.shader.connections.map((conn) => ({
-        id: `${Math.random() * 100000}`,
-        source: idMap.get(conn.from) ?? conn.from,
-        target: idMap.get(conn.to) ?? conn.to,
-        targetHandle: conn.input,
-        type: "insert",
-      }));
+        const tempNodes: Node[] = data.shader.shaders.map((s) => ({
+          id: s.id,
+          position: { x: 0, y: 0 },
+          data: {},
+        }));
+        const tempEdges: Edge[] = data.shader.connections.map((c) => ({
+          id: `${c.from}-${c.to}`,
+          source: c.from,
+          target: c.to,
+        }));
 
-      setNodes((prev) => [...prev, ...newNodes]);
-      setEdges((prev) => [...prev, ...newEdges]);
-    } catch (e) {
-      console.error(e);
-    }
-  }, [screenToFlowPosition, store]);
+        let idx = 0;
+        const sortedNodes = topologicalMap(tempNodes, tempEdges, (node) => {
+          const shader = shaderById.get(node.id)!;
+          const newId = idMap.get(node.id)!;
+          const remapped: Shader = { ...shader, id: newId };
+
+          if (data.uniforms[node.id]) {
+            uniformRef.current[newId] = data.uniforms[node.id];
+          } else {
+            uniformRef.current[newId] = {};
+          }
+
+          return {
+            id: newId,
+            position: { x: center.x, y: center.y + idx++ * 300 },
+            data: { shader: remapped, uniforms: uniformRef, paused: false },
+            type: "shader",
+          };
+        });
+
+        const newNodes = sortedNodes;
+
+        const newEdges: Edge[] = data.shader.connections.map((conn) => ({
+          id: `${Math.random() * 100000}`,
+          source: idMap.get(conn.from) ?? conn.from,
+          target: idMap.get(conn.to) ?? conn.to,
+          targetHandle: conn.input,
+          type: "insert",
+        }));
+
+        setNodes((prev) => [...prev, ...newNodes]);
+        setEdges((prev) => [...prev, ...newEdges]);
+      } catch (e) {
+        console.error(e);
+      }
+    },
+    [screenToFlowPosition, store],
+  );
 
   useEffect(() => {
     const onPaste = (e: ClipboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement
+      )
+        return;
       const text = e.clipboardData?.getData("text/plain");
       if (text) handleImport(text);
     };
