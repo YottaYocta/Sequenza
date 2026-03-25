@@ -511,53 +511,50 @@ const EditorAux: FC<EditorProps> = ({
     [nodes, edges],
   );
 
-  const handleImport = useCallback(
-    (json: string) => {
-      try {
-        const data = JSON.parse(json) as {
-          uniforms: Record<string, Uniforms>;
-          shader: Patch;
-        };
+  const handleImport = useCallback((json: string) => {
+    try {
+      const data = JSON.parse(json) as {
+        uniforms: Record<string, Uniforms>;
+        shader: Patch;
+      };
 
-        const idMap = new Map<string, string>();
-        for (const shader of data.shader.shaders) {
-          idMap.set(shader.id, `${Math.random() * 100000}`);
+      const idMap = new Map<string, string>();
+      for (const shader of data.shader.shaders) {
+        idMap.set(shader.id, `${Math.random() * 100000}`);
+      }
+
+      const newNodes: Node[] = data.shader.shaders.map((shader) => {
+        const newId = idMap.get(shader.id)!;
+        const remapped: Shader = { ...shader, id: newId };
+
+        if (data.uniforms[shader.id]) {
+          uniformRef.current[newId] = data.uniforms[shader.id];
+        } else {
+          uniformRef.current[newId] = {};
         }
 
-        const newNodes: Node[] = data.shader.shaders.map((shader) => {
-          const newId = idMap.get(shader.id)!;
-          const remapped: Shader = { ...shader, id: newId };
+        return {
+          id: newId,
+          position: { x: Math.random() * 400, y: Math.random() * 400 },
+          data: { shader: remapped, uniforms: uniformRef, paused: false },
+          type: "shader",
+        };
+      });
 
-          if (data.uniforms[shader.id]) {
-            uniformRef.current[newId] = data.uniforms[shader.id];
-          } else {
-            uniformRef.current[newId] = {};
-          }
+      const newEdges: Edge[] = data.shader.connections.map((conn) => ({
+        id: `${Math.random() * 100000}`,
+        source: idMap.get(conn.from) ?? conn.from,
+        target: idMap.get(conn.to) ?? conn.to,
+        targetHandle: conn.input,
+        type: "insert",
+      }));
 
-          return {
-            id: newId,
-            position: { x: Math.random() * 400, y: Math.random() * 400 },
-            data: { shader: remapped, uniforms: uniformRef, paused: false },
-            type: "shader",
-          };
-        });
-
-        const newEdges: Edge[] = data.shader.connections.map((conn) => ({
-          id: `${Math.random() * 100000}`,
-          source: idMap.get(conn.from) ?? conn.from,
-          target: idMap.get(conn.to) ?? conn.to,
-          targetHandle: conn.input,
-          type: "insert",
-        }));
-
-        setNodes((prev) => [...prev, ...newNodes]);
-        setEdges((prev) => [...prev, ...newEdges]);
-      } catch {
-        // invalid JSON — silently ignore
-      }
-    },
-    [],
-  );
+      setNodes((prev) => [...prev, ...newNodes]);
+      setEdges((prev) => [...prev, ...newEdges]);
+    } catch {
+      // invalid JSON — silently ignore
+    }
+  }, []);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -630,16 +627,31 @@ const EditorAux: FC<EditorProps> = ({
                   >
                     <div className="flex gap-1 p-1 bg-white rounded-md w-min">
                       <button
+                        className="button-base flex items-center gap-1"
+                        onClick={() => setAddShaderDialogOpen(true)}
+                      >
+                        Add Shader
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="#000000"
+                          stroke-width="1.5"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <path d="M12 5l0 14" />
+                          <path d="M5 12l14 0" />
+                        </svg>
+                      </button>
+
+                      <button
                         className="button-base"
                         onClick={() => setShowStats(!showStats)}
                       >
                         {showStats ? "Hide Stats" : "Show Stats"}
-                      </button>
-                      <button
-                        className="button-base"
-                        onClick={() => setAddShaderDialogOpen(true)}
-                      >
-                        Add Shader
                       </button>
                       <button
                         className="button-base"
