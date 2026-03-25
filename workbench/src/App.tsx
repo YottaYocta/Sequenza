@@ -161,11 +161,11 @@ function App() {
             initialOpenPreviewNodeId={
               localStorage.getItem("sequenza-open-preview-node") || null
             }
-            onEditorStateChange={({ showStats, shaderPanelOpen }) => {
+            onEditorStateChange={({ showStats, addShaderPanelOpen }) => {
               localStorage.setItem("sequenza-show-stats", String(showStats));
               localStorage.setItem(
                 "sequenza-shader-panel-open",
-                String(shaderPanelOpen),
+                String(addShaderPanelOpen),
               );
             }}
             onOpenPreviewNodeIdChange={(nodeId) => {

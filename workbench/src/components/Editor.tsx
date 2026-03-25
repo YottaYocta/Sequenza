@@ -40,6 +40,7 @@ import CustomEdge from "./CustomEdge";
 import ConnectionLine from "./ConnectionLine";
 import { Dialog } from "./Dialog";
 import { ExportDialog } from "./ExportDialog";
+import { ContextMenu } from "@base-ui/react/context-menu";
 
 interface EditorProps {
   shaders: Shader[];
@@ -59,7 +60,7 @@ interface EditorProps {
   initialOpenPreviewNodeId?: string | null;
   onEditorStateChange?: (state: {
     showStats: boolean;
-    shaderPanelOpen: boolean;
+    addShaderPanelOpen: boolean;
   }) => void;
   onOpenPreviewNodeIdChange?: (nodeId: string | null) => void;
 }
@@ -264,21 +265,32 @@ const EditorAux: FC<EditorProps> = ({
   };
 
   const store = useStoreApi();
-  const handleAddShader = (shader: Shader) => {
-    const newNode = createShaderNode(shader);
-    const domNode = store.getState().domNode;
+  const [addShaderPosition, setAddShaderPosition] = useState<XYPosition | null>(
+    null,
+  );
+  const handleAddShader = useCallback(
+    (shader: Shader) => {
+      const newNode = createShaderNode(shader);
 
-    if (domNode) {
-      const domRect = domNode.getBoundingClientRect();
-      const pos = screenToFlowPosition({
-        x: domRect.x + domRect.width / 2,
-        y: domRect.y + domRect.height / 2,
-      });
-      newNode.position = pos;
-    }
+      if (addShaderPosition === null) {
+        const domNode = store.getState().domNode;
+        if (domNode) {
+          const domRect = domNode.getBoundingClientRect();
+          const pos = screenToFlowPosition({
+            x: domRect.x + domRect.width / 2,
+            y: domRect.y + domRect.height / 2,
+          });
+          newNode.position = pos;
+        }
+      } else {
+        newNode.position = addShaderPosition;
+        setAddShaderPosition(null);
+      }
 
-    setNodes((snapshot) => [...snapshot, newNode]);
-  };
+      setNodes((snapshot) => [...snapshot, newNode]);
+    },
+    [addShaderPosition],
+  );
 
   const handleInsertShader = useCallback(
     (shader: Shader, edgeId: string) => {
@@ -506,7 +518,7 @@ const EditorAux: FC<EditorProps> = ({
   const [shaderSearch, setShaderSearch] = useState("");
   const [shaderDialogSearch, setShaderDialogSearch] = useState("");
   const [showStats, setShowStats] = useState(initialShowStats ?? false);
-  const [shaderPanelOpen, setShaderPanelOpen] = useState(
+  const [addShaderPanelOpen, setAddShaderPanelOpen] = useState(
     initialShaderPanelOpen ?? true,
   );
   const [openExportNodeId, setOpenExportNodeId] = useState<string | null>(null);
@@ -519,204 +531,242 @@ const EditorAux: FC<EditorProps> = ({
   };
 
   useEffect(() => {
-    onEditorStateChange?.({ showStats, shaderPanelOpen });
-  }, [showStats, shaderPanelOpen]);
+    onEditorStateChange?.({ showStats, addShaderPanelOpen });
+  }, [showStats, addShaderPanelOpen]);
 
   return (
-    <div className={`w-full h-full ${className}`}>
-      <EditorContext.Provider
-        value={{
-          currentTime: timeRef,
-          mousePosition: mousePosRef,
-          shaders,
-          patches,
-          showStats,
-          openExportNodeId,
-          setOpenExportNodeId,
-          openPreviewNodeId,
-          setOpenPreviewNodeId,
-          uniforms: uniformRef,
-          handleUpdateUniforms,
-          handleUpdateNode,
-          handleInsertShader,
-        }}
-      >
-        <ReactFlow
-          panOnScroll={true}
-          proOptions={{ hideAttribution: true }}
-          nodes={nodes}
-          nodeTypes={{ shader: ShaderNode }}
-          edges={edges}
-          edgeTypes={{ insert: CustomEdge }}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          onConnectEnd={onConnectEnd}
-          connectionLineComponent={ConnectionLine}
-          isValidConnection={isValidConnection}
-          minZoom={0.1}
-          style={{
-            background: "#F3F3F3",
-          }}
-          fitView
-        >
-          <Controls
-            style={
-              {
-                "--xy-controls-button-background-color-default": "transparent",
-                "--xy-controls-box-shadow-default": "none",
-              } as any
-            }
-          ></Controls>
-          <Panel position="top-left" className="flex flex-col gap-4">
-            <button
-              className="button-base"
-              onClick={() => setShowStats(!showStats)}
-            >
-              {showStats ? "Hide Stats" : "Show Stats"}
-            </button>
-            {showStats && (
-              <>
-                <div className="flex flex-col gap-2">
-                  {nodes.map((node) => (
-                    <p className="text-xs text-neutral-400" key={node.id}>
-                      {node.id}
-                    </p>
-                  ))}
-                </div>
-                <div className="flex flex-col gap-2">
-                  {edges.map((edge) => (
-                    <p className="text-xs text-neutral-400" key={edge.id}>
-                      {edge.source} {">"} {edge.target} {edge.targetHandle}
-                    </p>
-                  ))}
-                </div>
-              </>
-            )}
-          </Panel>
-          {shaders.length > 0 && (
-            <Panel position="bottom-right">
-              <div className="w-56 flex flex-col rounded-sm bg-white overflow-hidden">
-                <div className="flex items-center justify-between px-3 py-2">
-                  <p className="text-sm">Add Shader</p>
-                  <button
-                    className="button-base"
-                    onClick={() => setShaderPanelOpen(!shaderPanelOpen)}
-                  >
-                    {shaderPanelOpen ? "Hide" : "Show"}
-                  </button>
-                </div>
-                {shaderPanelOpen && (
-                  <div className="flex flex-col gap-1 px-2 pb-2">
+    <>
+      <ContextMenu.Root>
+        {" "}
+        <ContextMenu.Trigger
+          render={
+            <div className={`w-full h-full ${className} relative`}>
+              <EditorContext.Provider
+                value={{
+                  currentTime: timeRef,
+                  mousePosition: mousePosRef,
+                  shaders,
+                  patches,
+                  showStats,
+                  openExportNodeId,
+                  setOpenExportNodeId,
+                  openPreviewNodeId,
+                  setOpenPreviewNodeId,
+                  uniforms: uniformRef,
+                  handleUpdateUniforms,
+                  handleUpdateNode,
+                  handleInsertShader,
+                }}
+              >
+                <ReactFlow
+                  panOnScroll={true}
+                  proOptions={{ hideAttribution: true }}
+                  nodes={nodes}
+                  nodeTypes={{ shader: ShaderNode }}
+                  edges={edges}
+                  edgeTypes={{ insert: CustomEdge }}
+                  onNodesChange={onNodesChange}
+                  onEdgesChange={onEdgesChange}
+                  onConnect={onConnect}
+                  onConnectEnd={onConnectEnd}
+                  connectionLineComponent={ConnectionLine}
+                  isValidConnection={isValidConnection}
+                  minZoom={0.1}
+                  style={{
+                    background: "#F3F3F3",
+                  }}
+                  fitView
+                >
+                  <Controls
+                    style={
+                      {
+                        "--xy-controls-button-background-color-default":
+                          "transparent",
+                        "--xy-controls-box-shadow-default": "none",
+                      } as any
+                    }
+                  ></Controls>
+                  <Panel position="top-left" className="flex flex-col gap-4">
+                    <button
+                      className="button-base"
+                      onClick={() => setShowStats(!showStats)}
+                    >
+                      {showStats ? "Hide Stats" : "Show Stats"}
+                    </button>
+                    {showStats && (
+                      <>
+                        <div className="flex flex-col gap-2">
+                          {nodes.map((node) => (
+                            <p
+                              className="text-xs text-neutral-400"
+                              key={node.id}
+                            >
+                              {node.id}
+                            </p>
+                          ))}
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          {edges.map((edge) => (
+                            <p
+                              className="text-xs text-neutral-400"
+                              key={edge.id}
+                            >
+                              {edge.source} {">"} {edge.target}{" "}
+                              {edge.targetHandle}
+                            </p>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </Panel>
+                  {shaders.length > 0 && (
+                    <Panel position="bottom-right">
+                      <div className="w-56 flex flex-col rounded-sm bg-white overflow-hidden">
+                        <div className="flex items-center justify-between px-3 py-2">
+                          <p className="text-sm">Add Shader</p>
+                          <button
+                            className="button-base"
+                            onClick={() =>
+                              setAddShaderPanelOpen(!addShaderPanelOpen)
+                            }
+                          >
+                            {addShaderPanelOpen ? "Hide" : "Show"}
+                          </button>
+                        </div>
+                        {addShaderPanelOpen && (
+                          <div className="flex flex-col gap-1 px-2 pb-2">
+                            <input
+                              type="text"
+                              value={shaderSearch}
+                              onChange={(e) => setShaderSearch(e.target.value)}
+                              placeholder="Search shaders..."
+                              className="text-xs p-1 rounded-sm border border-neutral-200 outline-none mb-1"
+                            />
+                            <div className="flex flex-col gap-1 pb-2 h-[50vh] overflow-y-auto">
+                              {shaders
+                                .filter((s) =>
+                                  s.name
+                                    .toLowerCase()
+                                    .includes(shaderSearch.toLowerCase()),
+                                )
+                                .sort((a, b) => a.name.localeCompare(b.name))
+                                .map((shader) => (
+                                  <button
+                                    key={shader.id}
+                                    className="text-xs flex justify-start p-1 rounded-sm hover:bg-neutral-100 cursor-pointer text-neutral-500"
+                                    onClick={() => handleAddShader(shader)}
+                                  >
+                                    {shader.id.length > 25
+                                      ? `${shader.id.slice(0, 11)}...${shader.id.slice(-11)}`
+                                      : shader.id}
+                                  </button>
+                                ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </Panel>
+                  )}
+                  {savedAt && (
+                    <Panel position="bottom-center">
+                      <p className="text-xs text-neutral-400">
+                        Last saved at {savedAt.toLocaleTimeString()}
+                      </p>
+                    </Panel>
+                  )}
+                </ReactFlow>
+              </EditorContext.Provider>
+              {openExportNodeId !== null && patches[openExportNodeId] && (
+                <ExportDialog
+                  uniforms={uniformRef.current}
+                  patch={patches[openExportNodeId]}
+                  open={true}
+                  onOpenChange={(open) => {
+                    if (!open) setOpenExportNodeId(null);
+                  }}
+                />
+              )}
+              <Dialog
+                open={dropLocation === null ? false : true}
+                handleOpenChange={(open) => {
+                  if (open === false) setDropLocation(null);
+                }}
+              >
+                <div className="w-full h-full flex flex-col p-4 gap-4">
+                  <div className="w-full flex justify-between">
+                    <p>Add a Shader</p>
+                    <button
+                      className="button-base"
+                      onClick={() => {
+                        setDropLocation(null);
+                      }}
+                    >
+                      Close
+                    </button>
+                  </div>
+                  <div className="w-full flex flex-col h-full overflow-hidden gap-2">
                     <input
                       type="text"
-                      value={shaderSearch}
-                      onChange={(e) => setShaderSearch(e.target.value)}
+                      value={shaderDialogSearch}
+                      onChange={(e) => setShaderDialogSearch(e.target.value)}
                       placeholder="Search shaders..."
                       className="text-xs p-1 rounded-sm border border-neutral-200 outline-none mb-1"
                     />
-                    <div className="flex flex-col gap-1 pb-2 h-[50vh] overflow-y-auto">
+                    <div className="h-full flex flex-col overflow-y-auto">
                       {shaders
                         .filter((s) =>
                           s.name
                             .toLowerCase()
-                            .includes(shaderSearch.toLowerCase()),
+                            .includes(shaderDialogSearch.toLowerCase()),
                         )
-                        .sort((a, b) => a.name.localeCompare(b.name))
                         .map((shader) => (
                           <button
                             key={shader.id}
                             className="text-xs flex justify-start p-1 rounded-sm hover:bg-neutral-100 cursor-pointer text-neutral-500"
-                            onClick={() => handleAddShader(shader)}
+                            onClick={() => {
+                              if (dropLocation) {
+                                handleAppendShader(
+                                  shader,
+                                  dropLocation.sourceId,
+                                  dropLocation.position,
+                                );
+                                setDropLocation(null);
+                              } else {
+                                setDropLocation(null);
+                              }
+                            }}
                           >
-                            {shader.id.length > 25
-                              ? `${shader.id.slice(0, 11)}...${shader.id.slice(-11)}`
-                              : shader.id}
+                            {shader.id}
                           </button>
                         ))}
                     </div>
                   </div>
-                )}
-              </div>
-            </Panel>
-          )}
-          {savedAt && (
-            <Panel position="bottom-center">
-              <p className="text-xs text-neutral-400">
-                Last saved at {savedAt.toLocaleTimeString()}
-              </p>
-            </Panel>
-          )}
-        </ReactFlow>
-      </EditorContext.Provider>
-      {openExportNodeId !== null && patches[openExportNodeId] && (
-        <ExportDialog
-          uniforms={uniformRef.current}
-          patch={patches[openExportNodeId]}
-          open={true}
-          onOpenChange={(open) => {
-            if (!open) setOpenExportNodeId(null);
-          }}
-        />
-      )}
-      <Dialog
-        open={dropLocation === null ? false : true}
-        handleOpenChange={(open) => {
-          if (open === false) setDropLocation(null);
-        }}
-      >
-        <div className="w-full h-full flex flex-col p-4 gap-4">
-          <div className="w-full flex justify-between">
-            <p>Add a Shader</p>
-            <button
-              className="button-base"
-              onClick={() => {
-                setDropLocation(null);
-              }}
-            >
-              Close
-            </button>
-          </div>
-          <div className="w-full flex flex-col h-full overflow-hidden gap-2">
-            <input
-              type="text"
-              value={shaderDialogSearch}
-              onChange={(e) => setShaderDialogSearch(e.target.value)}
-              placeholder="Search shaders..."
-              className="text-xs p-1 rounded-sm border border-neutral-200 outline-none mb-1"
-            />
-            <div className="h-full flex flex-col overflow-y-auto">
-              {shaders
-                .filter((s) =>
-                  s.name
-                    .toLowerCase()
-                    .includes(shaderDialogSearch.toLowerCase()),
-                )
-                .map((shader) => (
-                  <button
-                    key={shader.id}
-                    className="text-xs flex justify-start p-1 rounded-sm hover:bg-neutral-100 cursor-pointer text-neutral-500"
-                    onClick={() => {
-                      if (dropLocation) {
-                        handleAppendShader(
-                          shader,
-                          dropLocation.sourceId,
-                          dropLocation.position,
-                        );
-                        setDropLocation(null);
-                      } else {
-                        setDropLocation(null);
-                      }
-                    }}
-                  >
-                    {shader.id}
-                  </button>
-                ))}
+                </div>
+              </Dialog>
             </div>
-          </div>
-        </div>
-      </Dialog>
-    </div>
+          }
+        />
+        <ContextMenu.Portal>
+          <ContextMenu.Backdrop />
+          <ContextMenu.Positioner>
+            <ContextMenu.Popup className="w-32 h-min bg-white outline-none">
+              <ContextMenu.Item
+                onClick={(e) => {
+                  setAddShaderPanelOpen(true);
+                  const pos = screenToFlowPosition({
+                    x: e.clientX,
+                    y: e.clientY,
+                  });
+                  setAddShaderPosition(pos);
+                }}
+              >
+                Add Node
+              </ContextMenu.Item>
+            </ContextMenu.Popup>
+          </ContextMenu.Positioner>
+        </ContextMenu.Portal>
+      </ContextMenu.Root>
+    </>
   );
 };
 
