@@ -554,6 +554,7 @@ const EditorAux: FC<EditorProps> = ({
           onConnectEnd={onConnectEnd}
           connectionLineComponent={ConnectionLine}
           isValidConnection={isValidConnection}
+          minZoom={0.1}
           style={{
             background: "#F3F3F3",
           }}
