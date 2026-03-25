@@ -56,7 +56,6 @@ interface EditorProps {
   }) => void;
   className?: string;
   initialShowStats?: boolean;
-  initialShaderPanelOpen?: boolean;
   initialOpenPreviewNodeId?: string | null;
   onEditorStateChange?: (state: {
     showStats: boolean;
@@ -111,9 +110,7 @@ const EditorAux: FC<EditorProps> = ({
   handleSave,
   className,
   initialShowStats,
-  initialShaderPanelOpen,
   initialOpenPreviewNodeId,
-  onEditorStateChange,
   onOpenPreviewNodeIdChange,
 }) => {
   const [edges, setEdges] = useState<Edge[]>(initialState?.edges ?? []);
@@ -518,11 +515,7 @@ const EditorAux: FC<EditorProps> = ({
     [nodes, edges],
   );
 
-  const [shaderSearch, setShaderSearch] = useState("");
   const [showStats, setShowStats] = useState(initialShowStats ?? false);
-  const [addShaderPanelOpen, setAddShaderPanelOpen] = useState(
-    initialShaderPanelOpen ?? true,
-  );
   const [addShaderDialogOpen, setAddShaderDialogOpen] = useState(false);
   const [openExportNodeId, setOpenExportNodeId] = useState<string | null>(null);
   const [openPreviewNodeId, setOpenPreviewNodeIdState] = useState<
@@ -532,10 +525,6 @@ const EditorAux: FC<EditorProps> = ({
     setOpenPreviewNodeIdState(id);
     onOpenPreviewNodeIdChange?.(id);
   };
-
-  useEffect(() => {
-    onEditorStateChange?.({ showStats, addShaderPanelOpen });
-  }, [showStats, addShaderPanelOpen]);
 
   return (
     <>
@@ -589,13 +578,24 @@ const EditorAux: FC<EditorProps> = ({
                       } as any
                     }
                   ></Controls>
-                  <Panel position="top-left" className="flex flex-col gap-4">
-                    <button
-                      className="button-base"
-                      onClick={() => setShowStats(!showStats)}
-                    >
-                      {showStats ? "Hide Stats" : "Show Stats"}
-                    </button>
+                  <Panel
+                    position="top-right"
+                    className="flex flex-col gap-4 items-end"
+                  >
+                    <div className="flex gap-1 p-1 bg-white rounded-md w-min">
+                      <button
+                        className="button-base"
+                        onClick={() => setShowStats(!showStats)}
+                      >
+                        {showStats ? "Hide Stats" : "Show Stats"}
+                      </button>
+                      <button
+                        className="button-base"
+                        onClick={() => setAddShaderDialogOpen(true)}
+                      >
+                        Add Shader
+                      </button>
+                    </div>
                     {showStats && (
                       <>
                         <div className="flex flex-col gap-2">
@@ -622,54 +622,6 @@ const EditorAux: FC<EditorProps> = ({
                       </>
                     )}
                   </Panel>
-                  {shaders.length > 0 && (
-                    <Panel position="bottom-right">
-                      <div className="w-56 flex flex-col rounded-sm bg-white overflow-hidden">
-                        <div className="flex items-center justify-between px-3 py-2">
-                          <p className="text-sm">Add Shader</p>
-                          <button
-                            className="button-base"
-                            onClick={() =>
-                              setAddShaderPanelOpen(!addShaderPanelOpen)
-                            }
-                          >
-                            {addShaderPanelOpen ? "Hide" : "Show"}
-                          </button>
-                        </div>
-                        {addShaderPanelOpen && (
-                          <div className="flex flex-col gap-1 px-2 pb-2">
-                            <input
-                              type="text"
-                              value={shaderSearch}
-                              onChange={(e) => setShaderSearch(e.target.value)}
-                              placeholder="Search shaders..."
-                              className="text-xs p-1 rounded-sm border border-neutral-200 outline-none mb-1"
-                            />
-                            <div className="flex flex-col gap-1 pb-2 h-[50vh] overflow-y-auto">
-                              {shaders
-                                .filter((s) =>
-                                  s.name
-                                    .toLowerCase()
-                                    .includes(shaderSearch.toLowerCase()),
-                                )
-                                .sort((a, b) => a.name.localeCompare(b.name))
-                                .map((shader) => (
-                                  <button
-                                    key={shader.id}
-                                    className="text-xs flex justify-start p-1 rounded-sm hover:bg-neutral-100 cursor-pointer text-neutral-500"
-                                    onClick={() => handleAddShader(shader)}
-                                  >
-                                    {shader.id.length > 25
-                                      ? `${shader.id.slice(0, 11)}...${shader.id.slice(-11)}`
-                                      : shader.id}
-                                  </button>
-                                ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </Panel>
-                  )}
                   {savedAt && (
                     <Panel position="bottom-center">
                       <p className="text-xs text-neutral-400">

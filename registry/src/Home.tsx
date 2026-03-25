@@ -150,15 +150,8 @@ export default function Home() {
               initialShowStats={
                 localStorage.getItem("registry-show-stats") === "true"
               }
-              initialShaderPanelOpen={
-                localStorage.getItem("registry-shader-panel-open") !== "false"
-              }
-              onEditorStateChange={({ showStats, addShaderPanelOpen }) => {
+              onEditorStateChange={({ showStats }) => {
                 localStorage.setItem("registry-show-stats", String(showStats));
-                localStorage.setItem(
-                  "registry-shader-panel-open",
-                  String(addShaderPanelOpen),
-                );
               }}
               className="rounded-md"
             />
