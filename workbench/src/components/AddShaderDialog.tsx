@@ -45,7 +45,7 @@ export const AddShaderDialog: FC<AddShaderDialogProps> = ({
               .map((shader) => (
                 <button
                   key={shader.id}
-                  className="text-xs flex justify-start p-1 rounded-sm hover:bg-neutral-100 cursor-pointer text-neutral-500"
+                  className="text-xs flex justify-start p-1 rounded-sm hover:bg-neutral-100 cursor-pointer text-neutral-500  focus:outline-none  focus:bg-neutral-200"
                   onClick={() => {
                     handleAddShader(shader);
                     handleOpenChange(false);
