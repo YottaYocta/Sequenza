@@ -25,6 +25,7 @@ import {
   ReactFlow,
   ReactFlowProvider,
   useReactFlow,
+  useStoreApi,
   type Edge,
   type Node,
   type OnConnect,
@@ -249,6 +250,7 @@ const EditorAux: FC<EditorProps> = ({
     const newId = `${Math.random() * 100000}`;
     const newShader: Shader = { ...shader, id: newId };
     uniformRef.current[newId] = {};
+
     return {
       id: newId,
       position: { x: 0, y: 0 },
@@ -261,8 +263,21 @@ const EditorAux: FC<EditorProps> = ({
     };
   };
 
+  const store = useStoreApi();
   const handleAddShader = (shader: Shader) => {
-    setNodes((snapshot) => [...snapshot, createShaderNode(shader)]);
+    const newNode = createShaderNode(shader);
+    const domNode = store.getState().domNode;
+
+    if (domNode) {
+      const domRect = domNode.getBoundingClientRect();
+      const pos = screenToFlowPosition({
+        x: domRect.x + domRect.width / 2,
+        y: domRect.y + domRect.height / 2,
+      });
+      newNode.position = pos;
+    }
+
+    setNodes((snapshot) => [...snapshot, newNode]);
   };
 
   const handleInsertShader = (shader: Shader, edgeId: string) => {
