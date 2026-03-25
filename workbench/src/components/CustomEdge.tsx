@@ -32,7 +32,6 @@ export default function CustomEdge({
   const [showAddShadersModal, setShowModal] = useState(false);
 
   const onEdgeClick = () => {
-    console.log("d");
     setShowModal(true);
   };
 

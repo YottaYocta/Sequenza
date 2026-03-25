@@ -280,41 +280,40 @@ const EditorAux: FC<EditorProps> = ({
     setNodes((snapshot) => [...snapshot, newNode]);
   };
 
-  const handleInsertShader = (shader: Shader, edgeId: string) => {
-    const oldEdge = edges.find((edge) => edge.id === edgeId);
-    if (!oldEdge) return;
-    const edgeStartId = oldEdge.source;
-    const edgeEndId = oldEdge.target;
-    const startNode = nodes.find((node) => node.id === edgeStartId);
-    const endNode = nodes.find((node) => node.id === edgeEndId);
-    const endHandle = oldEdge.targetHandle;
-    if (startNode && endNode && endHandle) {
-      const newNode = createShaderNode(shader);
-      const fields = extractFields(newNode.data.shader);
-      let inputHandleName: string | undefined = undefined;
-      for (const field of fields) {
-        if (field.type === "sampler2D" && field.source === "input") {
-          inputHandleName = field.name;
-          break;
+  const handleInsertShader = useCallback(
+    (shader: Shader, edgeId: string) => {
+      const oldEdge = edges.find((edge) => edge.id === edgeId);
+      if (!oldEdge) return;
+      const edgeStartId = oldEdge.source;
+      const edgeEndId = oldEdge.target;
+      const startNode = nodes.find((node) => node.id === edgeStartId);
+      const endNode = nodes.find((node) => node.id === edgeEndId);
+      const endHandle = oldEdge.targetHandle;
+      if (startNode && endNode && endHandle) {
+        const newNode = createShaderNode(shader);
+        const fields = extractFields(newNode.data.shader);
+        let inputHandleName: string | undefined = undefined;
+        for (const field of fields) {
+          if (field.type === "sampler2D" && field.source === "input") {
+            inputHandleName = field.name;
+            break;
+          }
         }
-      }
-      if (inputHandleName === undefined) return;
+        if (inputHandleName === undefined) return;
 
-      const [_, labelX, labelY] = getSimpleBezierPath({
-        sourceX: startNode.position.x,
-        sourceY: startNode.position.y,
-        sourcePosition: Position.Bottom,
-        targetX: endNode.position.x,
-        targetY: endNode.position.y,
-        targetPosition: Position.Top,
-      });
+        const [_, labelX, labelY] = getSimpleBezierPath({
+          sourceX: startNode.position.x,
+          sourceY: startNode.position.y,
+          sourcePosition: Position.Bottom,
+          targetX: endNode.position.x,
+          targetY: endNode.position.y,
+          targetPosition: Position.Top,
+        });
 
-      newNode.position.x = labelX;
-      newNode.position.y = labelY;
+        newNode.position.x = labelX;
+        newNode.position.y = labelY;
 
-      setNodes((snapshot) => [...snapshot, newNode]);
-      setEdges((snapshot) => {
-        const edgesWithoutConnection = snapshot.filter(
+        const edgesWithoutConnection = edges.filter(
           (edge) => edge.id !== edgeId,
         );
         const intoEdge: Edge = {
@@ -335,10 +334,17 @@ const EditorAux: FC<EditorProps> = ({
 
         edgesWithoutConnection.push(intoEdge);
         edgesWithoutConnection.push(outOfEdge);
-        return edgesWithoutConnection;
-      });
-    }
-  };
+        setEdges(edgesWithoutConnection);
+        const updatedNodes = propagateWidthHeightUpdates(
+          [...nodes, newNode],
+          edgesWithoutConnection,
+          startNode.id,
+        );
+        setNodes(updatedNodes);
+      }
+    },
+    [nodes, edges],
+  );
 
   const [edgesHash, edgeMap] = useMemo(() => {
     const edgeMap: Record<string, Connection[]> = {};
