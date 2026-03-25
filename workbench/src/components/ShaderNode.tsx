@@ -102,7 +102,7 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
     >
       <div className="w-full flex justify-between">
         <p className="text-sm w-min py-1 px-2 text-lg rounded-md text-neutral-500 text-nowrap">
-          {data.shader.name}
+          {data.shader.name.charAt(0).toUpperCase() + data.shader.name.slice(1)}
         </p>
         <div className="flex gap-2">
           <button
@@ -184,7 +184,7 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
                 Save
               </button>
             </div>
-            <div className="relative max-w-96">
+            <div className="relative max-w-144">
               <RendererComponent
                 ref={canvasRef}
                 animate={!data.paused}
@@ -193,7 +193,7 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
                 patch={patches[data.shader.id]}
                 uniforms={uniforms}
                 className="w-full h-auto"
-                style={{ maxWidth: `${(width / height) * 24}rem` }}
+                style={{ maxWidth: `${(width / height) * 36}rem` }}
                 onError={(msg) => {
                   setShaderError(msg);
                 }}
