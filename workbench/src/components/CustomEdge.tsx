@@ -15,9 +15,9 @@ export default function CustomEdge({
   targetY,
   sourcePosition,
   targetPosition,
-  style = {},
   markerEnd,
   id,
+  selected,
 }: EdgeProps) {
   const [edgePath, labelX, labelY] = getBezierPath({
     sourceX,
@@ -33,7 +33,11 @@ export default function CustomEdge({
 
   return (
     <>
-      <BaseEdge path={edgePath} markerEnd={markerEnd} style={style} />
+      <BaseEdge
+        path={edgePath}
+        markerEnd={markerEnd}
+        style={selected ? { strokeWidth: "5px" } : { strokeWidth: "2px" }}
+      />
       <EdgeLabelRenderer>
         <div
           className="absolute -translate-1/2 origin-center pointer-events-auto"
@@ -42,7 +46,7 @@ export default function CustomEdge({
           }}
         >
           <button
-            className="w-6 h-6 bg-neutral-200  rounded-full active:bg-neutral-200 z-10 flex items-center justify-center"
+            className="w-6 h-6 bg-neutral-200  rounded-full active:bg-neutral-200 z-10 flex items-center justify-center hover:bg-neutral-300"
             onClick={() => setShowModal(true)}
           >
             +

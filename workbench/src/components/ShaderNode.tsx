@@ -95,8 +95,8 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
   return (
     <div
       className={`
-				flex flex-col gap-4 bg-white rounded-lg p-6 relative transition-[outline] outline-neutral-200 duration-75
-				${selected ? "outline-4" : "outline-0"}
+				flex flex-col gap-4 bg-white rounded-lg p-6 relative  outline-neutral-200
+				${selected ? "outline-neutral-300 outline-4" : "outline-0"}
 			`}
     >
       <p className="text-sm w-min py-1 px-2 bg-neutral-100 rounded-lg text-neutral-500 text-nowrap">

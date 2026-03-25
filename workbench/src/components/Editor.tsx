@@ -201,10 +201,6 @@ const EditorAux: FC<EditorProps> = ({
   );
 
   useEffect(() => {
-    if (initialState?.uniforms) uniformRef.current = initialState.uniforms;
-  }, [initialState]);
-
-  useEffect(() => {
     setNodes((snapshot) =>
       snapshot.map((node) => {
         if (node.type === "shader") {
@@ -653,7 +649,7 @@ const EditorAux: FC<EditorProps> = ({
         <ContextMenu.Portal>
           <ContextMenu.Backdrop />
           <ContextMenu.Positioner>
-            <ContextMenu.Popup className="w-32 h-min bg-white outline-none">
+            <ContextMenu.Popup className="w-32 h-min bg-white outline-none flex flex-col p-1 rounded-md">
               <ContextMenu.Item
                 onClick={(e) => {
                   const pos = screenToFlowPosition({
@@ -663,6 +659,7 @@ const EditorAux: FC<EditorProps> = ({
                   setAddShaderLocation({ position: pos });
                   setAddShaderDialogOpen(true);
                 }}
+                className="button-base w-full"
               >
                 Add Node
               </ContextMenu.Item>

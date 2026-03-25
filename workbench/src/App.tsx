@@ -21,7 +21,9 @@ import {
 
 function App() {
   // maps filepath to shader
-  const [shaderMap, setShaderMap] = useState<Record<string, Shader>>({});
+  const [shaderMap, setShaderMap] = useState<Record<string, Shader> | null>(
+    null,
+  );
   const shaderUniforms = useRef<Record<string, Uniforms>>({});
 
   useEffect(() => {
@@ -58,6 +60,7 @@ function App() {
   }, []);
 
   const initialState = useMemo(() => {
+    if (shaderMap === null) return null;
     try {
       const nodes: Node[] = JSON.parse(
         localStorage.getItem("sequenza-nodes") ?? "[]",
@@ -143,20 +146,15 @@ function App() {
     return undefined;
   }, [shaderMap]);
 
-  const shadersReady = Object.keys(shaderMap).length > 0;
-
   return (
     <main className="">
       <div className="w-full min-h-screen h-screen ">
-        {shadersReady && (
+        {shaderMap && initialState && (
           <Editor
             shaders={[...Object.values(shaderMap)]}
             initialState={initialState}
             initialShowStats={
               localStorage.getItem("sequenza-show-stats") === "true"
-            }
-            initialShaderPanelOpen={
-              localStorage.getItem("sequenza-shader-panel-open") !== "false"
             }
             initialOpenPreviewNodeId={
               localStorage.getItem("sequenza-open-preview-node") || null
