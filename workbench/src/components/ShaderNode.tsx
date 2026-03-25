@@ -97,11 +97,49 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
       className={`
 				flex flex-col gap-4 bg-white rounded-lg p-6 relative  outline-neutral-200
 				${selected ? "outline-neutral-300 outline-4" : "outline-0"}
+        group
 			`}
     >
-      <p className="text-sm w-min py-1 px-2 bg-neutral-100 rounded-lg text-neutral-500 text-nowrap">
-        {data.shader.name}
-      </p>
+      <div className="w-full flex justify-between">
+        <p className="text-sm w-min py-1 px-2 bg-neutral-100 rounded-md text-neutral-500 text-nowrap">
+          {data.shader.name}
+        </p>
+        <div className="flex gap-2">
+          <button
+            className={`button-base group-hover:block hidden`}
+            onClick={() => {
+              setOpenPreviewNodeId(id);
+              setUniformSource(uniforms.current[data.shader.id] ?? {});
+            }}
+          >
+            Expand
+          </button>
+          <PreviewDialog
+            open={openPreviewNodeId === id}
+            onOpenChange={(open) => {
+              setUniformSource(uniforms.current[data.shader.id] ?? {});
+              setOpenPreviewNodeId(open ? id : null);
+            }}
+            shader={data.shader}
+            patch={patches[data.shader.id]}
+            uniforms={uniforms}
+            savedUniforms={uniformSource}
+            nodeId={id}
+            handleFieldUpdate={handleFieldUpdate}
+            handleUpdateNode={handleUpdateNode}
+          />
+          <button
+            className={`button-base ${data.paused ? "" : "group-hover:block hidden"}`}
+            onClick={() => {
+              handleUpdateNode(id, (snapshot) => {
+                return { ...snapshot, paused: !snapshot.paused };
+              });
+            }}
+          >
+            {data.paused ? "Resume" : "Pause"}
+          </button>
+        </div>
+      </div>
       {showStats && (
         <>
           <p className="text-xs text-neutral-500 absolute -top-6">
@@ -132,42 +170,21 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
         />
         <div className="flex flex-col justify-center items-start gap-4 ">
           <div className="flex flex-col gap-2">
-            <div className="relative max-w-96 group">
-              <div className="flex absolute top-2 right-2 gap-2">
-                <button
-                  className={`button-base group-hover:opacity-100 opacity-0`}
-                  onClick={() => {
-                    setOpenPreviewNodeId(id);
-                    setUniformSource(uniforms.current[data.shader.id] ?? {});
-                  }}
-                >
-                  Expand
-                </button>
-                <PreviewDialog
-                  open={openPreviewNodeId === id}
-                  onOpenChange={(open) => {
-                    setUniformSource(uniforms.current[data.shader.id] ?? {});
-                    setOpenPreviewNodeId(open ? id : null);
-                  }}
-                  shader={data.shader}
-                  patch={patches[data.shader.id]}
-                  uniforms={uniforms}
-                  savedUniforms={uniformSource}
-                  nodeId={id}
-                  handleFieldUpdate={handleFieldUpdate}
-                  handleUpdateNode={handleUpdateNode}
-                />
-                <button
-                  className={`button-base ${data.paused ? "opacity-100" : "group-hover:opacity-100 opacity-0"}`}
-                  onClick={() => {
-                    handleUpdateNode(id, (snapshot) => {
-                      return { ...snapshot, paused: !snapshot.paused };
-                    });
-                  }}
-                >
-                  {data.paused ? "Resume" : "Pause"}
-                </button>
-              </div>
+            <div className="flex gap-1">
+              <button
+                className="button-base"
+                onClick={() => setOpenExportNodeId(id)}
+              >
+                Export
+              </button>
+              <button className="button-base" onClick={copyImage}>
+                {imageCopied === "done" ? "Copied!" : "Copy"}
+              </button>
+              <button className="button-base" onClick={saveImage}>
+                Save
+              </button>
+            </div>
+            <div className="relative max-w-96">
               <RendererComponent
                 ref={canvasRef}
                 animate={!data.paused}
@@ -208,20 +225,6 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
                 }
               />
             </div>
-          </div>
-          <div className="flex gap-1">
-            <button
-              className="button-base"
-              onClick={() => setOpenExportNodeId(id)}
-            >
-              Export
-            </button>
-            <button className="button-base" onClick={copyImage}>
-              {imageCopied === "done" ? "Copied!" : "Copy"}
-            </button>
-            <button className="button-base" onClick={saveImage}>
-              Save
-            </button>
           </div>
         </div>
       </div>
