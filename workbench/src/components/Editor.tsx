@@ -701,9 +701,9 @@ const EditorAux: FC<EditorProps> = ({
                           viewBox="0 0 24 24"
                           fill="none"
                           stroke="#000000"
-                          stroke-width="1.5"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
                         >
                           <path d="M12 5l0 14" />
                           <path d="M5 12l14 0" />
