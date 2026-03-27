@@ -45,6 +45,7 @@ import { topologicalMap } from "./util";
 
 interface EditorProps {
   shaders: Shader[];
+  locked?: true;
   initialState?: {
     nodes: Node[];
     edges: Edge[];
@@ -136,6 +137,7 @@ const EditorAux: FC<EditorProps> = ({
   initialShowStats,
   initialOpenPreviewNodeId,
   onOpenPreviewNodeIdChange,
+  locked,
 }) => {
   const [edges, setEdges] = useState<Edge[]>(initialState?.edges ?? []);
   const [nodes, setNodes] = useState<Node[]>(() => {
@@ -657,7 +659,8 @@ const EditorAux: FC<EditorProps> = ({
                 }}
               >
                 <ReactFlow
-                  panOnScroll={true}
+                  preventScrolling={!locked}
+                  panOnScroll={!locked}
                   proOptions={{ hideAttribution: true }}
                   nodes={nodes}
                   nodeTypes={{ shader: ShaderNode }}
@@ -675,92 +678,96 @@ const EditorAux: FC<EditorProps> = ({
                   }}
                   fitView
                 >
-                  <Controls
-                    style={
-                      {
-                        "--xy-controls-button-background-color-default":
-                          "transparent",
-                        "--xy-controls-box-shadow-default": "none",
-                      } as any
-                    }
-                  ></Controls>
-                  <Panel
-                    position="top-right"
-                    className="flex flex-col gap-4 items-end"
-                  >
-                    <div className="flex gap-1 p-1 bg-white rounded-md w-min">
-                      <button
-                        className="button-base flex items-center gap-1"
-                        onClick={() => setAddShaderDialogOpen(true)}
-                      >
-                        Add Shader
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="14"
-                          height="14"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="#000000"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
+                  {!locked && (
+                    <Controls
+                      style={
+                        {
+                          "--xy-controls-button-background-color-default":
+                            "transparent",
+                          "--xy-controls-box-shadow-default": "none",
+                        } as any
+                      }
+                    ></Controls>
+                  )}
+                  {!locked && (
+                    <Panel
+                      position="top-right"
+                      className="flex flex-col gap-4 items-end"
+                    >
+                      <div className="flex gap-1 p-1 bg-white rounded-md w-min">
+                        <button
+                          className="button-base flex items-center gap-1"
+                          onClick={() => setAddShaderDialogOpen(true)}
                         >
-                          <path d="M12 5l0 14" />
-                          <path d="M5 12l14 0" />
-                        </svg>
-                      </button>
+                          Add Shader
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="#000000"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M12 5l0 14" />
+                            <path d="M5 12l14 0" />
+                          </svg>
+                        </button>
 
-                      <button
-                        className="button-base"
-                        onClick={() => setShowStats(!showStats)}
-                      >
-                        {showStats ? "Hide Stats" : "Show Stats"}
-                      </button>
-                      <button
-                        className="button-base"
-                        onClick={() => fileInputRef.current?.click()}
-                      >
-                        Import
-                      </button>
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept=".json"
-                        className="hidden"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (!file) return;
-                          file.text().then((text) => handleImport(text));
-                          e.target.value = "";
-                        }}
-                      />
-                    </div>
-                    {showStats && (
-                      <>
-                        <div className="flex flex-col gap-2">
-                          {nodes.map((node) => (
-                            <p
-                              className="text-xs text-neutral-400"
-                              key={node.id}
-                            >
-                              {node.id}
-                            </p>
-                          ))}
-                        </div>
-                        <div className="flex flex-col gap-2">
-                          {edges.map((edge) => (
-                            <p
-                              className="text-xs text-neutral-400"
-                              key={edge.id}
-                            >
-                              {edge.source} {">"} {edge.target}{" "}
-                              {edge.targetHandle}
-                            </p>
-                          ))}
-                        </div>
-                      </>
-                    )}
-                  </Panel>
+                        <button
+                          className="button-base"
+                          onClick={() => setShowStats(!showStats)}
+                        >
+                          {showStats ? "Hide Stats" : "Show Stats"}
+                        </button>
+                        <button
+                          className="button-base"
+                          onClick={() => fileInputRef.current?.click()}
+                        >
+                          Import
+                        </button>
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept=".json"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            file.text().then((text) => handleImport(text));
+                            e.target.value = "";
+                          }}
+                        />
+                      </div>
+                      {showStats && (
+                        <>
+                          <div className="flex flex-col gap-2">
+                            {nodes.map((node) => (
+                              <p
+                                className="text-xs text-neutral-400"
+                                key={node.id}
+                              >
+                                {node.id}
+                              </p>
+                            ))}
+                          </div>
+                          <div className="flex flex-col gap-2">
+                            {edges.map((edge) => (
+                              <p
+                                className="text-xs text-neutral-400"
+                                key={edge.id}
+                              >
+                                {edge.source} {">"} {edge.target}{" "}
+                                {edge.targetHandle}
+                              </p>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </Panel>
+                  )}
                   {savedAt && (
                     <Panel position="bottom-center">
                       <p className="text-xs text-neutral-400">

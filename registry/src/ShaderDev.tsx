@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Nav } from "./components/Nav";
 import { Footer } from "./components/Footer";
+import { EditorPreview } from "./components/EditorPreview";
 
 const COPY_ICON = (
   <svg
@@ -38,7 +39,7 @@ export default function ShaderDev() {
       <div className="flex items-center gap-32 max-w-5xl w-full justify-between">
         <div className="flex flex-col items-start gap-12">
           <div className="flex flex-col items-start gap-8 max-w-md">
-            <h1 className="tracking-tight capitalize text-black font-semibold text-4xl leading-11">
+            <h1 className="tracking-tight capitalize text-black font-medium bold text-4xl leading-11">
               Works on My Machine?
               <br />
               It'll work on yours too
@@ -64,13 +65,9 @@ export default function ShaderDev() {
             </button>
           </div>
         </div>
-        <div
-          className="w-110 h-88 rounded-lg bg-cover bg-center shrink-0"
-          style={{
-            backgroundImage:
-              "url(https://workers.paper.design/file-assets/01KKNDX03GBEX15GS0BMQPTWJ9/01KMPZX4SRHV17WNRXFRD5D183.png)",
-          }}
-        />
+        <div className="w-120 h-100 rounded-lg bg-cover bg-center shrink-0">
+          <EditorPreview></EditorPreview>
+        </div>
       </div>
 
       {/* Features */}
@@ -83,7 +80,7 @@ export default function ShaderDev() {
                 "url(https://workers.paper.design/file-assets/01KKNDX03GBEX15GS0BMQPTWJ9/01KMQ0WR42VKQB7MQ4JSXB4370.png)",
             }}
           />
-          <h2 className="tracking-tight capitalize text-black font-semibold text-3xl leading-9">
+          <h2 className="tracking-tight capitalize text-black font-medium bold text-3xl leading-9">
             Live Updates
           </h2>
           <p className="max-w-md opacity-70 text-black  leading-6">
@@ -109,7 +106,7 @@ export default function ShaderDev() {
               }}
             />
           </div>
-          <h2 className="tracking-tight capitalize text-black font-semibold text-3xl leading-9">
+          <h2 className="tracking-tight capitalize text-black font-medium bold text-3xl leading-9">
             Uniform Detection
           </h2>
           <p className="max-w-md opacity-70 text-black  leading-6">
@@ -125,7 +122,7 @@ export default function ShaderDev() {
                 "url(https://workers.paper.design/file-assets/01KKNDX03GBEX15GS0BMQPTWJ9/01KMQ0WR42VKQB7MQ4JSXB4370.png)",
             }}
           />
-          <h2 className="tracking-tight capitalize text-black font-semibold text-3xl leading-9">
+          <h2 className="tracking-tight capitalize text-black font-medium bold text-3xl leading-9">
             Local Storage
           </h2>
           <p className="max-w-md opacity-70 text-black  leading-6">

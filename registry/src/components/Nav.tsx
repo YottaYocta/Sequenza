@@ -10,6 +10,11 @@ export function Nav() {
         <Link to="/editor" className="  hover:opacity-70">
           Editor
         </Link>
+
+        <Link to="/" className="  hover:opacity-70">
+          Home
+        </Link>
+
         <Link to="/shader-dev" className="  hover:opacity-70">
           Shader Development
         </Link>

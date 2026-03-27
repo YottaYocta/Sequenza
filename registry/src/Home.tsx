@@ -2,6 +2,7 @@ import Dither1 from "./components/Dither1";
 import Hatching from "./components/Hatching";
 import HeatMap from "./components/HeatMap";
 import Dots1 from "./components/Dots1";
+import { EditorPreview } from "./components/EditorPreview";
 import daffodil from "./assets/daffodil.png";
 import type { EditorInitialState } from "@sequenza/workbench";
 import "@xyflow/react/dist/style.css";
@@ -29,7 +30,7 @@ export default function Home() {
       <div className="flex items-center gap-32 max-w-5xl w-full">
         <div className="flex flex-col items-start gap-20">
           <div className="flex flex-col items-start gap-8">
-            <h1 className="tracking-tight capitalize text-black font-semibold text-4xl leading-11 max-w-md">
+            <h1 className="tracking-tight capitalize text-black font-medium text-3xl leading-11 max-w-md">
               Design Interactive Shaders
               <br />
               Use them anywhere
@@ -52,8 +53,10 @@ export default function Home() {
             </a>
           </div>
         </div>
-        {/* Hero image placeholder — grey rect for now */}
-        <div className="w-110 h-88 rounded-lg bg-neutral-300 shrink-0" />
+        {/* Hero editor preview */}
+        <div className="w-120 h-100 rounded-lg bg-neutral-200 shrink-0 overflow-hidden">
+          <EditorPreview />
+        </div>
       </div>
 
       <div id="showcase" className="flex items-start gap-5 max-w-screen-2xl">
