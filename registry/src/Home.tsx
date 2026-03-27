@@ -1,201 +1,79 @@
-import { useState, useRef } from "react";
 import Dither1 from "./components/Dither1";
 import Hatching from "./components/Hatching";
 import HeatMap from "./components/HeatMap";
 import Dots1 from "./components/Dots1";
 import daffodil from "./assets/daffodil.png";
-import {
-  Editor,
-  type EditorInitialState,
-  staticShaders,
-} from "@sequenza/workbench";
+import type { EditorInitialState } from "@sequenza/workbench";
 import "@xyflow/react/dist/style.css";
 import "@sequenza/workbench/style.css";
-import type { Shader } from "@sequenza/lib";
+import { Nav } from "./components/Nav";
+import { Footer } from "./components/Footer";
+import { useInitialState } from "./context/InitialStateContext";
+import { useNavigate, Link } from "react-router";
 
-type MediaSource =
-  | { url: string; isVideo: false; name: string; element?: undefined }
-  | { url: string; isVideo: true; name: string; element: HTMLVideoElement };
+const source = daffodil;
 
 export default function Home() {
-  const [sources, setSources] = useState<MediaSource[]>([
-    { url: daffodil, isVideo: false, name: "daffodil.png" },
-  ]);
-  const [sourceIndex, setSourceIndex] = useState(0);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [editorOpen, setEditorOpen] = useState(false);
-  const [editorInitialState, setEditorInitialState] = useState<
-    EditorInitialState | undefined
-  >(undefined);
-
-  const currentSource = sources[sourceIndex];
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const url = URL.createObjectURL(file);
-    const isVideo = file.type.startsWith("video/");
-    if (isVideo) {
-      const vid = document.createElement("video");
-      vid.autoplay = true;
-      vid.muted = true;
-      vid.loop = true;
-      vid.playsInline = true;
-      vid.src = url;
-      vid.play();
-      setSources((prev) => {
-        const next: MediaSource[] = [
-          ...prev,
-          { url, isVideo: true, name: file.name, element: vid },
-        ];
-        setSourceIndex(next.length - 1);
-        return next;
-      });
-    } else {
-      setSources((prev) => {
-        const next: MediaSource[] = [
-          ...prev,
-          { url, isVideo: false, name: file.name },
-        ];
-        setSourceIndex(next.length - 1);
-        return next;
-      });
-    }
-    setEditorOpen(false);
-    e.target.value = "";
-  };
+  const { setInitialState } = useInitialState();
+  const navigate = useNavigate();
 
   const handleEdit = (initialState: EditorInitialState) => {
-    setEditorInitialState(initialState);
-    setEditorOpen(true);
+    setInitialState(initialState);
+    navigate("/editor");
   };
 
   return (
-    <div className="flex w-screen h-screen antialiased font-sans items-center">
-      <div className="w-2/5 h-full flex flex-col items-end justify-center gap-3 px-12 bg-neutral-100">
-        {currentSource.isVideo ? (
-          <video
-            key={currentSource.url}
-            src={currentSource.url}
-            className="h-48 w-64 rounded-sm object-cover"
-            autoPlay
-            muted
-            loop
-            playsInline
-          />
-        ) : (
-          <img
-            src={currentSource.url}
-            className="h-48 w-64 rounded-sm object-cover"
-          />
-        )}
-        <div className="flex items-center gap-2">
-          <button
-            className="button-base"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            Add source
-          </button>
-          <div className="flex items-center gap-1">
-            <button
-              className="button-base"
-              disabled={sourceIndex === 0}
-              onClick={() => setSourceIndex((i) => i - 1)}
-            >
-              ↑
-            </button>
-            <span className="text-xs font-mono text-neutral-400 tabular-nums">
-              {sourceIndex + 1}/{sources.length}
-            </span>
-            <button
-              className="button-base"
-              disabled={sourceIndex === sources.length - 1}
-              onClick={() => setSourceIndex((i) => i + 1)}
-            >
-              ↓
-            </button>
-          </div>
-        </div>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*,video/*"
-          className="hidden"
-          onChange={handleFileChange}
-        />
-      </div>
+    <div className="flex flex-col items-center gap-36 pt-3 pb-12 bg-neutral-100 antialiased font-sans font-light min-h-screen px-10">
+      <Nav />
 
-      {editorOpen ? (
-        <div className="w-3/5 h-full p-4">
-          <div className="w-full h-full rounded-sm overflow-clip relative">
-            <button
-              className="top-4 left-4 button-base absolute z-10"
-              onClick={() => setEditorOpen(false)}
-            >
-              Close
-            </button>
-            <Editor
-              shaders={Object.entries(staticShaders).map(
-                ([key, val]): Shader => {
-                  return {
-                    id: key,
-                    name: key,
-                    source: val,
-                    resolution: { width: 100, height: 100 },
-                  };
-                },
-              )}
-              initialState={editorInitialState}
-              handleSave={() => {}}
-              initialShowStats={
-                localStorage.getItem("registry-show-stats") === "true"
-              }
-              onEditorStateChange={({ showStats }) => {
-                localStorage.setItem("registry-show-stats", String(showStats));
-              }}
-              className="rounded-md"
-            />
-          </div>
-        </div>
-      ) : (
-        <div className="w-3/5 h-full flex flex-col items-start gap-20 pt-28 pl-12 overflow-x-visible overflow-y-auto">
-          <div className="flex flex-col gap-8">
-            <div>
-              <p className="text-base leading-5">Sequenza Registry</p>
-              <p className="text-3xl leading-9 w-100 font-semibold">
-                Design, Hack, and Embed Anywhere
-              </p>
-            </div>
-            <p className="text-xs leading-4 w-52 opacity-70">
-              Like what you see? Follow @YottaYocta and give the repo a star
+      <div className="flex items-center gap-32 max-w-5xl w-full">
+        <div className="flex flex-col items-start gap-20">
+          <div className="flex flex-col items-start gap-8">
+            <h1 className="tracking-tight capitalize text-black font-semibold text-4xl leading-11 max-w-md">
+              Design Interactive Shaders
+              <br />
+              Use them anywhere
+            </h1>
+            <p className="max-w-md opacity-70 text-black  leading-6">
+              An open-source, node-based compositor with modular image effects
+              and filters. Export a self-contained component with your shader
+              code with a single click.
             </p>
           </div>
-
-          <div className="grid grid-cols-[repeat(2,14rem)] lg:grid-cols-[repeat(3,14rem)] gap-x-4 gap-y-2">
-            {[
-              Dither1,
-              Hatching,
-              HeatMap,
-              Dots1,
-              Dither1,
-              Hatching,
-              HeatMap,
-              Dots1,
-            ].map((Component, i) => (
-              <div key={i} className="w-56 h-28 rounded-sm overflow-clip">
-                <Component
-                  source={
-                    currentSource.isVideo
-                      ? currentSource.element
-                      : currentSource.url
-                  }
-                  handleEdit={handleEdit}
-                />
-              </div>
-            ))}
+          <div className="flex items-center gap-7">
+            <Link
+              to="/editor"
+              className="flex justify-center items-center px-10 py-1.5 rounded-sm bg-black text-white font-medium "
+            >
+              Open Editor
+            </Link>
+            <a href="#showcase" className="text-black font-medium ">
+              Or see Examples &#8595;
+            </a>
           </div>
         </div>
-      )}
+        {/* Hero image placeholder — grey rect for now */}
+        <div className="w-110 h-88 rounded-lg bg-neutral-300 shrink-0" />
+      </div>
+
+      <div id="showcase" className="flex items-start gap-5 max-w-screen-2xl">
+        <div className="h-134 rounded-lg overflow-clip flex-1">
+          <Dither1 source={source} handleEdit={handleEdit} />
+        </div>
+        <div className="flex flex-col items-start gap-3.5">
+          <div className="w-96 h-58 rounded-lg overflow-clip shrink-0">
+            <Hatching source={source} handleEdit={handleEdit} />
+          </div>
+          <div className="w-96 h-68 rounded-lg overflow-clip shrink-0">
+            <HeatMap source={source} handleEdit={handleEdit} />
+          </div>
+        </div>
+        <div className="h-134 rounded-lg overflow-clip flex-1">
+          <Dots1 source={source} handleEdit={handleEdit} />
+        </div>
+      </div>
+
+      <Footer />
     </div>
   );
 }
