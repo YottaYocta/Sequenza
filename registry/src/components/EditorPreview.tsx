@@ -2,42 +2,33 @@ import { useMemo, useRef } from "react";
 import type { Node, Edge } from "@xyflow/react";
 import type { Shader, Uniforms } from "@sequenza/lib";
 import { Editor, ShaderNode } from "@sequenza/workbench";
-import daffodil from "../assets/daffodil.png";
 
-export function EditorPreview() {
+export type EditorPreviewProps = {
+  source: string;
+};
+
+export function EditorPreview({ source }: EditorPreviewProps) {
+  console.log(source);
   const uniformsRef = useRef<Record<string, Uniforms>>({
     "35514.33495797567": {
       resolution: [200, 200],
       scale: 1,
       u_image_source: {
         type: "texture",
-        src: daffodil,
+        src: source,
       },
     },
     "46700.951879366534": {
       u_frequency: 26.16,
-      u_radius: 0.74,
+      u_radius: 0.9,
       u_rotation: 0.43,
       u_constantSize: 0,
       u_background: [0, 0, 0, 1],
-    },
-    "7730.571700171063": {
-      u_blur_radius: 0.1,
-      u_resolution: [200, 200],
-      u_center: [0.5, 0.5],
-      u_blur_sample_count: 11.92,
     },
   });
 
   const initialState = useMemo<{ nodes: Node[]; edges: Edge[] }>(() => {
     const shaders: Shader[] = [
-      {
-        id: "7730.571700171063",
-        name: "blur (radial)",
-        source:
-          "#version 300 es\nprecision mediump float;\n\nuniform sampler2D u_texture;\nuniform float u_blur_radius; // [0, 3, 0.1]\nuniform vec2 u_resolution; // resolution\nuniform vec2 u_center; // [0.5, 0.5]\nuniform float u_blur_sample_count; // [2, 50, 5]\n\nin vec2 vUv;\nout vec4 fragColor;\n\nvoid main() {\n    vec2 aspect = vec2(u_resolution.x / u_resolution.y, 1.0);\n    vec2 uv = vUv * aspect;\n    vec2 center = u_center * aspect;\n\n    vec2 offset = uv - center;\n    float r = atan(offset.y, offset.x);\n    float dist = length(offset);\n\n    vec4 result = vec4(0.);\n\n    int count = int(floor(u_blur_sample_count));\n    float invCount = 1.0 / float(count);\n\n    for (int i = 0; i < count; i++) {\n        float progress = float(i) * invCount;\n        float angle = r - u_blur_radius * 0.5 + progress * u_blur_radius;\n\n        vec2 rotated = vec2(cos(angle), sin(angle)) * dist;\n\n        vec2 sample_uv = center + rotated;\n        sample_uv /= aspect;\n\n        result += texture(u_texture, sample_uv);\n    }\n\n    fragColor = result * invCount;\n}\n",
-        resolution: { width: 200, height: 200 },
-      },
       {
         id: "46700.951879366534",
         name: "dots",
@@ -57,8 +48,8 @@ export function EditorPreview() {
     const nodes: Node[] = shaders.map((shader, idx) => ({
       id: shader.id,
       position: {
-        x: (shaders.length - idx) * -100,
-        y: (shaders.length - idx) * 100,
+        x: (shaders.length - idx) * -300,
+        y: (shaders.length - idx) * 500,
       },
       zIndex: shaders.length - idx,
       data: {
@@ -70,13 +61,6 @@ export function EditorPreview() {
     }));
 
     const edges: Edge[] = [
-      {
-        id: "edge-1",
-        source: "46700.951879366534",
-        target: "7730.571700171063",
-        targetHandle: "u_texture",
-        type: "insert",
-      },
       {
         id: "edge-2",
         source: "35514.33495797567",
@@ -91,21 +75,15 @@ export function EditorPreview() {
 
   const availableShaders: Shader[] = [
     {
-      id: "template-blur",
-      name: "blur (radial)",
-      source: (initialState.nodes[0] as ShaderNode).data.shader.source,
-      resolution: { width: 200, height: 200 },
-    },
-    {
       id: "template-dots",
       name: "dots",
-      source: (initialState.nodes[1] as ShaderNode).data.shader.source,
+      source: (initialState.nodes[0] as ShaderNode).data.shader.source,
       resolution: { width: 200, height: 200 },
     },
     {
       id: "template-viewer",
       name: "image viewer",
-      source: (initialState.nodes[2] as ShaderNode).data.shader.source,
+      source: (initialState.nodes[1] as ShaderNode).data.shader.source,
       resolution: { width: 200, height: 200 },
     },
   ];

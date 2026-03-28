@@ -637,7 +637,6 @@ const EditorAux: FC<EditorProps> = ({
   return (
     <>
       <ContextMenu.Root>
-        {" "}
         <ContextMenu.Trigger
           render={
             <div className={`w-full h-full ${className} relative`}>
@@ -674,7 +673,7 @@ const EditorAux: FC<EditorProps> = ({
                   isValidConnection={isValidConnection}
                   minZoom={0.1}
                   style={{
-                    background: "#F3F3F3",
+                    background: "#F1F1F1",
                   }}
                   fitView
                 >

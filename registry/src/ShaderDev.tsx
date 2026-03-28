@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Nav } from "./components/Nav";
 import { Footer } from "./components/Footer";
 import { EditorPreview } from "./components/EditorPreview";
+import daffodil from "./assets/daffodil.png";
 
 const COPY_ICON = (
   <svg
@@ -36,7 +37,7 @@ export default function ShaderDev() {
     <div className="flex flex-col items-center gap-36 pt-3 pb-12 bg-neutral-100 antialiased font-sans font-light min-h-screen px-10">
       <Nav />
 
-      <div className="flex items-center gap-32 max-w-5xl w-full justify-between">
+      <div className="flex items-center gap-16 max-w-5xl w-full justify-between">
         <div className="flex flex-col items-start gap-12">
           <div className="flex flex-col items-start gap-8 max-w-md">
             <h1 className="tracking-tight capitalize text-black font-medium bold text-4xl leading-11">
@@ -65,8 +66,8 @@ export default function ShaderDev() {
             </button>
           </div>
         </div>
-        <div className="w-120 h-100 rounded-lg bg-cover bg-center shrink-0">
-          <EditorPreview></EditorPreview>
+        <div className="w-130 h-130 rounded-lg bg-cover bg-center shrink-0">
+          <EditorPreview source={daffodil}></EditorPreview>
         </div>
       </div>
 
