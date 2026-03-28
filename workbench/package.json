@@ -1,6 +1,6 @@
 {
   "name": "@sequenza/workbench",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "type": "module",
   "module": "./dist/sequenza.js",
   "types": "./dist/index.d.ts",
@@ -37,10 +37,11 @@
     "react-dom": "^19.0.0"
   },
   "dependencies": {
+    "@base-ui/react": "^1.3.0",
     "@sequenza/lib": "workspace:*",
-    "twgl.js": "^7.0.0",
     "@tailwindcss/line-clamp": "^0.4.4",
     "@tailwindcss/vite": "^4.2.1",
+    "@xyflow/react": "^12.10.1",
     "chokidar": "^5.0.0",
     "cors": "^2.8.6",
     "express": "^5.2.1",
@@ -48,7 +49,7 @@
     "socket.io": "^4.8.3",
     "socket.io-client": "^4.8.3",
     "tailwindcss": "^4.2.1",
-    "@xyflow/react": "^12.10.1"
+    "twgl.js": "^7.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

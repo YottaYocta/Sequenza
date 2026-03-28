@@ -19,8 +19,10 @@ export const ExportDialog: FC<ExportDialogProps> = ({
   onOpenChange,
 }) => {
   const generatedCode = exportSequenzaPatch(uniforms, patch);
+  const jsonExport = JSON.stringify({ uniforms, shader: patch }, null, 2);
   const [installCopied, setInstallCopied] = useState<"idle" | "done">("idle");
   const [codeCopied, setCodeCopied] = useState<"idle" | "done">("idle");
+  const [jsonCopied, setJsonCopied] = useState<"idle" | "done">("idle");
 
   const copyInstall = () => {
     navigator.clipboard.writeText(installCommand);
@@ -32,6 +34,12 @@ export const ExportDialog: FC<ExportDialogProps> = ({
     navigator.clipboard.writeText(generatedCode);
     setCodeCopied("done");
     setTimeout(() => setCodeCopied("idle"), 1800);
+  };
+
+  const copyJson = () => {
+    navigator.clipboard.writeText(jsonExport);
+    setJsonCopied("done");
+    setTimeout(() => setJsonCopied("idle"), 1800);
   };
 
   return (
@@ -71,6 +79,22 @@ export const ExportDialog: FC<ExportDialogProps> = ({
           <textarea
             readOnly
             value={generatedCode}
+            className="w-full h-full resize-none bg-transparent text-xs text-neutral-700 font-mono p-4 pr-12 outline-none"
+          />
+        </div>
+      </div>
+      <div className="flex flex-col gap-1 flex-1 min-h-0">
+        <p className="text-xs text-neutral-500">JSON</p>
+        <div className="relative flex-1 min-h-0 bg-neutral-50 rounded">
+          <button
+            className="absolute top-4 right-4 button-base"
+            onClick={copyJson}
+          >
+            {jsonCopied === "done" ? "Copied!" : "Copy"}
+          </button>
+          <textarea
+            readOnly
+            value={jsonExport}
             className="w-full h-full resize-none bg-transparent text-xs text-neutral-700 font-mono p-4 pr-12 outline-none"
           />
         </div>

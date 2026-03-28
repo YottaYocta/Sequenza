@@ -25,6 +25,7 @@ import {
   ReactFlow,
   ReactFlowProvider,
   useReactFlow,
+  useStoreApi,
   type Edge,
   type Node,
   type OnConnect,
@@ -37,11 +38,14 @@ import { ShaderNode, type ShaderNodeData } from "./ShaderNode";
 import { EditorContext } from "./EditorContext";
 import CustomEdge from "./CustomEdge";
 import ConnectionLine from "./ConnectionLine";
-import { Dialog } from "./Dialog";
 import { ExportDialog } from "./ExportDialog";
+import { AddShaderDialog } from "./AddShaderDialog";
+import { ContextMenu } from "@base-ui/react/context-menu";
+import { topologicalMap } from "./util";
 
 interface EditorProps {
   shaders: Shader[];
+  locked?: true;
   initialState?: {
     nodes: Node[];
     edges: Edge[];
@@ -54,11 +58,10 @@ interface EditorProps {
   }) => void;
   className?: string;
   initialShowStats?: boolean;
-  initialShaderPanelOpen?: boolean;
   initialOpenPreviewNodeId?: string | null;
   onEditorStateChange?: (state: {
     showStats: boolean;
-    shaderPanelOpen: boolean;
+    addShaderPanelOpen: boolean;
   }) => void;
   onOpenPreviewNodeIdChange?: (nodeId: string | null) => void;
 }
@@ -66,41 +69,64 @@ interface EditorProps {
 function propagateWidthHeightUpdates(
   nodes: Node[],
   edges: Edge[],
-  startNodeId: string,
+  startId?: string,
 ): Node[] {
-  const nodeMap = new Map(nodes.map((n) => [n.id, n]));
-  const queue: string[] = [startNodeId];
+  const incomingEdges = new Map<string, Edge[]>();
+  for (const edge of edges) {
+    const list = incomingEdges.get(edge.target) ?? [];
+    list.push(edge);
+    incomingEdges.set(edge.target, list);
+  }
 
-  while (queue.length > 0) {
-    const id = queue.shift()!;
-    const node = nodeMap.get(id);
-    if (!node || node.type !== "shader") continue;
-    const shaderNode = node as ShaderNode;
-    const { width, height } = shaderNode.data.shader.resolution;
+  const adjacency = new Map<string, string[]>();
+  for (const node of nodes) adjacency.set(node.id, []);
+  for (const edge of edges) adjacency.get(edge.source)?.push(edge.target);
 
-    const outgoers = getOutgoers(
-      node,
-      [...nodeMap.values()],
-      edges,
-    ) as ShaderNode[];
-
-    for (const outgoer of outgoers) {
-      const updated: ShaderNode = {
-        ...outgoer,
-        data: {
-          ...outgoer.data,
-          shader: {
-            ...outgoer.data.shader,
-            resolution: { width: width, height: height },
-          },
-        },
-      };
-      nodeMap.set(outgoer.id, updated);
-      queue.push(outgoer.id);
+  let reachable: Set<string> | null = null;
+  if (startId !== undefined) {
+    reachable = new Set<string>();
+    const bfs = [startId];
+    while (bfs.length > 0) {
+      const id = bfs.shift()!;
+      if (reachable.has(id)) continue;
+      reachable.add(id);
+      for (const neighbor of adjacency.get(id) ?? []) bfs.push(neighbor);
     }
   }
 
-  return [...nodeMap.values()];
+  return topologicalMap(
+    nodes,
+    edges,
+    (node, nodeMap) => {
+      if (node.id === startId) return node;
+      if (node.type !== "shader") return node;
+      const incoming = incomingEdges.get(node.id);
+      if (!incoming || incoming.length === 0) return node;
+
+      const edge = reachable
+        ? incoming.find((e) => reachable!.has(e.source))
+        : incoming[0];
+      if (!edge) return node;
+
+      const sourceNode = nodeMap.get(edge.source);
+      if (!sourceNode || sourceNode.type !== "shader") return node;
+      const { width, height } = (sourceNode as ShaderNode).data.shader
+        .resolution;
+
+      const shaderNode = node as ShaderNode;
+      return {
+        ...shaderNode,
+        data: {
+          ...shaderNode.data,
+          shader: {
+            ...shaderNode.data.shader,
+            resolution: { width, height },
+          },
+        },
+      };
+    },
+    startId,
+  );
 }
 
 const EditorAux: FC<EditorProps> = ({
@@ -109,24 +135,15 @@ const EditorAux: FC<EditorProps> = ({
   handleSave,
   className,
   initialShowStats,
-  initialShaderPanelOpen,
   initialOpenPreviewNodeId,
-  onEditorStateChange,
   onOpenPreviewNodeIdChange,
+  locked,
 }) => {
   const [edges, setEdges] = useState<Edge[]>(initialState?.edges ?? []);
   const [nodes, setNodes] = useState<Node[]>(() => {
     const initialNodes = initialState?.nodes ?? [];
     const initialEdges = initialState?.edges ?? [];
-    const targetIds = new Set(initialEdges.map((e) => e.target));
-    const rootIds = initialNodes
-      .filter((n) => !targetIds.has(n.id))
-      .map((n) => n.id);
-    let result = initialNodes;
-    for (const rootId of rootIds) {
-      result = propagateWidthHeightUpdates(result, initialEdges, rootId);
-    }
-    return result;
+    return propagateWidthHeightUpdates(initialNodes, initialEdges);
   });
 
   const onNodesChange: OnNodesChange = useCallback(
@@ -174,9 +191,9 @@ const EditorAux: FC<EditorProps> = ({
 
   const { screenToFlowPosition } = useReactFlow();
 
-  const [dropLocation, setDropLocation] = useState<null | {
+  const [addShaderLocation, setAddShaderLocation] = useState<null | {
     position: XYPosition;
-    sourceId: string;
+    sourceId?: string;
   }>(null);
 
   const onConnectEnd: OnConnectEnd = useCallback(
@@ -184,13 +201,14 @@ const EditorAux: FC<EditorProps> = ({
       if (!connectionState.isValid && connectionState.fromNode) {
         const { clientX, clientY } =
           "changedTouches" in event ? event.changedTouches[0] : event;
-        setDropLocation({
+        setAddShaderLocation({
           position: screenToFlowPosition({
             x: clientX,
             y: clientY,
           }),
           sourceId: connectionState.fromNode.id,
         });
+        setAddShaderDialogOpen(true);
       }
     },
     [screenToFlowPosition],
@@ -199,10 +217,6 @@ const EditorAux: FC<EditorProps> = ({
   const uniformRef = useRef<Record<string, Uniforms>>(
     initialState?.uniforms ?? {},
   );
-
-  useEffect(() => {
-    if (initialState?.uniforms) uniformRef.current = initialState.uniforms;
-  }, [initialState]);
 
   useEffect(() => {
     setNodes((snapshot) =>
@@ -249,6 +263,7 @@ const EditorAux: FC<EditorProps> = ({
     const newId = `${Math.random() * 100000}`;
     const newShader: Shader = { ...shader, id: newId };
     uniformRef.current[newId] = {};
+
     return {
       id: newId,
       position: { x: 0, y: 0 },
@@ -261,45 +276,72 @@ const EditorAux: FC<EditorProps> = ({
     };
   };
 
-  const handleAddShader = (shader: Shader) => {
-    setNodes((snapshot) => [...snapshot, createShaderNode(shader)]);
-  };
-
-  const handleInsertShader = (shader: Shader, edgeId: string) => {
-    const oldEdge = edges.find((edge) => edge.id === edgeId);
-    if (!oldEdge) return;
-    const edgeStartId = oldEdge.source;
-    const edgeEndId = oldEdge.target;
-    const startNode = nodes.find((node) => node.id === edgeStartId);
-    const endNode = nodes.find((node) => node.id === edgeEndId);
-    const endHandle = oldEdge.targetHandle;
-    if (startNode && endNode && endHandle) {
+  const store = useStoreApi();
+  const handleAddShader = useCallback(
+    (shader: Shader) => {
       const newNode = createShaderNode(shader);
-      const fields = extractFields(newNode.data.shader);
-      let inputHandleName: string | undefined = undefined;
-      for (const field of fields) {
-        if (field.type === "sampler2D" && field.source === "input") {
-          inputHandleName = field.name;
-          break;
+
+      if (addShaderLocation === null) {
+        const domNode = store.getState().domNode;
+        if (domNode) {
+          const domRect = domNode.getBoundingClientRect();
+          const pos = screenToFlowPosition({
+            x: domRect.x + domRect.width / 2,
+            y: domRect.y + domRect.height / 2,
+          });
+          newNode.position = pos;
         }
+      } else if (addShaderLocation.sourceId) {
+        handleAppendShader(
+          shader,
+          addShaderLocation.sourceId,
+          addShaderLocation.position,
+        );
+        return;
+      } else {
+        newNode.position = addShaderLocation.position;
       }
-      if (inputHandleName === undefined) return;
 
-      const [_, labelX, labelY] = getSimpleBezierPath({
-        sourceX: startNode.position.x,
-        sourceY: startNode.position.y,
-        sourcePosition: Position.Bottom,
-        targetX: endNode.position.x,
-        targetY: endNode.position.y,
-        targetPosition: Position.Top,
-      });
-
-      newNode.position.x = labelX;
-      newNode.position.y = labelY;
-
+      setAddShaderLocation(null);
       setNodes((snapshot) => [...snapshot, newNode]);
-      setEdges((snapshot) => {
-        const edgesWithoutConnection = snapshot.filter(
+    },
+    [addShaderLocation],
+  );
+
+  const handleInsertShader = useCallback(
+    (shader: Shader, edgeId: string) => {
+      const oldEdge = edges.find((edge) => edge.id === edgeId);
+      if (!oldEdge) return;
+      const edgeStartId = oldEdge.source;
+      const edgeEndId = oldEdge.target;
+      const startNode = nodes.find((node) => node.id === edgeStartId);
+      const endNode = nodes.find((node) => node.id === edgeEndId);
+      const endHandle = oldEdge.targetHandle;
+      if (startNode && endNode && endHandle) {
+        const newNode = createShaderNode(shader);
+        const fields = extractFields(newNode.data.shader);
+        let inputHandleName: string | undefined = undefined;
+        for (const field of fields) {
+          if (field.type === "sampler2D" && field.source === "input") {
+            inputHandleName = field.name;
+            break;
+          }
+        }
+        if (inputHandleName === undefined) return;
+
+        const [_, labelX, labelY] = getSimpleBezierPath({
+          sourceX: startNode.position.x,
+          sourceY: startNode.position.y,
+          sourcePosition: Position.Bottom,
+          targetX: endNode.position.x,
+          targetY: endNode.position.y,
+          targetPosition: Position.Top,
+        });
+
+        newNode.position.x = labelX;
+        newNode.position.y = labelY;
+
+        const edgesWithoutConnection = edges.filter(
           (edge) => edge.id !== edgeId,
         );
         const intoEdge: Edge = {
@@ -320,10 +362,17 @@ const EditorAux: FC<EditorProps> = ({
 
         edgesWithoutConnection.push(intoEdge);
         edgesWithoutConnection.push(outOfEdge);
-        return edgesWithoutConnection;
-      });
-    }
-  };
+        setEdges(edgesWithoutConnection);
+        const updatedNodes = propagateWidthHeightUpdates(
+          [...nodes, newNode],
+          edgesWithoutConnection,
+          startNode.id,
+        );
+        setNodes(updatedNodes);
+      }
+    },
+    [nodes, edges],
+  );
 
   const [edgesHash, edgeMap] = useMemo(() => {
     const edgeMap: Record<string, Connection[]> = {};
@@ -407,7 +456,8 @@ const EditorAux: FC<EditorProps> = ({
         const updated = snapshot.map((node) => {
           if (node.id === nodeId && node.type === "shader") {
             const shaderNode = node as ShaderNode;
-            return { ...shaderNode, data: updateData(shaderNode.data) };
+            const newNodeData = updateData(shaderNode.data);
+            return { ...shaderNode, data: newNodeData };
           }
           return node;
         });
@@ -472,8 +522,6 @@ const EditorAux: FC<EditorProps> = ({
             newEdges,
             sourceNode.id,
           );
-          console.log(newEdges);
-          console.log(newNodes);
           setEdges(newEdges);
           setNodes(newNodes);
         }
@@ -482,12 +530,101 @@ const EditorAux: FC<EditorProps> = ({
     [nodes, edges],
   );
 
-  const [shaderSearch, setShaderSearch] = useState("");
-  const [shaderDialogSearch, setShaderDialogSearch] = useState("");
-  const [showStats, setShowStats] = useState(initialShowStats ?? false);
-  const [shaderPanelOpen, setShaderPanelOpen] = useState(
-    initialShaderPanelOpen ?? true,
+  const handleImport = useCallback(
+    (json: string) => {
+      try {
+        const data = JSON.parse(json) as {
+          uniforms: Record<string, Uniforms>;
+          shader: Patch;
+        };
+
+        const idMap = new Map<string, string>();
+        for (const shader of data.shader.shaders) {
+          idMap.set(shader.id, `${Math.random() * 100000}`);
+        }
+
+        const domNode = store.getState().domNode;
+        const center = domNode
+          ? (() => {
+              const rect = domNode.getBoundingClientRect();
+              return screenToFlowPosition({
+                x: rect.x + rect.width / 2,
+                y: rect.y + rect.height / 2,
+              });
+            })()
+          : { x: 0, y: 0 };
+
+        const shaderById = new Map(data.shader.shaders.map((s) => [s.id, s]));
+
+        const tempNodes: Node[] = data.shader.shaders.map((s) => ({
+          id: s.id,
+          position: { x: 0, y: 0 },
+          data: {},
+        }));
+        const tempEdges: Edge[] = data.shader.connections.map((c) => ({
+          id: `${c.from}-${c.to}`,
+          source: c.from,
+          target: c.to,
+        }));
+
+        let idx = 0;
+        const sortedNodes = topologicalMap(tempNodes, tempEdges, (node) => {
+          const shader = shaderById.get(node.id)!;
+          const newId = idMap.get(node.id)!;
+          const remapped: Shader = { ...shader, id: newId };
+
+          if (data.uniforms[node.id]) {
+            uniformRef.current[newId] = data.uniforms[node.id];
+          } else {
+            uniformRef.current[newId] = {};
+          }
+
+          return {
+            id: newId,
+            position: { x: center.x, y: center.y + idx++ * 300 },
+            data: { shader: remapped, uniforms: uniformRef, paused: false },
+            type: "shader",
+          };
+        });
+
+        const newNodes = sortedNodes;
+
+        const newEdges: Edge[] = data.shader.connections.map((conn) => ({
+          id: `${Math.random() * 100000}`,
+          source: idMap.get(conn.from) ?? conn.from,
+          target: idMap.get(conn.to) ?? conn.to,
+          targetHandle: conn.input,
+          type: "insert",
+        }));
+
+        setNodes((prev) => [...prev, ...newNodes]);
+        setEdges((prev) => [...prev, ...newEdges]);
+      } catch (e) {
+        console.error(e);
+      }
+    },
+    [screenToFlowPosition, store],
   );
+
+  useEffect(() => {
+    const onPaste = (e: ClipboardEvent) => {
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement
+      )
+        return;
+      const text = e.clipboardData?.getData("text/plain");
+      if (text) handleImport(text);
+    };
+
+    window.addEventListener("paste", onPaste);
+    return () => window.removeEventListener("paste", onPaste);
+  }, [handleImport]);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [showStats, setShowStats] = useState(initialShowStats ?? false);
+  const [addShaderDialogOpen, setAddShaderDialogOpen] = useState(false);
   const [openExportNodeId, setOpenExportNodeId] = useState<string | null>(null);
   const [openPreviewNodeId, setOpenPreviewNodeIdState] = useState<
     string | null
@@ -497,204 +634,189 @@ const EditorAux: FC<EditorProps> = ({
     onOpenPreviewNodeIdChange?.(id);
   };
 
-  useEffect(() => {
-    onEditorStateChange?.({ showStats, shaderPanelOpen });
-  }, [showStats, shaderPanelOpen]);
-
   return (
-    <div className={`w-full h-full ${className}`}>
-      <EditorContext.Provider
-        value={{
-          currentTime: timeRef,
-          mousePosition: mousePosRef,
-          shaders,
-          patches,
-          showStats,
-          openExportNodeId,
-          setOpenExportNodeId,
-          openPreviewNodeId,
-          setOpenPreviewNodeId,
-          uniforms: uniformRef,
-          handleUpdateUniforms,
-          handleUpdateNode,
-          handleInsertShader,
-        }}
-      >
-        <ReactFlow
-          panOnScroll={true}
-          proOptions={{ hideAttribution: true }}
-          nodes={nodes}
-          nodeTypes={{ shader: ShaderNode }}
-          edges={edges}
-          edgeTypes={{ insert: CustomEdge }}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          onConnectEnd={onConnectEnd}
-          connectionLineComponent={ConnectionLine}
-          isValidConnection={isValidConnection}
-          style={{
-            background: "#F3F3F3",
-          }}
-          fitView
-        >
-          <Controls
-            style={
-              {
-                "--xy-controls-button-background-color-default": "transparent",
-                "--xy-controls-box-shadow-default": "none",
-              } as any
-            }
-          ></Controls>
-          <Panel position="top-left" className="flex flex-col gap-4">
-            <button
-              className="button-base"
-              onClick={() => setShowStats(!showStats)}
-            >
-              {showStats ? "Hide Stats" : "Show Stats"}
-            </button>
-            {showStats && (
-              <>
-                <div className="flex flex-col gap-2">
-                  {nodes.map((node) => (
-                    <p className="text-xs text-neutral-400" key={node.id}>
-                      {node.id}
-                    </p>
-                  ))}
-                </div>
-                <div className="flex flex-col gap-2">
-                  {edges.map((edge) => (
-                    <p className="text-xs text-neutral-400" key={edge.id}>
-                      {edge.source} {">"} {edge.target} {edge.targetHandle}
-                    </p>
-                  ))}
-                </div>
-              </>
-            )}
-          </Panel>
-          {shaders.length > 0 && (
-            <Panel position="bottom-right">
-              <div className="w-56 flex flex-col rounded-sm bg-white overflow-hidden">
-                <div className="flex items-center justify-between px-3 py-2">
-                  <p className="text-sm">Add Shader</p>
-                  <button
-                    className="button-base"
-                    onClick={() => setShaderPanelOpen(!shaderPanelOpen)}
-                  >
-                    {shaderPanelOpen ? "Hide" : "Show"}
-                  </button>
-                </div>
-                {shaderPanelOpen && (
-                  <div className="flex flex-col gap-1 px-2 pb-2">
-                    <input
-                      type="text"
-                      value={shaderSearch}
-                      onChange={(e) => setShaderSearch(e.target.value)}
-                      placeholder="Search shaders..."
-                      className="text-xs p-1 rounded-sm border border-neutral-200 outline-none mb-1"
-                    />
-                    <div className="flex flex-col gap-1 pb-2 h-[50vh] overflow-y-auto">
-                      {shaders
-                        .filter((s) =>
-                          s.name
-                            .toLowerCase()
-                            .includes(shaderSearch.toLowerCase()),
-                        )
-                        .sort((a, b) => a.name.localeCompare(b.name))
-                        .map((shader) => (
-                          <button
-                            key={shader.id}
-                            className="text-xs flex justify-start p-1 rounded-sm hover:bg-neutral-100 cursor-pointer text-neutral-500"
-                            onClick={() => handleAddShader(shader)}
-                          >
-                            {shader.id.length > 25
-                              ? `${shader.id.slice(0, 11)}...${shader.id.slice(-11)}`
-                              : shader.id}
-                          </button>
-                        ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </Panel>
-          )}
-          {savedAt && (
-            <Panel position="bottom-center">
-              <p className="text-xs text-neutral-400">
-                Last saved at {savedAt.toLocaleTimeString()}
-              </p>
-            </Panel>
-          )}
-        </ReactFlow>
-      </EditorContext.Provider>
-      {openExportNodeId !== null && patches[openExportNodeId] && (
-        <ExportDialog
-          uniforms={uniformRef.current}
-          patch={patches[openExportNodeId]}
-          open={true}
-          onOpenChange={(open) => {
-            if (!open) setOpenExportNodeId(null);
-          }}
-        />
-      )}
-      <Dialog
-        open={dropLocation === null ? false : true}
-        handleOpenChange={(open) => {
-          if (open === false) setDropLocation(null);
-        }}
-      >
-        <div className="w-full h-full flex flex-col p-4 gap-4">
-          <div className="w-full flex justify-between">
-            <p>Add a Shader</p>
-            <button
-              className="button-base"
-              onClick={() => {
-                setDropLocation(null);
-              }}
-            >
-              Close
-            </button>
-          </div>
-          <div className="w-full flex flex-col h-full overflow-hidden gap-2">
-            <input
-              type="text"
-              value={shaderDialogSearch}
-              onChange={(e) => setShaderDialogSearch(e.target.value)}
-              placeholder="Search shaders..."
-              className="text-xs p-1 rounded-sm border border-neutral-200 outline-none mb-1"
-            />
-            <div className="h-full flex flex-col overflow-y-auto">
-              {shaders
-                .filter((s) =>
-                  s.name
-                    .toLowerCase()
-                    .includes(shaderDialogSearch.toLowerCase()),
-                )
-                .map((shader) => (
-                  <button
-                    key={shader.id}
-                    className="text-xs flex justify-start p-1 rounded-sm hover:bg-neutral-100 cursor-pointer text-neutral-500"
-                    onClick={() => {
-                      if (dropLocation) {
-                        handleAppendShader(
-                          shader,
-                          dropLocation.sourceId,
-                          dropLocation.position,
-                        );
-                        setDropLocation(null);
-                      } else {
-                        setDropLocation(null);
+    <>
+      <ContextMenu.Root>
+        <ContextMenu.Trigger
+          render={
+            <div className={`w-full h-full ${className} relative`}>
+              <EditorContext.Provider
+                value={{
+                  currentTime: timeRef,
+                  mousePosition: mousePosRef,
+                  shaders,
+                  patches,
+                  showStats,
+                  openExportNodeId,
+                  setOpenExportNodeId,
+                  openPreviewNodeId,
+                  setOpenPreviewNodeId,
+                  uniforms: uniformRef,
+                  handleUpdateUniforms,
+                  handleUpdateNode,
+                  handleInsertShader,
+                }}
+              >
+                <ReactFlow
+                  preventScrolling={!locked}
+                  panOnScroll={!locked}
+                  proOptions={{ hideAttribution: true }}
+                  nodes={nodes}
+                  nodeTypes={{ shader: ShaderNode }}
+                  edges={edges}
+                  edgeTypes={{ insert: CustomEdge }}
+                  onNodesChange={onNodesChange}
+                  onEdgesChange={onEdgesChange}
+                  onConnect={onConnect}
+                  onConnectEnd={onConnectEnd}
+                  connectionLineComponent={ConnectionLine}
+                  isValidConnection={isValidConnection}
+                  minZoom={0.1}
+                  style={{
+                    background: "#F1F1F1",
+                  }}
+                  fitView
+                >
+                  {!locked && (
+                    <Controls
+                      style={
+                        {
+                          "--xy-controls-button-background-color-default":
+                            "transparent",
+                          "--xy-controls-box-shadow-default": "none",
+                        } as any
                       }
-                    }}
-                  >
-                    {shader.id}
-                  </button>
-                ))}
+                    ></Controls>
+                  )}
+                  {!locked && (
+                    <Panel
+                      position="top-right"
+                      className="flex flex-col gap-4 items-end"
+                    >
+                      <div className="flex gap-1 p-1 bg-white rounded-md w-min">
+                        <button
+                          className="button-base flex items-center gap-1"
+                          onClick={() => setAddShaderDialogOpen(true)}
+                        >
+                          Add Shader
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="#000000"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M12 5l0 14" />
+                            <path d="M5 12l14 0" />
+                          </svg>
+                        </button>
+
+                        <button
+                          className="button-base"
+                          onClick={() => setShowStats(!showStats)}
+                        >
+                          {showStats ? "Hide Stats" : "Show Stats"}
+                        </button>
+                        <button
+                          className="button-base"
+                          onClick={() => fileInputRef.current?.click()}
+                        >
+                          Import
+                        </button>
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept=".json"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            file.text().then((text) => handleImport(text));
+                            e.target.value = "";
+                          }}
+                        />
+                      </div>
+                      {showStats && (
+                        <>
+                          <div className="flex flex-col gap-2">
+                            {nodes.map((node) => (
+                              <p
+                                className="text-xs text-neutral-400"
+                                key={node.id}
+                              >
+                                {node.id}
+                              </p>
+                            ))}
+                          </div>
+                          <div className="flex flex-col gap-2">
+                            {edges.map((edge) => (
+                              <p
+                                className="text-xs text-neutral-400"
+                                key={edge.id}
+                              >
+                                {edge.source} {">"} {edge.target}{" "}
+                                {edge.targetHandle}
+                              </p>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </Panel>
+                  )}
+                  {savedAt && (
+                    <Panel position="bottom-center">
+                      <p className="text-xs text-neutral-400">
+                        Last saved at {savedAt.toLocaleTimeString()}
+                      </p>
+                    </Panel>
+                  )}
+                </ReactFlow>
+              </EditorContext.Provider>
+              {openExportNodeId !== null && patches[openExportNodeId] && (
+                <ExportDialog
+                  uniforms={uniformRef.current}
+                  patch={patches[openExportNodeId]}
+                  open={true}
+                  onOpenChange={(open) => {
+                    if (!open) setOpenExportNodeId(null);
+                  }}
+                />
+              )}
+              <AddShaderDialog
+                open={addShaderDialogOpen}
+                handleOpenChange={setAddShaderDialogOpen}
+                shaders={shaders}
+                handleAddShader={handleAddShader}
+              />
             </div>
-          </div>
-        </div>
-      </Dialog>
-    </div>
+          }
+        />
+        <ContextMenu.Portal>
+          <ContextMenu.Backdrop />
+          <ContextMenu.Positioner>
+            <ContextMenu.Popup className="w-32 h-min bg-white outline-none flex flex-col p-1 rounded-md">
+              <ContextMenu.Item
+                onClick={(e) => {
+                  const pos = screenToFlowPosition({
+                    x: e.clientX,
+                    y: e.clientY,
+                  });
+                  setAddShaderLocation({ position: pos });
+                  setAddShaderDialogOpen(true);
+                }}
+                className="button-base w-full"
+              >
+                Add Node
+              </ContextMenu.Item>
+            </ContextMenu.Popup>
+          </ContextMenu.Positioner>
+        </ContextMenu.Portal>
+      </ContextMenu.Root>
+    </>
   );
 };
 
