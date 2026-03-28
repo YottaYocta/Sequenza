@@ -17,6 +17,7 @@ import radial_blur from "../../shaders/radial_blur.frag?raw";
 import directional_blur from "../../shaders/directional_blur.frag?raw";
 import noise from "../../shaders/noise.frag?raw";
 import dispersion from "../../shaders/dispersion.frag?raw";
+import transform3D from "../../shaders/transform.frag?raw";
 
 export const staticShaders: Record<string, string> = {
   key: chromakey,
@@ -38,4 +39,5 @@ export const staticShaders: Record<string, string> = {
   "mix (multiply)": multiply,
   "mix (linear)": mix,
   "mix (divide)": divide,
+  "transform 3D": transform3D,
 };
