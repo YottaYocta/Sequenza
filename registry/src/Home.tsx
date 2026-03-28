@@ -23,21 +23,21 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col items-center gap-36 pt-3 pb-12 bg-neutral-100 antialiased font-sans font-light min-h-screen px-10">
+    <div className="flex flex-col items-center gap-36 pt-3 pb-12 bg-neutral-100 antialiased font-sans min-h-screen px-10 ">
       <Nav />
 
       <div className="flex items-center gap-16 max-w-5xl w-full">
         <div className="flex flex-col items-start gap-20">
           <div className="flex flex-col items-start gap-8">
-            <h1 className="tracking-tight capitalize text-black font-medium text-3xl leading-11 max-w-md">
+            <h1 className="tracking-tight capitalize text-black font-medium text-4xl leading-11 max-w-md">
               Design Interactive Shaders
               <br />
               Use them anywhere
             </h1>
-            <p className="max-w-md opacity-70 text-black  leading-6">
-              An open-source, node-based compositor with modular image effects
-              and filters. Export a self-contained component with your shader
-              code with a single click.
+            <p className="max-w-md opacity-70 text-black leading-6 ">
+              An open-source compositor with modular shader effects. Export a
+              self-contained component with a single click. Make fine-grained
+              edits directly in the exported code.
             </p>
           </div>
           <div className="flex items-center gap-7">

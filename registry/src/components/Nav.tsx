@@ -21,6 +21,7 @@ export function Nav() {
         <a
           href="https://github.com/YottaYocta/Sequenza"
           className="  hover:opacity-70"
+          target="_blank"
         >
           GitHub
         </a>

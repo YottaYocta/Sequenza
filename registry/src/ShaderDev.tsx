@@ -34,11 +34,11 @@ export default function ShaderDev() {
   };
 
   return (
-    <div className="flex flex-col items-center gap-36 pt-3 pb-12 bg-neutral-100 antialiased font-sans font-light min-h-screen px-10">
+    <div className="flex flex-col items-center gap-36 pt-3 pb-12 bg-neutral-100 antialiased font-sans min-h-screen px-10">
       <Nav />
 
       <div className="flex items-center gap-16 max-w-5xl w-full justify-between">
-        <div className="flex flex-col items-start gap-12">
+        <div className="flex flex-col items-start gap-20">
           <div className="flex flex-col items-start gap-8 max-w-md">
             <h1 className="tracking-tight capitalize text-black font-medium bold text-4xl leading-11">
               Works on My Machine?
