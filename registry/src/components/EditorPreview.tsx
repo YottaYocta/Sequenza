@@ -19,7 +19,7 @@ export function EditorPreview({ source }: EditorPreviewProps) {
       },
     },
     "46700.951879366534": {
-      u_frequency: 26.16,
+      u_frequency: 40,
       u_radius: 0.9,
       u_rotation: 0.43,
       u_constantSize: 0,
