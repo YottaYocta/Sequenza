@@ -12,6 +12,7 @@ import { Nav } from "./components/Nav";
 import { Footer } from "./components/Footer";
 import { useInitialState } from "./context/InitialStateContext";
 import { useNavigate, Link } from "react-router";
+import Race from "./components/Race";
 
 export default function Home() {
   const { setInitialState } = useInitialState();
@@ -57,20 +58,28 @@ export default function Home() {
         </div>
       </div>
 
-      <div id="showcase" className="flex items-start gap-5 max-w-screen-2xl">
-        <div className="h-134 rounded-lg overflow-clip flex-1">
-          <Dither1 source={daffodil} handleEdit={handleEdit} />
+      <div
+        className="flex flex-col w-full max-w-screen-2xl gap-32"
+        id="showcase"
+      >
+        <div className="w-full max-w-screen-2xl h-96 rounded-lg overflow-clip">
+          <Race enableHoverActivation={false} handleEdit={handleEdit}></Race>
         </div>
-        <div className="flex flex-col items-start gap-3.5">
-          <div className="w-96 h-58 rounded-lg overflow-clip shrink-0">
-            <Hatching source={daffodil} handleEdit={handleEdit} />
+        <div className="flex items-start gap-5 max-w-screen-2xl">
+          <div className="h-134 rounded-lg overflow-clip flex-1">
+            <Dither1 source={daffodil} handleEdit={handleEdit} />
           </div>
-          <div className="w-96 h-68 rounded-lg overflow-clip shrink-0">
-            <HeatMap source={daffodil} handleEdit={handleEdit} />
+          <div className="flex flex-col items-start gap-3.5">
+            <div className="w-96 h-58 rounded-lg overflow-clip shrink-0">
+              <Hatching source={daffodil} handleEdit={handleEdit} />
+            </div>
+            <div className="w-96 h-68 rounded-lg overflow-clip shrink-0">
+              <HeatMap source={daffodil} handleEdit={handleEdit} />
+            </div>
           </div>
-        </div>
-        <div className="h-134 rounded-lg overflow-clip flex-1">
-          <Dots1 source={daffodil} handleEdit={handleEdit} />
+          <div className="h-134 rounded-lg overflow-clip flex-1">
+            <Dots1 source={daffodil} handleEdit={handleEdit} />
+          </div>
         </div>
       </div>
 
