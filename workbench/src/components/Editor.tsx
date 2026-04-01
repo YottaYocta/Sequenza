@@ -25,6 +25,7 @@ import {
   ReactFlow,
   ReactFlowProvider,
   useReactFlow,
+  useOnSelectionChange,
   useStoreApi,
   type Edge,
   type Node,
@@ -218,6 +219,12 @@ const EditorAux: FC<EditorProps> = ({
     initialState?.uniforms ?? {},
   );
 
+  const selectedNodesRef = useRef<Node[]>([]);
+  const onSelectionChange = useCallback(({ nodes }: { nodes: Node[] }) => {
+    selectedNodesRef.current = nodes;
+  }, []);
+  useOnSelectionChange({ onChange: onSelectionChange });
+
   useEffect(() => {
     setNodes((snapshot) =>
       snapshot.map((node) => {
@@ -244,6 +251,70 @@ const EditorAux: FC<EditorProps> = ({
     );
   }, [shaders]);
 
+  const handleCopy = useCallback(() => {
+    const selected = selectedNodesRef.current;
+    if (selected.length === 0) return;
+    const selectedIds = new Set(selected.map((n) => n.id));
+    const internalEdges = edges.filter(
+      (e) => selectedIds.has(e.source) && selectedIds.has(e.target),
+    );
+    const clipboardUniforms: Record<string, Uniforms> = {};
+    for (const node of selected) {
+      if (uniformRef.current[node.id])
+        clipboardUniforms[node.id] = uniformRef.current[node.id];
+    }
+    navigator.clipboard
+      .writeText(
+        JSON.stringify({
+          __sequenza_clipboard__: true,
+          nodes: selected,
+          edges: internalEdges,
+          uniforms: clipboardUniforms,
+        }),
+      )
+      .catch(console.error);
+  }, [edges]);
+
+  const handlePasteNodes = useCallback(
+    (data: {
+      nodes: Node[];
+      edges: Edge[];
+      uniforms: Record<string, Uniforms>;
+    }) => {
+      const idMap = new Map<string, string>();
+      for (const node of data.nodes) {
+        idMap.set(node.id, `${Math.random() * 100000}`);
+      }
+
+      const newNodes: Node[] = data.nodes.map((node) => {
+        const newId = idMap.get(node.id)!;
+        const shaderNode = node as ShaderNode;
+        const newShader = { ...shaderNode.data.shader, id: newId };
+        uniformRef.current[newId] = data.uniforms[node.id] ?? {};
+        return {
+          ...shaderNode,
+          id: newId,
+          position: { x: node.position.x + 50, y: node.position.y + 50 },
+          data: { ...shaderNode.data, shader: newShader, uniforms: uniformRef },
+          selected: false,
+        };
+      });
+
+      const newEdges: Edge[] = data.edges
+        .filter((e) => idMap.has(e.source) && idMap.has(e.target))
+        .map((edge) => ({
+          ...edge,
+          id: `${Math.random() * 100000}`,
+          source: idMap.get(edge.source)!,
+          target: idMap.get(edge.target)!,
+        }));
+
+      setNodes((prev) => [...prev, ...newNodes]);
+      setEdges((prev) => [...prev, ...newEdges]);
+    },
+    [],
+  );
+
   const [savedAt, setSavedAt] = useState<Date | null>(null);
 
   useEffect(() => {
@@ -253,11 +324,19 @@ const EditorAux: FC<EditorProps> = ({
         handleSave({ nodes, edges, uniforms: uniformRef.current });
         setSavedAt(new Date());
       }
+      if (
+        (e.metaKey || e.ctrlKey) &&
+        e.key === "c" &&
+        !(document.activeElement instanceof HTMLInputElement) &&
+        !(document.activeElement instanceof HTMLTextAreaElement)
+      ) {
+        handleCopy();
+      }
     };
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [nodes, edges]);
+  }, [nodes, edges, handleCopy]);
 
   const createShaderNode = (shader: Shader): ShaderNode => {
     const newId = `${Math.random() * 100000}`;
@@ -614,12 +693,22 @@ const EditorAux: FC<EditorProps> = ({
       )
         return;
       const text = e.clipboardData?.getData("text/plain");
-      if (text) handleImport(text);
+      if (!text) return;
+      try {
+        const parsed = JSON.parse(text);
+        if (parsed.__sequenza_clipboard__) {
+          handlePasteNodes(parsed);
+          return;
+        }
+      } catch (error: unknown) {
+        console.log("Could not parse pasted value:", error);
+      }
+      handleImport(text);
     };
 
     window.addEventListener("paste", onPaste);
     return () => window.removeEventListener("paste", onPaste);
-  }, [handleImport]);
+  }, [handleImport, handlePasteNodes]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
