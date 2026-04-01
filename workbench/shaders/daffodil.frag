@@ -4,6 +4,7 @@ precision highp float;
 
 
 uniform float u_time; // time
+uniform float u_time_multiplier; // [0.1, 5, 1]
 uniform vec2 u_resolution; // resolution
 uniform float u_vitality;
 uniform vec2 u_mouse;  //mouse
@@ -14,6 +15,8 @@ uniform float u_flower_rotation; // [-6, 10, 5]
 uniform float u_ring_radius; // [-1, 10, 2]
 uniform float u_rotation_offset; // [1, 10, 5]
 uniform float u_mouse_rotation; // [0, 2, 0.1]
+uniform float u_mouse_rotation_gain; // [1, 2, 1]
+uniform float u_natural_rotation_scale; // [0, 5, 0.1]
 uniform float u_mouse_scale_factor; // [0, 1, 0.1]
 uniform vec3 u_transform; // [0, 0.5, -20]
 
@@ -153,7 +156,7 @@ float leaves(vec3 p) {
 
 float single_flower(vec3 p)
 {
-    float scaledTime = u_time / 2.0;
+    float scaledTime = u_time * u_time_multiplier / 2.0;
 
     float bendStart = 7.0;  
     float bendEnd   = 0.0;  
@@ -162,7 +165,10 @@ float single_flower(vec3 p)
 
     h = h * h;
 
-    float maxBend = sin(u_time / 2.0) / 10.0 + 0.6 - (gain(u_vitality / 2.0, 2.0)-0.5) / 5.0; 
+    float maxBend = 
+        sin(u_time * u_time_multiplier / 2.0) / 10.0 
+        + 0.6 
+        - (gain(u_vitality / 2.0, 2.0) - 0.5) / 5.0; 
 
     float bendAngle = h * maxBend;
 
@@ -189,7 +195,12 @@ float sceneSDF(vec3 p)
     float radius = u_ring_radius + (1.0-u_mouse.y * u_mouse_scale_factor) * 3.0;           
 
     p = rotateAroundAxis(p, vec3(1.0, 0.0, 0.0), -0.5);
-    float angle = atan(p.z, p.x) +.4 + (sin(u_time / 4.0) ) / 10.0 - (gain(u_mouse.x, 1.2) - 0.5) * u_mouse_rotation + u_rotation_offset;
+    float angle = 
+        atan(p.z, p.x) 
+        + 0.4 
+        + (sin(u_time * u_time_multiplier)) * u_natural_rotation_scale
+        - (gain(u_mouse.x, u_mouse_rotation_gain) - 0.5) * u_mouse_rotation 
+        + u_rotation_offset;
     float r = length(p.xz);
 
     float sectorAngle = 6.28318 / u_flower_count;
