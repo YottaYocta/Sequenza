@@ -703,7 +703,7 @@ const EditorAux: FC<EditorProps> = ({
           return;
         }
       } catch (error: unknown) {
-        console.log("Could not parse pasted value:", error);
+        console.log("imported value treated as JSON import, ", error);
       }
       handleImport(text);
     };
