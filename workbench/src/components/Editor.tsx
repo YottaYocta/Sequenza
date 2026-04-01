@@ -45,6 +45,7 @@ import { ExportDialog } from "./ExportDialog";
 import { AddShaderDialog } from "./AddShaderDialog";
 import { ContextMenu } from "@base-ui/react/context-menu";
 import { topologicalMap } from "./util";
+import { importPatchToGraph } from "./importPatch";
 
 interface EditorProps {
   shaders: Shader[];
@@ -619,11 +620,6 @@ const EditorAux: FC<EditorProps> = ({
           shader: Patch;
         };
 
-        const idMap = new Map<string, string>();
-        for (const shader of data.shader.shaders) {
-          idMap.set(shader.id, `${Math.random() * 100000}`);
-        }
-
         const domNode = store.getState().domNode;
         const center = domNode
           ? (() => {
@@ -635,47 +631,20 @@ const EditorAux: FC<EditorProps> = ({
             })()
           : { x: 0, y: 0 };
 
-        const shaderById = new Map(data.shader.shaders.map((s) => [s.id, s]));
+        const { nodes: rawNodes, edges: newEdges, idMap } = importPatchToGraph(
+          data.shader,
+          center,
+        );
 
-        const tempNodes: Node[] = data.shader.shaders.map((s) => ({
-          id: s.id,
-          position: { x: 0, y: 0 },
-          data: {},
-        }));
-        const tempEdges: Edge[] = data.shader.connections.map((c) => ({
-          id: `${c.from}-${c.to}`,
-          source: c.from,
-          target: c.to,
-        }));
+        for (const [oldId, newId] of idMap) {
+          uniformRef.current[newId] = data.uniforms[oldId] ?? {};
+        }
 
-        let idx = 0;
-        const sortedNodes = topologicalMap(tempNodes, tempEdges, (node) => {
-          const shader = shaderById.get(node.id)!;
-          const newId = idMap.get(node.id)!;
-          const remapped: Shader = { ...shader, id: newId };
-
-          if (data.uniforms[node.id]) {
-            uniformRef.current[newId] = data.uniforms[node.id];
-          } else {
-            uniformRef.current[newId] = {};
-          }
-
-          return {
-            id: newId,
-            position: { x: center.x, y: center.y + idx++ * 300 },
-            data: { shader: remapped, uniforms: uniformRef, paused: false },
-            type: "shader",
-          };
-        });
-
-        const newNodes = sortedNodes;
-
-        const newEdges: Edge[] = data.shader.connections.map((conn) => ({
-          id: `${Math.random() * 100000}`,
-          source: idMap.get(conn.from) ?? conn.from,
-          target: idMap.get(conn.to) ?? conn.to,
-          targetHandle: conn.input,
-          type: "insert",
+        const newNodes: Node[] = rawNodes.map(({ id, position, shader }) => ({
+          id,
+          position,
+          data: { shader, uniforms: uniformRef, paused: false },
+          type: "shader",
         }));
 
         setNodes((prev) => [...prev, ...newNodes]);
@@ -707,7 +676,6 @@ const EditorAux: FC<EditorProps> = ({
       }
       handleImport(text);
     };
-
     window.addEventListener("paste", onPaste);
     return () => window.removeEventListener("paste", onPaste);
   }, [handleImport, handlePasteNodes]);
