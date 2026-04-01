@@ -7,11 +7,9 @@ export function exportSequenzaPatch(
 ): string {
   let content = templateContent;
 
-  const filteredUniformKeys = Object.keys(uniforms).filter((key) => {
-    const matchingShader = patch.shaders.find((shader) => shader.id === key);
-    if (matchingShader) return true;
-    else return false;
-  });
+  const filteredUniformKeys = Object.keys(uniforms).filter((key) =>
+    patch.shaders.some((shader) => shader.id === key),
+  );
 
   const filteredUniforms: Record<string, Uniforms> = {};
   for (const key of filteredUniformKeys) {

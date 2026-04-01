@@ -6,6 +6,7 @@ import {
   useState,
   type FC,
 } from "react";
+
 import {
   extractFields,
   type Connection,
@@ -13,6 +14,7 @@ import {
   type Shader,
   type Uniforms,
 } from "@sequenza/lib";
+
 import {
   addEdge,
   applyEdgeChanges,
