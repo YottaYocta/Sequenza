@@ -12,6 +12,8 @@ export type ImportedNode = {
 
 /**
  *
+ * source: claude
+ *
  * Converts a Patch into positioned ReactFlow nodes and edges using the
  * Sugiyama layered-graph layout algorithm:
  *   1. Longest-path layer assignment
