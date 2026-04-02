@@ -150,112 +150,16 @@ const EditorAux: FC<EditorProps> = ({
     return propagateWidthHeightUpdates(initialNodes, initialEdges);
   });
 
-  type Command = {
-    addedNodes: Node[];
-    removedNodes: Node[];
-    addedEdges: Edge[];
-    removedEdges: Edge[];
-  };
-
-  const undoStack = useRef<Command[]>([]);
-  const redoStack = useRef<Command[]>([]);
-
-  const pushCommand = useCallback((cmd: Command) => {
-    undoStack.current.push(cmd);
-    redoStack.current = [];
-  }, []);
-
-  const handleUndo = useCallback(() => {
-    const cmd = undoStack.current.pop();
-    if (!cmd) return;
-    redoStack.current.push(cmd);
-    setNodes((prev) => {
-      const withoutAdded = prev.filter(
-        (n) => !cmd.addedNodes.some((a) => a.id === n.id),
-      );
-      return [...withoutAdded, ...cmd.removedNodes];
-    });
-    setEdges((prev) => {
-      const withoutAdded = prev.filter(
-        (e) => !cmd.addedEdges.some((a) => a.id === e.id),
-      );
-      return [...withoutAdded, ...cmd.removedEdges];
-    });
-  }, []);
-
-  const handleRedo = useCallback(() => {
-    const cmd = redoStack.current.pop();
-    if (!cmd) return;
-    undoStack.current.push(cmd);
-    setNodes((prev) => {
-      const withoutRemoved = prev.filter(
-        (n) => !cmd.removedNodes.some((r) => r.id === n.id),
-      );
-      return [...withoutRemoved, ...cmd.addedNodes];
-    });
-    setEdges((prev) => {
-      const withoutRemoved = prev.filter(
-        (e) => !cmd.removedEdges.some((r) => r.id === e.id),
-      );
-      return [...withoutRemoved, ...cmd.addedEdges];
-    });
-  }, []);
-
   const onNodesChange: OnNodesChange = useCallback(
-    (changes) => {
-      const removals = changes.filter((c) => c.type === "remove");
-      if (removals.length > 0) {
-        const removedIds = new Set(removals.map((c) => c.id));
-        setNodes((prev) => {
-          const removedNodes = prev.filter((n) => removedIds.has(n.id));
-          setEdges((prevEdges) => {
-            const removedEdges = prevEdges.filter(
-              (e) => removedIds.has(e.source) || removedIds.has(e.target),
-            );
-            if (removedNodes.length > 0 || removedEdges.length > 0) {
-              pushCommand({
-                addedNodes: [],
-                removedNodes,
-                addedEdges: [],
-                removedEdges,
-              });
-            }
-            return applyEdgeChanges(
-              removedEdges.map((e) => ({ type: "remove", id: e.id })),
-              prevEdges,
-            );
-          });
-          return applyNodeChanges(changes, prev);
-        });
-      } else {
-        setNodes((prev) => applyNodeChanges(changes, prev));
-      }
-    },
-    [pushCommand],
+    (changes) =>
+      setNodes((nodesSnapshot) => applyNodeChanges(changes, nodesSnapshot)),
+    [setNodes],
   );
 
   const onEdgesChange: OnEdgesChange = useCallback(
-    (changes) => {
-      const removals = changes.filter((c) => c.type === "remove");
-      if (removals.length > 0) {
-        const removedIds = new Set(removals.map((c) => c.id));
-        setEdges((prev) => {
-          const removedEdges = prev.filter((e) => removedIds.has(e.id));
-          if (removedEdges.length > 0) {
-            pushCommand({
-              addedNodes: [],
-              removedNodes: [],
-              addedEdges: [],
-              removedEdges,
-            });
-          }
-          return applyEdgeChanges(changes, prev);
-        });
-      } else {
-        setEdges((prev) => applyEdgeChanges(changes, prev));
-      }
-    },
-    [pushCommand],
+    (changes) =>
+      setEdges((edgesSnapshot) => applyEdgeChanges(changes, edgesSnapshot)),
+    [setEdges],
   );
 
   const isValidConnection = useCallback(
@@ -282,21 +186,11 @@ const EditorAux: FC<EditorProps> = ({
         newEdges,
         params.source,
       );
-      const addedEdge = newEdges.find(
-        (e) => !edges.some((old) => old.id === e.id),
-      );
-      if (addedEdge) {
-        pushCommand({
-          addedNodes: [],
-          removedNodes: [],
-          addedEdges: [addedEdge],
-          removedEdges: [],
-        });
-      }
+
       setEdges(newEdges);
       setNodes(newNodes);
     },
-    [edges, nodes, pushCommand],
+    [edges, nodes],
   );
 
   const { screenToFlowPosition } = useReactFlow();
@@ -418,47 +312,34 @@ const EditorAux: FC<EditorProps> = ({
           target: idMap.get(edge.target)!,
         }));
 
-      pushCommand({
-        addedNodes: newNodes,
-        removedNodes: [],
-        addedEdges: newEdges,
-        removedEdges: [],
-      });
       setNodes((prev) => [...prev, ...newNodes]);
       setEdges((prev) => [...prev, ...newEdges]);
     },
-    [pushCommand],
+    [],
   );
 
   const [savedAt, setSavedAt] = useState<Date | null>(null);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      const inInput =
-        document.activeElement instanceof HTMLInputElement ||
-        document.activeElement instanceof HTMLTextAreaElement;
-
       if ((e.metaKey || e.ctrlKey) && e.key === "s") {
         e.preventDefault();
         handleSave({ nodes, edges, uniforms: uniformRef.current });
         setSavedAt(new Date());
       }
-      if ((e.metaKey || e.ctrlKey) && e.key === "c" && !inInput) {
+      if (
+        (e.metaKey || e.ctrlKey) &&
+        e.key === "c" &&
+        !(document.activeElement instanceof HTMLInputElement) &&
+        !(document.activeElement instanceof HTMLTextAreaElement)
+      ) {
         handleCopy();
-      }
-      if ((e.metaKey || e.ctrlKey) && e.key === "z" && !inInput) {
-        e.preventDefault();
-        if (e.shiftKey) {
-          handleRedo();
-        } else {
-          handleUndo();
-        }
       }
     };
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [nodes, edges, handleCopy, handleUndo, handleRedo]);
+  }, [nodes, edges, handleCopy]);
 
   const createShaderNode = (shader: Shader): ShaderNode => {
     const newId = `${Math.random() * 100000}`;
@@ -504,15 +385,9 @@ const EditorAux: FC<EditorProps> = ({
       }
 
       setAddShaderLocation(null);
-      pushCommand({
-        addedNodes: [newNode],
-        removedNodes: [],
-        addedEdges: [],
-        removedEdges: [],
-      });
       setNodes((snapshot) => [...snapshot, newNode]);
     },
-    [addShaderLocation, pushCommand],
+    [addShaderLocation],
   );
 
   const handleInsertShader = useCallback(
@@ -569,12 +444,6 @@ const EditorAux: FC<EditorProps> = ({
 
         edgesWithoutConnection.push(intoEdge);
         edgesWithoutConnection.push(outOfEdge);
-        pushCommand({
-          addedNodes: [newNode],
-          removedNodes: [],
-          addedEdges: [intoEdge, outOfEdge],
-          removedEdges: [oldEdge],
-        });
         setEdges(edgesWithoutConnection);
         const updatedNodes = propagateWidthHeightUpdates(
           [...nodes, newNode],
@@ -584,7 +453,7 @@ const EditorAux: FC<EditorProps> = ({
         setNodes(updatedNodes);
       }
     },
-    [nodes, edges, pushCommand],
+    [nodes, edges],
   );
 
   const [edgesHash, edgeMap] = useMemo(() => {
@@ -735,18 +604,12 @@ const EditorAux: FC<EditorProps> = ({
             newEdges,
             sourceNode.id,
           );
-          pushCommand({
-            addedNodes: [newNode],
-            removedNodes: [],
-            addedEdges: [newEdge],
-            removedEdges: [],
-          });
           setEdges(newEdges);
           setNodes(newNodes);
         }
       }
     },
-    [nodes, edges, pushCommand],
+    [nodes, edges],
   );
 
   const handleImport = useCallback(
@@ -768,11 +631,10 @@ const EditorAux: FC<EditorProps> = ({
             })()
           : { x: 0, y: 0 };
 
-        const {
-          nodes: rawNodes,
-          edges: newEdges,
-          idMap,
-        } = importPatchToGraph(data.shader, center);
+        const { nodes: rawNodes, edges: newEdges, idMap } = importPatchToGraph(
+          data.shader,
+          center,
+        );
 
         for (const [oldId, newId] of idMap) {
           uniformRef.current[newId] = data.uniforms[oldId] ?? {};
