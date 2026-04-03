@@ -4,6 +4,7 @@ precision mediump float;
 // from book of shaders
 
 uniform vec2 u_resolution; // resolution
+uniform float u_time; // time
 
 in vec2 vUv;
 out vec4 fragColor;
@@ -15,7 +16,7 @@ float random (vec2 st) {
 }
 
 void main() {
-    vec2 st = vUv.xy/u_resolution.xy;
+    vec2 st = vUv.xy/u_resolution.xy + u_time;
 
     float rnd1 = random(st);
     float rnd2 = random(st + rnd1);
