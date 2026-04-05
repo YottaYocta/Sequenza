@@ -5,6 +5,7 @@ uniform sampler2D u_texture; // input
 uniform float u_strength;   // [0, 1, 0.5]
 uniform float u_radius;     // [0, 2, 0.75]
 uniform float u_softness;   // [0, 1, 0.45]
+uniform vec2 u_speed;   // mouse
 
 in vec2 vUv;
 out vec4 fragColor;

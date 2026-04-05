@@ -13,6 +13,7 @@ import { Footer } from "./components/Footer";
 import { useInitialState } from "./context/InitialStateContext";
 import { useNavigate, Link } from "react-router";
 import Race from "./components/Race";
+import FbmBlue from "./components/FbmBlue";
 
 export default function Home() {
   const { setInitialState } = useInitialState();
@@ -62,7 +63,8 @@ export default function Home() {
         className="flex flex-col w-full max-w-screen-2xl gap-32"
         id="showcase"
       >
-        <div className="w-full max-w-screen-2xl h-96 rounded-lg overflow-clip">
+        <div className="w-full max-w-screen-2xl h-64 flex gap-2">
+          <FbmBlue handleEdit={handleEdit} />
           <Race enableHoverActivation={false} handleEdit={handleEdit}></Race>
         </div>
         <div className="flex items-start gap-5 max-w-screen-2xl">

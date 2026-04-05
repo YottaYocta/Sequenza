@@ -1,8 +1,5 @@
 import { RendererComponent, type Uniforms, type Patch } from "@sequenza/lib";
-import {
-  buildEditorState,
-  type EditorInitialState,
-} from "@sequenza/workbench";
+import { buildEditorState, type EditorInitialState } from "@sequenza/workbench";
 import "@sequenza/lib/style.css";
 import { useRef, useEffect, useState } from "react";
 
@@ -31,12 +28,15 @@ function Race({ enableHoverActivation = true, handleEdit }: RaceProps) {
       const deltaMs = now - lastFrameTimeRef.current;
       lastFrameTimeRef.current = now;
 
-      const shouldAccumulateTime = enableHoverActivation ? isMouseOverRef.current : true;
+      const shouldAccumulateTime = enableHoverActivation
+        ? isMouseOverRef.current
+        : true;
       if (shouldAccumulateTime) {
         cumulativeTimeRef.current += deltaMs / 1000;
       }
 
-      uniformRef.current["44702.208364777616"].u_time = cumulativeTimeRef.current / 2;
+      uniformRef.current["44702.208364777616"].u_time =
+        cumulativeTimeRef.current / 2;
 
       rafRef.current = requestAnimationFrame(animate);
     };
@@ -53,7 +53,7 @@ function Race({ enableHoverActivation = true, handleEdit }: RaceProps) {
   const patch = getPatch();
 
   return (
-    <div className="relative w-full h-full group">
+    <div className="relative w-full h-full group rounded-md overflow-clip ">
       <div
         {...(enableHoverActivation && {
           onMouseEnter: () => setIsMouseOver(true),
