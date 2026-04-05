@@ -45,7 +45,7 @@ import { ExportDialog } from "./ExportDialog";
 import { AddShaderDialog } from "./AddShaderDialog";
 import { ContextMenu } from "@base-ui/react/context-menu";
 import { topologicalMap } from "./util";
-import { importPatchToGraph } from "./importPatch";
+import { buildEditorState } from "../buildEditorState";
 
 interface EditorProps {
   shaders: Shader[];
@@ -631,20 +631,16 @@ const EditorAux: FC<EditorProps> = ({
             })()
           : { x: 0, y: 0 };
 
-        const { nodes: rawNodes, edges: newEdges, idMap } = importPatchToGraph(
-          data.shader,
-          center,
-        );
+        const { nodes: rawNodes, edges: newEdges, uniforms: newUniforms } =
+          buildEditorState(data.shader, data.uniforms, center);
 
-        for (const [oldId, newId] of idMap) {
-          uniformRef.current[newId] = data.uniforms[oldId] ?? {};
+        for (const [newId, value] of Object.entries(newUniforms)) {
+          uniformRef.current[newId] = value;
         }
 
-        const newNodes: Node[] = rawNodes.map(({ id, position, shader }) => ({
-          id,
-          position,
-          data: { shader, uniforms: uniformRef, paused: false },
-          type: "shader",
+        const newNodes: Node[] = rawNodes.map((node) => ({
+          ...node,
+          data: { ...node.data, uniforms: uniformRef },
         }));
 
         setNodes((prev) => [...prev, ...newNodes]);
