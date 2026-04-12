@@ -69,7 +69,10 @@ function HandshakerHero() {
                   </button>
                 </a>
                 <button
-                  onClick={() => setPopup((p) => !p)}
+                  onClick={() => {
+                    setPopup(true);
+                    setTimeout(() => setPopup(false), 2500);
+                  }}
                   className="flex items-center justify-center px-3 py-2 rounded-md bg-neutral-50 hover:bg-neutral-100 transition cursor-pointer active:bg-neutral-200"
                 >
                   🎉
