@@ -7,7 +7,7 @@ out vec4 fragColor;
 
 uniform sampler2D input_tex;
 uniform vec2 resolution; // resolution
-uniform vec3 rotation; 
+uniform vec3 rotation;  // [0, 0, 0]
 uniform vec3 translation; // [0, 0, 1]
 uniform vec2 scale; // [1, 1]
 uniform vec4 background_color; // color [1, 1, 1, 0]
