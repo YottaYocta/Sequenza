@@ -14,7 +14,6 @@ import { useInitialState } from "./context/InitialStateContext";
 import { useNavigate, Link } from "react-router";
 import Race from "./components/Race";
 import FbmBlue from "./components/FbmBlue";
-import HandshakerHero from "./components/HandshakerHero";
 
 export default function Home() {
   const { setInitialState } = useInitialState();
@@ -68,7 +67,6 @@ export default function Home() {
           <FbmBlue handleEdit={handleEdit} />
           <Race enableHoverActivation={false} handleEdit={handleEdit}></Race>
         </div>
-        <HandshakerHero />
         <div className="flex items-start gap-5 max-w-screen-2xl">
           <div className="h-134 rounded-lg overflow-clip flex-1">
             <Dither1 source={daffodil} handleEdit={handleEdit} />

@@ -18,6 +18,9 @@ export function Nav() {
         <Link to="/shader-dev" className="  hover:opacity-70">
           Shader Development
         </Link>
+        <Link to="/friends" className="  hover:opacity-70">
+          Friends
+        </Link>
         <a
           href="https://github.com/YottaYocta/Sequenza"
           className="  hover:opacity-70"

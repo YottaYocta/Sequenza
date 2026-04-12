@@ -5,6 +5,7 @@ import handshaker from "../assets/handshaker.png";
 function HandshakerHero() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  const [popup, setPopup] = useState(false);
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     const rect = containerRef.current?.getBoundingClientRect();
@@ -42,20 +43,38 @@ function HandshakerHero() {
           />
         </div>
 
-        <div className="w-full justify-center flex z-10">
-          <div className="flex flex-col justiyf-center gap-4 bg-white rounded-lg p-4 shrink-0 w-min text-nowrap">
-            <div className="text-3xl leading-[round(up,120%,1px)] text-[#166FE3FC] font-sans font-medium">
-              Land that Dream Role
+        <div className="w-full justify-center flex z-10 relative">
+          <div className="flex flex-col gap-4 shrink-0 w-min text-nowrap relative">
+            <div
+              className="absolute bottom-full mb-3 left-0 bg-white px-4 py-2 text-nowrap text-[#166FE3FC] font-sans font-medium rounded-md shadow-md pointer-events-none"
+              style={{
+                opacity: popup ? 1 : 0,
+                transform: popup ? "translateY(0)" : "translateY(6px)",
+                transition: "opacity 0.2s ease, transform 0.2s ease",
+              }}
+            >
+              Happy Birthday Ganesh! 🎂
             </div>
-            <div>
-              <a
-                href="https://chromewebstore.google.com/detail/handshaker-handshake-auto/aedegffcgkjmbaefclfjlklommhmeokf"
-                target="_blank"
-              >
-                <button className="flex flex-col items-start px-6 py-2 rounded-md bg-[#1866FC] w-min text-white hover:bg-blue-500 transition cursor-pointer">
-                  install Handshaker today
+            <div className="flex flex-col gap-4 bg-white rounded-lg p-4">
+              <div className="text-3xl leading-[round(up,120%,1px)] text-[#166FE3FC] font-sans font-medium">
+                Land that Dream Role
+              </div>
+              <div className="flex gap-2">
+                <a
+                  href="https://chromewebstore.google.com/detail/handshaker-handshake-auto/aedegffcgkjmbaefclfjlklommhmeokf"
+                  target="_blank"
+                >
+                  <button className="flex flex-col items-start px-6 py-2 rounded-md bg-[#1866FC] w-min text-white hover:bg-blue-500 transition cursor-pointer">
+                    install Handshaker today
+                  </button>
+                </a>
+                <button
+                  onClick={() => setPopup((p) => !p)}
+                  className="flex items-center justify-center px-3 py-2 rounded-md bg-neutral-50 hover:bg-neutral-100 transition cursor-pointer active:bg-neutral-200"
+                >
+                  🎉
                 </button>
-              </a>
+              </div>
             </div>
           </div>
         </div>
