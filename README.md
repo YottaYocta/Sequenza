@@ -144,7 +144,7 @@ Use this to have an agent scaffold a new shader file and get the dev server runn
 I want to create a new GLSL shader and
 iterate on it with the sequenza visual editor. Here's what needs to happen:
 
-1. Create a new file at `workbench/shaders/<name>.frag` with this boilerplate:
+1. Create a new file within a local asset dir named `<name>.frag` with this boilerplate:
 
    #version 300 es
    precision mediump float;
