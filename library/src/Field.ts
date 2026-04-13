@@ -33,13 +33,35 @@ export type Field =
       source: "input" | "texture" | "gradient";
     };
 
-// uniform vec3 varname; // color
-// uniform vec3 varname; // color [r, g, b]
-// uniform vec4 varname; // color
-// uniform vec4 varname; // color [r, g, b, a]
-// uniform float var; // time (if this, create an input component that looks like ([start/stop - changes by ui state] / timevalue), with timevalue being time elapsed in seconds. use the time context from the editor)
-// uniform vec2 varname; // mouse (if this, create a readonly component that monitors position of the mouse; does this by using the mouse context from the editor)
-// uniform sampler2D varname; // texture
+// Supported uniform annotation formats:
+//
+// float
+//   uniform float var;                    → plain float, no control (default 0)
+//   uniform float var; // [min, max, def] → scrubber with range and default
+//   uniform float var; // time            → driven by elapsed seconds (no control)
+//
+// vec2
+//   uniform vec2 var;                     → plain vec2, no control (default [0,0])
+//   uniform vec2 var; // [x, y]           → vec2 with default values
+//   uniform vec2 var; // mouse            → driven by normalized mouse position (no control)
+//   uniform vec2 var; // resolution       → driven by canvas size (no control)
+//
+// vec3
+//   uniform vec3 var;                     → plain vec3, no control (default [0,0,0])
+//   uniform vec3 var; // [x, y, z]        → vec3 with default values
+//   uniform vec3 var; // color            → color picker (default [1,1,1])
+//   uniform vec3 var; // color [r, g, b]  → color picker with default
+//
+// vec4
+//   uniform vec4 var;                        → plain vec4, no control (default [0,0,0,0])
+//   uniform vec4 var; // [x, y, z, w]        → vec4 with default values
+//   uniform vec4 var; // color               → color picker (default [1,1,1,1])
+//   uniform vec4 var; // color [r, g, b, a]  → color picker with default
+//
+// sampler2D
+//   uniform sampler2D var;            → expects a node input connection
+//   uniform sampler2D var; // texture → expects a texture asset
+//   uniform sampler2D var; // gradient → expects a gradient asset
 
 /**
  * Parses shader source for uniform declarations with metadata comments.

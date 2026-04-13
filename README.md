@@ -163,6 +163,38 @@ iterate on it with the sequenza visual editor. Here's what needs to happen:
 
 The shader will appear in the editor sidebar under the name I give it. I can then
 build the graph visually and tune uniforms live.
+
+Prompt the user for the name of the file they want to create and if it should contain anything. The editor automatically detects uniform configs using comments, so take care to add these when generating:
+
+// float
+// uniform float var; → plain float, no control (default 0)
+// uniform float var; // [min, max, def] → scrubber with range and default
+// uniform float var; // time → driven by elapsed seconds (no control)
+//
+// vec2
+// uniform vec2 var; → plain vec2, no control (default [0,0])
+// uniform vec2 var; // [x, y] → vec2 with default values
+// uniform vec2 var; // mouse → driven by normalized mouse position (no control)
+// uniform vec2 var; // resolution → driven by canvas size (no control)
+//
+// vec3
+// uniform vec3 var; → plain vec3, no control (default [0,0,0])
+// uniform vec3 var; // [x, y, z] → vec3 with default values
+// uniform vec3 var; // color → color picker (default [1,1,1])
+// uniform vec3 var; // color [r, g, b] → color picker with default
+//
+// vec4
+// uniform vec4 var; → plain vec4, no control (default [0,0,0,0])
+// uniform vec4 var; // [x, y, z, w] → vec4 with default values
+// uniform vec4 var; // color → color picker (default [1,1,1,1])
+// uniform vec4 var; // color [r, g, b, a] → color picker with default
+//
+// sampler2D
+// uniform sampler2D var; → expects a node input connection
+// uniform sampler2D var; // texture → expects a texture asset
+// uniform sampler2D var; // gradient → expects a gradient asset
+
+
 ```
 
 ## Archive
