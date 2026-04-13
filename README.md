@@ -69,6 +69,102 @@ import "@sequenza/lib/style.css";
 
 The export button in the editor generates a complete ready-to-paste component with the patch and uniforms embedded.
 
+---
+
+## Integration Prompts
+
+### Using an export from the editor
+
+Paste this into your AI assistant after copying the generated component from the editor's **Export** panel:
+
+```
+I have a Sequenza shader export — a self-contained React component that renders
+a GLSL shader composition using @sequenza/lib. Here it is:
+
+<paste exported component here>
+
+Please integrate this into my project. It accepts no props and renders the shader
+full-width inside whatever container it's placed in. The `animate` prop drives a requestAnimationFrame loop for
+shaders that use a time uniform. Let me know if you need anything else.
+```
+
+### Minimal setup with local shader files
+
+Use this when you want to wire up `.frag` files directly without going through the editor:
+
+```
+I want to render a GLSL fragment shader using @sequenza/lib. Install it with:
+
+  pnpm add @sequenza/lib
+
+The core types are:
+
+  type Shader = {
+    id: string;
+    name: string;
+    source: string;              // raw GLSL source as a string
+    resolution: { width: number; height: number };
+  };
+
+  type Patch = {
+    shaders: Shader[];
+    connections: Connection[];  // [] for a single shader with no inputs
+  };
+
+  type Connection = { from: string; to: string; input: string };
+
+Import the shader source as a string (e.g. `import src from "./my.frag?raw"` in
+Vite), construct a Patch, and render:
+
+  import { RendererComponent } from "@sequenza/lib";
+  import "@sequenza/lib/style.css";
+  import { useRef } from "react";
+  import fragSrc from "./my.frag?raw";
+
+  const patch = {
+    shaders: [{ id: "main", name: "main", source: fragSrc, resolution: { width: 800, height: 600 } }],
+    connections: [],
+  };
+
+  export default function MyShader() {
+    const uniforms = useRef({});
+    return <RendererComponent patch={patch} uniforms={uniforms} animate />;
+  }
+
+The `uniforms` ref maps shader id → { [uniformName]: value }. Update it
+imperatively (no re-render needed) if I specify values later. Otherwise, leave it empty, as it will be filled by default. The `animate` prop runs a rAF loop.
+Please set this up using my shader file(s) and wire up any uniforms I need.
+```
+
+### Set up a local shader dev environment
+
+Use this to have an agent scaffold a new shader file and get the dev server running:
+
+```
+I want to create a new GLSL shader and
+iterate on it with the sequenza visual editor. Here's what needs to happen:
+
+1. Create a new file at `workbench/shaders/<name>.frag` with this boilerplate:
+
+   #version 300 es
+   precision mediump float;
+
+   uniform vec2 u_resolution; // resolution
+   uniform float u_time;      // time
+
+   in vec2 vUv;
+   out vec4 fragColor;
+
+   void main() {
+     fragColor = vec4(vUv, 0.5 + 0.5 * sin(u_time), 1.0);
+   }
+
+2. Start the dev server. use the command `pnpx @sequenza/workbench dev` at the root of the directory. This starts a dev server that automatically watches and exposes any local shader files recursively.
+
+The shader will appear in the editor sidebar under the name I give it. I can then
+build the graph visually and tune uniforms live.
+```
+
 ## Archive
 
 The initial version of the app has now been moved to `/old`
