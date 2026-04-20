@@ -2,7 +2,7 @@ import { Link } from "react-router";
 
 export function Nav() {
   return (
-    <nav className="flex items-center justify-between w-full max-w-5xl h-10 border-b border-neutral-200 shrink-0">
+    <nav className="flex items-center justify-between w-full max-w-6xl h-10 border-b border-neutral-200 shrink-0">
       <Link to="/" className="flex items-center gap-1">
         <span className="font-semibold">Sequenza</span>
       </Link>

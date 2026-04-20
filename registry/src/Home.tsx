@@ -28,7 +28,7 @@ export default function Home() {
     <div className="flex flex-col items-center gap-36 pt-3 pb-12 bg-neutral-100 antialiased font-sans min-h-screen px-10 ">
       <Nav />
 
-      <div className="flex items-center gap-16 max-w-5xl w-full">
+      <div className="flex items-center gap-16 max-w-6xl w-full px-16">
         <div className="flex flex-col items-start gap-20">
           <div className="flex flex-col items-start gap-8">
             <h1 className="tracking-tight capitalize text-black font-medium text-4xl leading-11 max-w-md">
@@ -49,17 +49,26 @@ export default function Home() {
             >
               Open Editor
             </Link>
-            <a href="#showcase" className="text-black font-medium ">
+            <a
+              href="#showcase"
+              className="text-black font-medium "
+              onClick={(e) => {
+                e.preventDefault();
+                document
+                  .getElementById("showcase")
+                  ?.scrollIntoView({ behavior: "smooth", block: "center" });
+              }}
+            >
               Or see Examples &#8595;
             </a>
           </div>
         </div>
-        <div className="w-130 h-130 rounded-lg bg-neutral-200 shrink-0 overflow-hidden">
+        <div className="flex-1 h-130 rounded-lg bg-neutral-200 shrink-0 overflow-hidden">
           <EditorPreview source={rubiks} />
         </div>
       </div>
 
-      <div className="flex flex-col w-full max-w-5xl gap-8" id="showcase">
+      <div className="flex flex-col w-full max-w-6xl gap-8" id="showcase">
         <div className="lg:h-64 md:h-48 h-32 w-full">
           <ShaderDemo
             patch={fbmBlueData.patch as unknown as Patch}
