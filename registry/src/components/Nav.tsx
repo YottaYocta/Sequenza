@@ -2,7 +2,7 @@ import { Link } from "react-router";
 
 export function Nav() {
   return (
-    <nav className="flex items-center justify-between w-full max-w-screen-2xl h-10 border-b border-neutral-200 shrink-0">
+    <nav className="flex items-center justify-between w-full max-w-5xl h-10 border-b border-neutral-200 shrink-0">
       <Link to="/" className="flex items-center gap-1">
         <span className="font-semibold">Sequenza</span>
       </Link>
@@ -16,10 +16,7 @@ export function Nav() {
         </Link>
 
         <Link to="/shader-dev" className="  hover:opacity-70">
-          Shader Development
-        </Link>
-        <Link to="/friends" className="  hover:opacity-70">
-          Friends
+          Local Dev
         </Link>
         <a
           href="https://github.com/YottaYocta/Sequenza"

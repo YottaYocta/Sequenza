@@ -84,6 +84,7 @@ export default function Home() {
         </div>
         <div className="flex items-start gap-8 w-full h-100">
           <ShaderDemo
+            animate={true}
             patch={responsiveLinesData.patch as unknown as Patch}
             initialUniforms={
               responsiveLinesData.uniforms as unknown as Record<
@@ -96,6 +97,7 @@ export default function Home() {
             handleEdit={handleEdit}
           />
           <ShaderDemo
+            animate={false}
             patch={hatchingData.patch as unknown as Patch}
             initialUniforms={
               hatchingData.uniforms as unknown as Record<string, Uniforms>

@@ -6,7 +6,7 @@ import {
 } from "@sequenza/lib";
 import { buildEditorState, type EditorInitialState } from "@sequenza/workbench";
 import "@sequenza/lib/style.css";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface ShaderDemoProps {
   patch: Patch;
@@ -15,6 +15,7 @@ interface ShaderDemoProps {
   height: number;
   className?: string;
   handleEdit?: (initialState: EditorInitialState) => void;
+  animate?: boolean;
 }
 
 export function ShaderDemo({
@@ -24,6 +25,7 @@ export function ShaderDemo({
   height,
   className,
   handleEdit,
+  animate,
 }: ShaderDemoProps) {
   const uniformRef = useRef<Record<string, Uniforms>>(
     JSON.parse(JSON.stringify(initialUniforms)),
@@ -33,9 +35,9 @@ export function ShaderDemo({
     lerpSpeed: 0.12,
     tiltSensitivity: 0.63,
     spinSensitivity: 0.2,
-    maxTilt: 10,
-    maxSpin: 49,
-    perspective: 80,
+    maxTilt: 2,
+    maxSpin: 30,
+    perspective: 30,
     stopDelay: 200,
   });
 
@@ -47,6 +49,8 @@ export function ShaderDemo({
   const lerpStopTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
   );
+  const [hovering, setHovering] = useState<boolean>(false);
+  const hoveringRef = useRef(false);
 
   const startLerp = () => {
     stopLerp();
@@ -132,12 +136,17 @@ export function ShaderDemo({
 
     let rafId: number | undefined;
     if (timeFields.length > 0) {
-      const startTime = performance.now();
+      let cumulativeTime = 0;
+      let lastFrameTime = performance.now();
       const loop = () => {
-        const elapsed = (performance.now() - startTime) / 1000;
+        const now = performance.now();
+        if (hoveringRef.current) {
+          cumulativeTime += (now - lastFrameTime) / 1000;
+        }
+        lastFrameTime = now;
         for (const { shaderId, fieldName } of timeFields) {
           uniformRef.current[shaderId] ??= {};
-          uniformRef.current[shaderId][fieldName] = elapsed;
+          uniformRef.current[shaderId][fieldName] = cumulativeTime;
         }
         rafId = requestAnimationFrame(loop);
       };
@@ -164,6 +173,8 @@ export function ShaderDemo({
         targetPos.current = { x, y };
         currentPos.current = { x, y };
         startLerp();
+        hoveringRef.current = true;
+        setHovering(true);
       }}
       onMouseMove={(e) => {
         const rect = e.currentTarget.getBoundingClientRect();
@@ -177,12 +188,14 @@ export function ShaderDemo({
           stopLerp,
           motionRef.current.stopDelay,
         );
+        hoveringRef.current = false;
+        setHovering(false);
       }}
     >
       <RendererComponent
         patch={patch}
         uniforms={uniformRef}
-        animate={true}
+        animate={animate !== undefined ? animate : hovering}
         width={width}
         height={height}
         className="w-full h-full"
@@ -194,7 +207,7 @@ export function ShaderDemo({
         >
           <div ref={tiltRef}>
             <button
-              className="opacity-0 scale-75 group-hover:opacity-100 group-hover:scale-100 focus:opacity-100 focus:scale-100 pointer-events-none group-hover:pointer-events-auto focus:pointer-events-auto px-5 py-2 text-sm font-semibold rounded-full bg-black text-white transition-[transform,opacity] duration-200 ease-out hover:cursor-pointer border-white border-2"
+              className="opacity-0 scale-75 group-hover:opacity-100 group-hover:scale-100 focus:opacity-100 focus:scale-100 pointer-events-none group-hover:pointer-events-auto focus:pointer-events-auto px-5 py-2 text-lg font-semibold  rounded-md bg-neutral-900 text-white transition-[transform, opacity] duration-200 ease-out hover:cursor-pointer border-neutral-100  border-2"
               onClick={() =>
                 handleEdit(buildEditorState(patch, initialUniforms))
               }

@@ -1,3 +1,5 @@
+import { Link } from "react-router";
+
 export function Footer() {
   return (
     <footer className="flex items-center justify-between w-full max-w-screen-2xl ">
@@ -11,13 +13,19 @@ export function Footer() {
       <div className="flex items-center gap-9">
         <a
           href="https://github.com/YottaYocta/Sequenza"
-          className="opacity-60   hover:opacity-80"
+          className="opacity-60   hover:opacity-80 "
         >
           Github
         </a>
-        <span className="opacity-60  ">Documentation</span>
-        <span className="opacity-60  ">Running Locally</span>
-        <span className="opacity-60  ">Showcase</span>
+        <Link to="/friends" className="opacity-60 hover:opacity-80 transition">
+          Friends
+        </Link>
+        <Link
+          to="/shader-dev"
+          className="opacity-60 hover:opacity-80 transition"
+        >
+          Local Dev
+        </Link>
       </div>
     </footer>
   );
