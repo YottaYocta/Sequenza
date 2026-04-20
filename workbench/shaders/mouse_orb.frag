@@ -3,7 +3,7 @@ precision mediump float;
 
 uniform vec2 u_resolution;  // resolution
 uniform vec2 u_mouse;       // mouse
-uniform float u_size;       // [0, 0.5, 0.15]
+uniform float u_size;       // [0, 0.5, 3]
 uniform float u_brightness; // [0, 1, 1]
 
 in vec2 vUv;
