@@ -1,9 +1,5 @@
-import Dither1 from "./components/Dither1";
-import Hatching from "./components/Hatching";
-import HeatMap from "./components/HeatMap";
-import Dots1 from "./components/Dots1";
 import { EditorPreview } from "./components/EditorPreview";
-import daffodil from "./assets/daffodil.png";
+import { ShaderDemo } from "./components/ShaderDemo";
 import rubiks from "./assets/rubiks.png";
 import type { EditorInitialState } from "@sequenza/workbench";
 import "@xyflow/react/dist/style.css";
@@ -12,8 +8,12 @@ import { Nav } from "./components/Nav";
 import { Footer } from "./components/Footer";
 import { useInitialState } from "./context/InitialStateContext";
 import { useNavigate, Link } from "react-router";
-import Race from "./components/Race";
-import FbmBlue from "./components/FbmBlue";
+import type { Patch, Uniforms } from "@sequenza/lib";
+
+import raceData from "./shaders/race.json";
+import fbmBlueData from "./shaders/fbm-blue.json";
+import responsiveLinesData from "./shaders/responsive-lines.json";
+import hatchingData from "./shaders/hatching.json";
 
 export default function Home() {
   const { setInitialState } = useInitialState();
@@ -59,29 +59,51 @@ export default function Home() {
         </div>
       </div>
 
-      <div
-        className="flex flex-col w-full max-w-screen-2xl gap-32"
-        id="showcase"
-      >
-        <div className="w-full max-w-screen-2xl h-64 flex gap-2">
-          <FbmBlue handleEdit={handleEdit} />
-          <Race enableHoverActivation={false} handleEdit={handleEdit}></Race>
+      <div className="flex flex-col w-full max-w-5xl gap-8" id="showcase">
+        <div className="lg:h-64 md:h-48 h-32 w-full">
+          <ShaderDemo
+            patch={fbmBlueData.patch as unknown as Patch}
+            initialUniforms={
+              fbmBlueData.uniforms as unknown as Record<string, Uniforms>
+            }
+            width={2000}
+            height={500}
+            handleEdit={handleEdit}
+          />
         </div>
-        <div className="flex items-start gap-5 max-w-screen-2xl">
-          <div className="h-134 rounded-lg overflow-clip flex-1">
-            <Dither1 source={daffodil} handleEdit={handleEdit} />
-          </div>
-          <div className="flex flex-col items-start gap-3.5">
-            <div className="w-96 h-58 rounded-lg overflow-clip shrink-0">
-              <Hatching source={daffodil} handleEdit={handleEdit} />
-            </div>
-            <div className="w-96 h-68 rounded-lg overflow-clip shrink-0">
-              <HeatMap source={daffodil} handleEdit={handleEdit} />
-            </div>
-          </div>
-          <div className="h-134 rounded-lg overflow-clip flex-1">
-            <Dots1 source={daffodil} handleEdit={handleEdit} />
-          </div>
+        <div className="lg:h-64 md:h-48 h-32 w-full">
+          <ShaderDemo
+            patch={raceData.patch as unknown as Patch}
+            initialUniforms={
+              raceData.uniforms as unknown as Record<string, Uniforms>
+            }
+            width={1000}
+            height={400}
+            handleEdit={handleEdit}
+          />
+        </div>
+        <div className="flex items-start gap-8 w-full h-100">
+          <ShaderDemo
+            patch={responsiveLinesData.patch as unknown as Patch}
+            initialUniforms={
+              responsiveLinesData.uniforms as unknown as Record<
+                string,
+                Uniforms
+              >
+            }
+            width={500}
+            height={400}
+            handleEdit={handleEdit}
+          />
+          <ShaderDemo
+            patch={hatchingData.patch as unknown as Patch}
+            initialUniforms={
+              hatchingData.uniforms as unknown as Record<string, Uniforms>
+            }
+            width={200}
+            height={300}
+            handleEdit={handleEdit}
+          />
         </div>
       </div>
 
