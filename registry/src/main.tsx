@@ -1,6 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
+
 import Home from "./Home.tsx";
 import ShaderDev from "./ShaderDev.tsx";
 import EditorPage from "./EditorPage.tsx";

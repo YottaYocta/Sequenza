@@ -1,4 +1,9 @@
-import { RendererComponent, extractFields, type Uniforms, type Patch } from "@sequenza/lib";
+import {
+  RendererComponent,
+  extractFields,
+  type Uniforms,
+  type Patch,
+} from "@sequenza/lib";
 import { buildEditorState, type EditorInitialState } from "@sequenza/workbench";
 import "@sequenza/lib/style.css";
 import { useEffect, useRef } from "react";
@@ -12,10 +17,84 @@ interface ShaderDemoProps {
   handleEdit?: (initialState: EditorInitialState) => void;
 }
 
-export function ShaderDemo({ patch, initialUniforms, width, height, className, handleEdit }: ShaderDemoProps) {
+export function ShaderDemo({
+  patch,
+  initialUniforms,
+  width,
+  height,
+  className,
+  handleEdit,
+}: ShaderDemoProps) {
   const uniformRef = useRef<Record<string, Uniforms>>(
-    JSON.parse(JSON.stringify(initialUniforms))
+    JSON.parse(JSON.stringify(initialUniforms)),
   );
+
+  const motionRef = useRef({
+    lerpSpeed: 0.12,
+    tiltSensitivity: 0.63,
+    spinSensitivity: 0.2,
+    maxTilt: 10,
+    maxSpin: 49,
+    perspective: 80,
+    stopDelay: 200,
+  });
+
+  const targetPos = useRef({ x: 0, y: 0 });
+  const currentPos = useRef({ x: 0, y: 0 });
+  const labelRef = useRef<HTMLDivElement>(null);
+  const tiltRef = useRef<HTMLDivElement>(null);
+  const lerpRafRef = useRef<number | undefined>(undefined);
+  const lerpStopTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
+
+  const startLerp = () => {
+    stopLerp();
+    const tick = () => {
+      const {
+        lerpSpeed,
+        tiltSensitivity,
+        spinSensitivity,
+        maxTilt,
+        maxSpin,
+        perspective,
+      } = motionRef.current;
+      const t = targetPos.current;
+      const c = currentPos.current;
+      const velX = t.x - c.x;
+      const velY = t.y - c.y;
+      c.x += velX * lerpSpeed;
+      c.y += velY * lerpSpeed;
+      if (labelRef.current) {
+        labelRef.current.style.left = `${c.x}px`;
+        labelRef.current.style.top = `${c.y}px`;
+      }
+      if (tiltRef.current) {
+        const rotY = Math.max(
+          -maxTilt,
+          Math.min(maxTilt, velX * tiltSensitivity),
+        );
+        const rotX = Math.max(
+          -maxTilt,
+          Math.min(maxTilt, -velY * tiltSensitivity),
+        );
+        const rotZ = Math.max(
+          -maxSpin,
+          Math.min(maxSpin, velX * spinSensitivity),
+        );
+        tiltRef.current.style.transform = `perspective(${perspective}px) rotateX(${rotX}deg) rotateY(${rotY}deg) rotateZ(${rotZ}deg)`;
+      }
+      lerpRafRef.current = requestAnimationFrame(tick);
+    };
+    lerpRafRef.current = requestAnimationFrame(tick);
+  };
+
+  const stopLerp = () => {
+    if (lerpRafRef.current !== undefined) {
+      cancelAnimationFrame(lerpRafRef.current);
+      lerpRafRef.current = undefined;
+    }
+  };
 
   useEffect(() => {
     const timeFields: Array<{ shaderId: string; fieldName: string }> = [];
@@ -68,12 +147,38 @@ export function ShaderDemo({ patch, initialUniforms, width, height, className, h
     return () => {
       if (onMouseMove) window.removeEventListener("mousemove", onMouseMove);
       if (rafId !== undefined) cancelAnimationFrame(rafId);
+      clearTimeout(lerpStopTimeout.current);
+      stopLerp();
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
-    <div className={`relative w-full h-full group overflow-clip ${className ?? "rounded-md"}`}>
+    <div
+      className={`relative w-full h-full group overflow-clip ${className ?? "rounded-md"}`}
+      onMouseEnter={(e) => {
+        clearTimeout(lerpStopTimeout.current);
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        targetPos.current = { x, y };
+        currentPos.current = { x, y };
+        startLerp();
+      }}
+      onMouseMove={(e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        targetPos.current = {
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top,
+        };
+      }}
+      onMouseLeave={() => {
+        lerpStopTimeout.current = setTimeout(
+          stopLerp,
+          motionRef.current.stopDelay,
+        );
+      }}
+    >
       <RendererComponent
         patch={patch}
         uniforms={uniformRef}
@@ -83,13 +188,20 @@ export function ShaderDemo({ patch, initialUniforms, width, height, className, h
         className="w-full h-full"
       />
       {handleEdit && (
-        <div className="absolute top-1.5 right-1.5 flex gap-1 group-hover:opacity-100 opacity-0 transition group-hover:transition-none duration-200">
-          <button
-            className="button-base"
-            onClick={() => handleEdit(buildEditorState(patch, initialUniforms))}
-          >
-            Edit
-          </button>
+        <div
+          ref={labelRef}
+          className="absolute pointer-events-none -translate-x-1/2 -translate-y-1/2"
+        >
+          <div ref={tiltRef}>
+            <button
+              className="opacity-0 scale-75 group-hover:opacity-100 group-hover:scale-100 focus:opacity-100 focus:scale-100 pointer-events-none group-hover:pointer-events-auto focus:pointer-events-auto px-5 py-2 text-sm font-semibold rounded-full bg-black text-white transition-[transform,opacity] duration-200 ease-out hover:cursor-pointer border-white border-2"
+              onClick={() =>
+                handleEdit(buildEditorState(patch, initialUniforms))
+              }
+            >
+              Edit
+            </button>
+          </div>
         </div>
       )}
     </div>
