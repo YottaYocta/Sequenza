@@ -10,7 +10,7 @@ import { useInitialState } from "./context/InitialStateContext";
 import { useNavigate, Link } from "react-router";
 import type { Patch, Uniforms } from "@sequenza/lib";
 
-import raceData from "./shaders/race.json";
+import fireDitherData from "./shaders/fire-dither.json";
 import fbmBlueData from "./shaders/fbm-blue.json";
 import responsiveLinesData from "./shaders/responsive-lines.json";
 import hatchingData from "./shaders/hatching.json";
@@ -80,17 +80,19 @@ export default function Home() {
             handleEdit={handleEdit}
           />
         </div>
+
         <div className="lg:h-64 md:h-48 h-32 w-full">
           <ShaderDemo
-            patch={raceData.patch as unknown as Patch}
+            patch={fireDitherData.patch as unknown as Patch}
             initialUniforms={
-              raceData.uniforms as unknown as Record<string, Uniforms>
+              fireDitherData.uniforms as unknown as Record<string, Uniforms>
             }
             width={1000}
             height={400}
             handleEdit={handleEdit}
           />
         </div>
+
         <div className="flex items-start gap-8 w-full h-100">
           <ShaderDemo
             animate={true}
@@ -106,7 +108,6 @@ export default function Home() {
             handleEdit={handleEdit}
           />
           <ShaderDemo
-            animate={false}
             patch={hatchingData.patch as unknown as Patch}
             initialUniforms={
               hatchingData.uniforms as unknown as Record<string, Uniforms>

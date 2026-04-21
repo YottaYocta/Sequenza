@@ -2,7 +2,7 @@ import type { Edge, Node } from "@xyflow/react";
 import type { Patch, Uniforms } from "@sequenza/lib";
 import type { ShaderNode } from "./components/ShaderNode";
 
-const COL_GAP = 500;
+const COL_GAP = 1000;
 const ROW_GAP = 500;
 
 export type EditorInitialState = {
