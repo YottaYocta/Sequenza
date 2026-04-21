@@ -104,7 +104,7 @@ export const GradientField: FC<{
         </button>
       </div>
       <div className="flex flex-col gap-1.5">
-        {stops.map((stop, idx) => (
+        {[...stops.map((stop, idx) => ({ stop, idx }))].sort((a, b) => a.stop.position - b.stop.position).map(({ stop, idx }) => (
           <div key={idx} className="flex items-center gap-2">
             <Scrubber
               value={stop.position}
