@@ -1,4 +1,9 @@
-import { RendererComponent, extractFields, type Uniforms, type Patch } from "@sequenza/lib";
+import {
+  RendererComponent,
+  extractFields,
+  type Uniforms,
+  type Patch,
+} from "@sequenza/lib";
 import "@sequenza/lib/style.css";
 import { useEffect, useRef } from "react";
 
@@ -66,8 +71,14 @@ function SequenzaComponent() {
       patch={getPatch()}
       uniforms={uniformRef}
       animate={true}
-      width={100}
-      height={100}
+      width={
+        100
+        // final patch width
+      }
+      height={
+        100
+        // final patch height
+      }
     ></RendererComponent>
   );
 }
