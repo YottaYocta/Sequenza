@@ -1,6 +1,6 @@
 {
   "name": "@sequenza/workbench",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "type": "module",
   "module": "./dist/sequenza.js",
   "types": "./dist/index.d.ts",
