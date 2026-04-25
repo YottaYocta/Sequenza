@@ -101,7 +101,7 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
 			`}
     >
       <div className="w-full flex justify-between">
-        <p className="text-sm w-min py-1 px-2 text-lg rounded-md text-neutral-500 text-nowrap">
+        <p className="text-sm w-min py-1 px-2 text-lg rounded-md text-neutral-500 text-nowrap max-w-32">
           {data.shader.name.charAt(0).toUpperCase() + data.shader.name.slice(1)}
         </p>
         <div className="flex gap-2">
