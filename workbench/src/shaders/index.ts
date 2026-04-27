@@ -15,6 +15,9 @@ import multiply from "../../shaders/multiply.frag?raw";
 import divide from "../../shaders/divide.frag?raw";
 import radial_blur from "../../shaders/radial_blur.frag?raw";
 import directional_blur from "../../shaders/directional_blur.frag?raw";
+import bokeh from "../../shaders/bokeh.frag?raw";
+import bokeh_directional from "../../shaders/bokeh (directional).frag?raw";
+import bokeh_image_map from "../../shaders/bokeh (image map).frag?raw";
 import noise from "../../shaders/noise.frag?raw";
 import dispersion from "../../shaders/dispersion.frag?raw";
 import transform3D from "../../shaders/transform.frag?raw";
@@ -69,6 +72,9 @@ export const staticShaders: Record<string, string> = {
   // blur & sharpen
   "blur (radial)": radial_blur,
   "blur (linear)": directional_blur,
+  "bokeh": bokeh,
+  "bokeh (directional)": bokeh_directional,
+  "bokeh (image map)": bokeh_image_map,
   sharpen: sharpen,
 
   // filters
