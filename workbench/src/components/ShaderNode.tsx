@@ -27,6 +27,7 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
   const {
     patches,
     uniforms,
+    uniformDefs,
     handleUpdateUniforms,
     handleUpdateNode,
     showStats,
@@ -38,16 +39,23 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
   const [uniformState, setUniformState] = useState<Uniforms>(() => {
     const saved = uniforms.current[data.shader.id] ?? {};
     const fields = extractFields(data.shader);
-    const { width, height } = data.shader.resolution;
     const merged: Uniforms = { ...saved };
     for (const field of fields) {
       if (!(field.name in merged)) {
-        if (field.type === "vec2" && field.special === "resolution") {
-          merged[field.name] = [width, height];
-        } else {
-          const def = getFieldDefault(field);
-          if (def !== undefined) merged[field.name] = def;
-        }
+        const def = getFieldDefault(field);
+        if (def !== undefined) merged[field.name] = def;
+      }
+    }
+    return merged;
+  });
+
+  const [uniformDefState, setUniformDefState] = useState<Uniforms>(() => {
+    const editorDefs = uniformDefs.current[data.shader.id] ?? {};
+    const merged: Uniforms = { ...editorDefs };
+    for (const field of extractFields(data.shader)) {
+      if (field.type === "sampler2D") continue;
+      if (field.defaultExpr !== undefined && !(field.name in merged)) {
+        merged[field.name] = field.defaultExpr as any;
       }
     }
     return merged;
@@ -56,6 +64,34 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
   useEffect(() => {
     handleUpdateUniforms(data.shader.id, () => uniformState);
   }, []);
+
+  useEffect(() => {
+    uniformDefs.current[data.shader.id] = uniformDefState;
+  }, [uniformDefState]);
+
+  const handleUpdateUniformDef = (
+    fieldName: string,
+    slotIndex: number | null,
+    value: string | null,
+    fieldLength?: number,
+  ) => {
+    setUniformDefState((prev) => {
+      const next = { ...prev };
+      if (slotIndex === null) {
+        next[fieldName] = value as any;
+      } else {
+        const prevArr = Array.isArray(prev[fieldName])
+          ? [...(prev[fieldName] as (string | null)[])]
+          : null;
+        const len = prevArr?.length ?? fieldLength ?? slotIndex + 1;
+        const arr: (string | null)[] = prevArr ?? Array(len).fill(null);
+        while (arr.length <= slotIndex) arr.push(null);
+        arr[slotIndex] = value;
+        next[fieldName] = (arr.every((s) => s === null) ? null : arr) as any;
+      }
+      return next;
+    });
+  };
 
   const handleFieldUpdate = (fieldName: string, value: any) => {
     setUniformState((prev) => ({ ...prev, [fieldName]: value }));
@@ -144,9 +180,11 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
             patch={patches[data.shader.id]}
             uniforms={uniforms}
             savedUniforms={uniformState}
+            uniformDefs={uniformDefState}
             nodeId={id}
             handleFieldUpdate={handleFieldUpdate}
             handleUpdateNode={handleUpdateNode}
+            handleUpdateUniformDef={handleUpdateUniformDef}
           />
           <button
             className={`button-base ${data.paused ? "" : "group-hover:block hidden"}`}
@@ -186,7 +224,9 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
         <UniformForm
           shader={data.shader}
           savedUniforms={uniformState}
+          uniformDefs={uniformDefState}
           handleUpdateUniform={handleFieldUpdate}
+          handleUpdateUniformDef={handleUpdateUniformDef}
         />
         <div className="flex flex-col justify-center items-start gap-4 ">
           <div className="flex flex-col gap-2">

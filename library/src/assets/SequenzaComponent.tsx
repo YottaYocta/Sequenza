@@ -1,68 +1,84 @@
 import {
   RendererComponent,
-  extractFields,
   type Uniforms,
   type Patch,
 } from "@sequenza/lib";
 import "@sequenza/lib/style.css";
+// @ts-expect-error mathjs is a peer dependency of the exported component, not the library
+import { create, all } from "mathjs";
 import { useEffect, useRef } from "react";
+
+const math = create(all);
 
 function SequenzaComponent() {
   const uniformRef = useRef<Record<string, Uniforms>>(getInitialUniforms());
 
   useEffect(() => {
     const patch = getPatch();
+    const defs = getUniformDefs();
+    const mouse: [number, number] = [0, 0];
 
-    const timeFields: Array<{ shaderId: string; fieldName: string }> = [];
-    const mouseFields: Array<{ shaderId: string; fieldName: string }> = [];
-
+    const resolutionMap: Record<string, [number, number]> = {};
     for (const shader of patch.shaders) {
-      const fields = extractFields(shader);
-      for (const field of fields) {
-        if (field.type === "float" && field.special === "time") {
-          timeFields.push({ shaderId: shader.id, fieldName: field.name });
-        } else if (field.type === "vec2" && field.special === "mouse") {
-          mouseFields.push({ shaderId: shader.id, fieldName: field.name });
-        } else if (field.type === "vec2" && field.special === "resolution") {
-          uniformRef.current[shader.id] ??= {};
-          uniformRef.current[shader.id][field.name] = [
-            shader.resolution.width,
-            shader.resolution.height,
-          ];
+      resolutionMap[shader.id] = [shader.resolution.width, shader.resolution.height];
+    }
+
+    const onMouseMove = (e: MouseEvent) => {
+      mouse[0] = Math.min(1, e.clientX / window.innerWidth);
+      mouse[1] = Math.min(1, e.clientY / window.innerHeight);
+    };
+    window.addEventListener("mousemove", onMouseMove);
+
+    const startTime = performance.now();
+    let rafId: number;
+
+    const loop = () => {
+      const time = (performance.now() - startTime) / 1000;
+
+      for (const [shaderId, fieldDefs] of Object.entries(defs)) {
+        const res = resolutionMap[shaderId] ?? [1, 1];
+        const scope = {
+          time,
+          mouse: { x: mouse[0], y: mouse[1] },
+          resolution: { x: res[0], y: res[1] },
+        };
+        uniformRef.current[shaderId] ??= {};
+        for (const [fieldName, def] of Object.entries(fieldDefs)) {
+          if (typeof def === "string") {
+            try {
+              const result = math.evaluate(def, scope);
+              if (typeof result === "number")
+                uniformRef.current[shaderId][fieldName] = result;
+            } catch { /* invalid expression */ }
+          } else if (Array.isArray(def)) {
+            const current = uniformRef.current[shaderId][fieldName];
+            const arr: number[] = Array.isArray(current)
+              ? [...current]
+              : (def as any[]).map(() => 0);
+            for (let i = 0; i < def.length; i++) {
+              const slot = (def as any[])[i];
+              if (typeof slot === "string") {
+                try {
+                  const result = math.evaluate(slot, scope);
+                  if (typeof result === "number") arr[i] = result;
+                } catch { /* invalid expression */ }
+              } else if (typeof slot === "number") {
+                arr[i] = slot;
+              }
+            }
+            uniformRef.current[shaderId][fieldName] = arr;
+          }
         }
       }
-    }
 
-    let onMouseMove: ((e: MouseEvent) => void) | undefined;
-    if (mouseFields.length > 0) {
-      onMouseMove = (e: MouseEvent) => {
-        const x = Math.min(1, e.clientX / window.innerWidth);
-        const y = Math.min(1, e.clientY / window.innerHeight);
-        for (const { shaderId, fieldName } of mouseFields) {
-          uniformRef.current[shaderId] ??= {};
-          uniformRef.current[shaderId][fieldName] = [x, y];
-        }
-      };
-      window.addEventListener("mousemove", onMouseMove);
-    }
-
-    let rafId: number | undefined;
-    if (timeFields.length > 0) {
-      const startTime = performance.now();
-      const loop = () => {
-        const elapsed = (performance.now() - startTime) / 1000;
-        for (const { shaderId, fieldName } of timeFields) {
-          uniformRef.current[shaderId] ??= {};
-          uniformRef.current[shaderId][fieldName] = elapsed;
-        }
-        rafId = requestAnimationFrame(loop);
-      };
       rafId = requestAnimationFrame(loop);
-    }
+    };
+
+    rafId = requestAnimationFrame(loop);
 
     return () => {
-      if (onMouseMove) window.removeEventListener("mousemove", onMouseMove);
-      if (rafId !== undefined) cancelAnimationFrame(rafId);
+      window.removeEventListener("mousemove", onMouseMove);
+      cancelAnimationFrame(rafId);
     };
   }, []);
 
@@ -79,7 +95,7 @@ function SequenzaComponent() {
         100
         // final patch height
       }
-    ></RendererComponent>
+    />
   );
 }
 
@@ -91,4 +107,8 @@ function getInitialUniforms(): Record<string, Uniforms> {
 
 function getPatch(): Patch {
   throw new Error("placeholder for patch");
+}
+
+function getUniformDefs(): Record<string, Uniforms> {
+  throw new Error("placeholder for uniform defs");
 }

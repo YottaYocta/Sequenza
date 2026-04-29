@@ -14,6 +14,7 @@ import {
   type Shader,
   type Uniforms,
 } from "@sequenza/lib";
+import { evalExpression, type EvalContext } from "../lib/evalExpression";
 
 import {
   addEdge,
@@ -55,11 +56,13 @@ interface EditorProps {
     nodes: Node[];
     edges: Edge[];
     uniforms: Record<string, Uniforms>;
+    uniformDefs?: Record<string, Uniforms>;
   };
   handleSave: (data: {
     nodes: Node[];
     edges: Edge[];
     uniforms: Record<string, Uniforms>;
+    uniformDefs: Record<string, Uniforms>;
   }) => void;
   className?: string;
   initialShowStats?: boolean;
@@ -222,6 +225,9 @@ const EditorAux: FC<EditorProps> = ({
   const uniformRef = useRef<Record<string, Uniforms>>(
     initialState?.uniforms ?? {},
   );
+  const uniformDefRef = useRef<Record<string, Uniforms>>(
+    initialState?.uniformDefs ?? {},
+  );
 
   const selectedNodesRef = useRef<Node[]>([]);
   const onSelectionChange = useCallback(({ nodes }: { nodes: Node[] }) => {
@@ -263,9 +269,12 @@ const EditorAux: FC<EditorProps> = ({
       (e) => selectedIds.has(e.source) && selectedIds.has(e.target),
     );
     const clipboardUniforms: Record<string, Uniforms> = {};
+    const clipboardUniformDefs: Record<string, Uniforms> = {};
     for (const node of selected) {
       if (uniformRef.current[node.id])
         clipboardUniforms[node.id] = uniformRef.current[node.id];
+      if (uniformDefRef.current[node.id])
+        clipboardUniformDefs[node.id] = uniformDefRef.current[node.id];
     }
     navigator.clipboard
       .writeText(
@@ -274,6 +283,7 @@ const EditorAux: FC<EditorProps> = ({
           nodes: selected,
           edges: internalEdges,
           uniforms: clipboardUniforms,
+          uniformDefs: clipboardUniformDefs,
         }),
       )
       .catch(console.error);
@@ -284,6 +294,7 @@ const EditorAux: FC<EditorProps> = ({
       nodes: Node[];
       edges: Edge[];
       uniforms: Record<string, Uniforms>;
+      uniformDefs?: Record<string, Uniforms>;
     }) => {
       const idMap = new Map<string, string>();
       for (const node of data.nodes) {
@@ -295,6 +306,7 @@ const EditorAux: FC<EditorProps> = ({
         const shaderNode = node as ShaderNode;
         const newShader = { ...shaderNode.data.shader, id: newId };
         uniformRef.current[newId] = data.uniforms[node.id] ?? {};
+        uniformDefRef.current[newId] = data.uniformDefs?.[node.id] ?? {};
         return {
           ...shaderNode,
           id: newId,
@@ -325,7 +337,12 @@ const EditorAux: FC<EditorProps> = ({
     const onKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "s") {
         e.preventDefault();
-        handleSave({ nodes, edges, uniforms: uniformRef.current });
+        handleSave({
+          nodes,
+          edges,
+          uniforms: uniformRef.current,
+          uniformDefs: uniformDefRef.current,
+        });
         setSavedAt(new Date());
       }
       if (
@@ -555,25 +572,6 @@ const EditorAux: FC<EditorProps> = ({
   const startRef = useRef<number | null>(null);
   const mousePosRef = useRef<[number, number]>([0, 0]);
 
-  const timeMouseFields = useMemo(() => {
-    const map: Record<string, { timeFields: string[]; mouseFields: string[] }> =
-      {};
-    for (const node of nodes) {
-      if (node.type !== "shader") continue;
-      const shaderNode = node as ShaderNode;
-      const fields = extractFields(shaderNode.data.shader);
-      map[node.id] = {
-        timeFields: fields
-          .filter((f) => f.type === "float" && f.special === "time")
-          .map((f) => f.name),
-        mouseFields: fields
-          .filter((f) => f.type === "vec2" && f.special === "mouse")
-          .map((f) => f.name),
-      };
-    }
-    return map;
-  }, [nodes]);
-
   useEffect(() => {
     const onMouseMove = (e: MouseEvent) => {
       mousePosRef.current = [
@@ -585,16 +583,28 @@ const EditorAux: FC<EditorProps> = ({
     return () => window.removeEventListener("mousemove", onMouseMove);
   }, []);
 
+  useEffect(() => {
+    for (const [nodeId, shader] of Object.entries(shaderMap)) {
+      if (!uniformDefRef.current[nodeId]) uniformDefRef.current[nodeId] = {};
+      for (const field of extractFields(shader)) {
+        if (field.type === "sampler2D") continue;
+        if (
+          field.defaultExpr !== undefined &&
+          !(field.name in uniformDefRef.current[nodeId])
+        ) {
+          uniformDefRef.current[nodeId][field.name] = field.defaultExpr;
+        }
+      }
+    }
+    for (const nodeId of Object.keys(uniformDefRef.current)) {
+      if (!shaderMap[nodeId]) delete uniformDefRef.current[nodeId];
+    }
+  }, [shaderHash]);
+
   const resetTime = useCallback(() => {
     elapsedRef.current = 0;
     setPlaying(false);
-    for (const [nodeId, { timeFields }] of Object.entries(timeMouseFields)) {
-      if (!uniformRef.current[nodeId]) continue;
-      for (const name of timeFields) {
-        uniformRef.current[nodeId][name] = 0;
-      }
-    }
-  }, [timeMouseFields]);
+  }, []);
 
   useEffect(() => {
     if (playing) {
@@ -605,24 +615,48 @@ const EditorAux: FC<EditorProps> = ({
       if (playing && startRef.current !== null) {
         elapsedRef.current = (performance.now() - startRef.current) / 1000;
       }
-      for (const [nodeId, { timeFields, mouseFields }] of Object.entries(
-        timeMouseFields,
-      )) {
+      for (const [nodeId, fieldDefs] of Object.entries(uniformDefRef.current)) {
         if (!uniformRef.current[nodeId]) uniformRef.current[nodeId] = {};
-        for (const name of timeFields) {
-          uniformRef.current[nodeId][name] = elapsedRef.current;
-        }
-        for (const name of mouseFields) {
-          uniformRef.current[nodeId][name] = mousePosRef.current;
+        const shader = shaderMap[nodeId];
+        const resolution: [number, number] = shader
+          ? [shader.resolution.width, shader.resolution.height]
+          : [1, 1];
+        const ctx: EvalContext = {
+          time: elapsedRef.current,
+          mouse: mousePosRef.current,
+          resolution,
+        };
+        for (const [fieldName, def] of Object.entries(fieldDefs)) {
+          if (typeof def === "string") {
+            const resolved = evalExpression(def, ctx);
+            if (resolved !== null)
+              uniformRef.current[nodeId][fieldName] = resolved;
+          } else if (
+            Array.isArray(def) &&
+            (def as (number | string)[]).some((s) => typeof s === "string")
+          ) {
+            const current = uniformRef.current[nodeId][fieldName];
+            const arr: number[] = Array.isArray(current)
+              ? [...current]
+              : (def as (number | string)[]).map(() => 0);
+            for (let i = 0; i < def.length; i++) {
+              const slot = (def as (number | string)[])[i];
+              if (typeof slot === "string") {
+                const resolved = evalExpression(slot, ctx);
+                if (resolved !== null) arr[i] = resolved;
+              } else {
+                arr[i] = slot as number;
+              }
+            }
+            uniformRef.current[nodeId][fieldName] = arr;
+          }
         }
       }
       rafId = requestAnimationFrame(tick);
     };
     rafId = requestAnimationFrame(tick);
-    return () => {
-      cancelAnimationFrame(rafId);
-    };
-  }, [playing, timeMouseFields]);
+    return () => cancelAnimationFrame(rafId);
+  }, [playing, shaderMap]);
 
   const handleAppendShader = useCallback(
     (shader: Shader, sourceId: string, position: XYPosition) => {
@@ -670,6 +704,7 @@ const EditorAux: FC<EditorProps> = ({
         const data = JSON.parse(json) as {
           uniforms: Record<string, Uniforms>;
           shader: Patch;
+          uniformDefs?: Record<string, Uniforms>;
         };
 
         const domNode = store.getState().domNode;
@@ -687,10 +722,18 @@ const EditorAux: FC<EditorProps> = ({
           nodes: rawNodes,
           edges: newEdges,
           uniforms: newUniforms,
+          idMap,
         } = buildEditorState(data.shader, data.uniforms, center);
 
         for (const [newId, value] of Object.entries(newUniforms)) {
           uniformRef.current[newId] = value;
+        }
+
+        if (data.uniformDefs) {
+          for (const [oldId, defs] of Object.entries(data.uniformDefs)) {
+            const newId = idMap.get(oldId);
+            if (newId) uniformDefRef.current[newId] = defs;
+          }
         }
 
         const newNodes: Node[] = rawNodes.map((node) => ({
@@ -765,6 +808,7 @@ const EditorAux: FC<EditorProps> = ({
                   openPreviewNodeId,
                   setOpenPreviewNodeId,
                   uniforms: uniformRef,
+                  uniformDefs: uniformDefRef,
                   handleUpdateUniforms,
                   handleUpdateNode,
                   handleInsertShader,
@@ -893,6 +937,7 @@ const EditorAux: FC<EditorProps> = ({
               {openExportNodeId !== null && patches[openExportNodeId] && (
                 <ExportDialog
                   uniforms={uniformRef.current}
+                  uniformDefs={uniformDefRef.current}
                   patch={patches[openExportNodeId]}
                   open={true}
                   onOpenChange={(open) => {

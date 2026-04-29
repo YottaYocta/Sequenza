@@ -8,31 +8,37 @@ import type {
 import { extractFields, getFieldDefault, type Field } from "@sequenza/lib";
 import { FieldLabel } from "./UniformFields/shared";
 import { FloatField } from "./UniformFields/FloatField";
-import { TimeField } from "./UniformFields/TimeField";
 import { Vec2Field } from "./UniformFields/Vec2Field";
 import { Vec3Field, Vec3ColorField } from "./UniformFields/Vec3Field";
 import { Vec4Field, Vec4ColorField } from "./UniformFields/Vec4Field";
-import { MouseField } from "./UniformFields/MouseField";
-import { ResolutionField } from "./UniformFields/ResolutionField";
 import { ImageUploadField } from "./UniformFields/ImageUploadField";
 import { GradientField } from "./UniformFields/GradientField";
 
 interface UniformFormProps {
   shader: Shader;
   savedUniforms: Uniforms;
+  uniformDefs: Uniforms;
   handleUpdateUniform: (fieldName: string, value: any) => void;
+  handleUpdateUniformDef?: (
+    fieldName: string,
+    slotIndex: number | null,
+    value: string | null,
+    fieldLength?: number,
+  ) => void;
+}
+
+function toVecDef(raw: any): (string | null)[] | undefined {
+  return Array.isArray(raw)
+    ? (raw as (string | number)[]).map((s) => (typeof s === "string" ? s : null))
+    : undefined;
 }
 
 function fieldLabelType(field: Field): string {
   switch (field.type) {
     case "float":
-      return field.special === "time" ? "float time" : "float";
+      return "float";
     case "vec2":
-      return field.special === "mouse"
-        ? "vec2 mouse"
-        : field.special === "resolution"
-          ? "vec2 resolution"
-          : "vec2";
+      return "vec2";
     case "vec3":
       return field.color ? "vec3 color" : "vec3";
     case "vec4":
@@ -47,7 +53,9 @@ function fieldLabelType(field: Field): string {
 const UniformForm: FC<UniformFormProps> = ({
   shader,
   savedUniforms,
+  uniformDefs,
   handleUpdateUniform,
+  handleUpdateUniformDef,
 }) => {
   const fields = useMemo(() => extractFields(shader), [shader.source]);
   if (
@@ -71,46 +79,50 @@ const UniformForm: FC<UniformFormProps> = ({
 
         const saved = savedUniforms[field.name];
         const fallback = getFieldDefault(field);
+        const rawDef = uniformDefs[field.name];
+
+        const vecOnSetDef = (len: number) =>
+          handleUpdateUniformDef
+            ? (index: number, expr: string | null) =>
+                handleUpdateUniformDef(field.name, index, expr, len)
+            : undefined;
 
         let control: ReactNode = null;
         switch (field.type) {
-          case "float":
-            control =
-              field.special === "time" ? (
-                <TimeField />
-              ) : (
-                <FloatField
-                  field={field}
-                  value={(saved as number) ?? (fallback as number)}
-                  onChange={update}
-                />
-              );
+          case "float": {
+            const def = typeof rawDef === "string" ? rawDef : undefined;
+            const onSetDef = handleUpdateUniformDef
+              ? (expr: string | null) =>
+                  handleUpdateUniformDef(field.name, null, expr)
+              : undefined;
+            control = (
+              <FloatField
+                field={field}
+                value={(saved as number) ?? (fallback as number)}
+                onChange={update}
+                def={def}
+                onSetDef={onSetDef}
+              />
+            );
             break;
-          case "vec2":
-            control =
-              field.special === "mouse" ? (
-                <MouseField />
-              ) : field.special === "resolution" ? (
-                <ResolutionField
-                  field={
-                    field as Field & { type: "vec2"; special: "resolution" }
-                  }
-                  width={shader.resolution.width}
-                  height={shader.resolution.height}
-                  handleUpdateUniformField={update}
-                />
-              ) : (
-                <Vec2Field
-                  field={field}
-                  value={
-                    (saved as [number, number]) ??
-                    (fallback as [number, number])
-                  }
-                  onChange={update}
-                />
-              );
+          }
+          case "vec2": {
+            control = (
+              <Vec2Field
+                field={field}
+                value={
+                  (saved as [number, number]) ?? (fallback as [number, number])
+                }
+                onChange={update}
+                def={toVecDef(rawDef)}
+                onSetDef={vecOnSetDef(2)}
+              />
+            );
             break;
-          case "vec3":
+          }
+          case "vec3": {
+            const def = toVecDef(rawDef);
+            const onSetDef = vecOnSetDef(3);
             control = field.color ? (
               <Vec3ColorField
                 field={field}
@@ -128,10 +140,15 @@ const UniformForm: FC<UniformFormProps> = ({
                   (fallback as [number, number, number])
                 }
                 onChange={update}
+                def={def}
+                onSetDef={onSetDef}
               />
             );
             break;
-          case "vec4":
+          }
+          case "vec4": {
+            const def = toVecDef(rawDef);
+            const onSetDef = vecOnSetDef(4);
             control = field.color ? (
               <Vec4ColorField
                 field={field}
@@ -149,9 +166,12 @@ const UniformForm: FC<UniformFormProps> = ({
                   (fallback as [number, number, number, number])
                 }
                 onChange={update}
+                def={def}
+                onSetDef={onSetDef}
               />
             );
             break;
+          }
           case "sampler2D":
             if (field.source === "texture")
               control = (

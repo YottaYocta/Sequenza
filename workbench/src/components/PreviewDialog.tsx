@@ -14,11 +14,18 @@ interface PreviewDialogProps {
   patch: Patch;
   uniforms: RefObject<Record<string, Uniforms>>;
   savedUniforms: Uniforms;
+  uniformDefs: Uniforms;
   nodeId: string;
   handleFieldUpdate: (fieldName: string, value: any) => void;
   handleUpdateNode: (
     nodeId: string,
     fn: (s: ShaderNodeData) => ShaderNodeData,
+  ) => void;
+  handleUpdateUniformDef: (
+    fieldName: string,
+    slotIndex: number | null,
+    value: string | null,
+    fieldLength?: number,
   ) => void;
 }
 
@@ -29,9 +36,11 @@ export const PreviewDialog: FC<PreviewDialogProps> = ({
   patch,
   uniforms,
   savedUniforms,
+  uniformDefs,
   nodeId,
   handleFieldUpdate,
   handleUpdateNode,
+  handleUpdateUniformDef,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -106,7 +115,9 @@ export const PreviewDialog: FC<PreviewDialogProps> = ({
             <UniformForm
               shader={shader}
               savedUniforms={savedUniforms}
+              uniformDefs={uniformDefs}
               handleUpdateUniform={handleFieldUpdate}
+              handleUpdateUniformDef={handleUpdateUniformDef}
             />
           </div>
         </div>
@@ -167,6 +178,7 @@ export const PreviewDialog: FC<PreviewDialogProps> = ({
               </button>
               <ExportDialog
                 uniforms={uniforms.current}
+                uniformDefs={{ [shader.id]: uniformDefs }}
                 patch={patch}
                 open={exportOpen}
                 onOpenChange={setExportOpen}
