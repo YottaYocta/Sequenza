@@ -77,10 +77,7 @@ const UniformForm: FC<UniformFormProps> = ({
           case "float":
             control =
               field.special === "time" ? (
-                <TimeField
-                  field={field as Field & { type: "float"; special: "time" }}
-                  handleUpdateUniformField={update}
-                />
+                <TimeField />
               ) : (
                 <FloatField
                   field={field}
@@ -92,10 +89,7 @@ const UniformForm: FC<UniformFormProps> = ({
           case "vec2":
             control =
               field.special === "mouse" ? (
-                <MouseField
-                  field={field as Field & { type: "vec2"; special: "mouse" }}
-                  handleUpdateUniformField={update}
-                />
+                <MouseField />
               ) : field.special === "resolution" ? (
                 <ResolutionField
                   field={

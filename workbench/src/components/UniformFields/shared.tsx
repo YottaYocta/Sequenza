@@ -1,4 +1,5 @@
 import { useRef, useContext, type FC } from "react";
+import { RotateCcw } from "lucide-react";
 import { EditorContext } from "../EditorContext";
 
 export const toHex = (v: number) =>
@@ -44,7 +45,7 @@ export const ResetButton: FC<{ onClick: () => void }> = ({ onClick }) => (
     className="w-6 h-6 flex items-center justify-center text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 rounded-sm select-none shrink-0"
     title="Reset to default"
   >
-    ↺
+    <RotateCcw size={12} />
   </button>
 );
 

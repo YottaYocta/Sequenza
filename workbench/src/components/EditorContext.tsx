@@ -3,7 +3,10 @@ import type { Patch, Shader, Uniforms } from "@sequenza/lib";
 import type { ShaderNodeData } from "./ShaderNode";
 
 interface EditorContextType {
-  currentTime: RefObject<number>;
+  elapsedRef: RefObject<number>;
+  playing: boolean;
+  setPlaying: (p: boolean) => void;
+  resetTime: () => void;
   mousePosition: RefObject<[number, number]>; // mouse position relative to screen dimensions on scale of 0-1
   shaders: Shader[];
   patches: Record<string, Patch>;
@@ -25,7 +28,10 @@ interface EditorContextType {
 }
 
 export const EditorContext = createContext<EditorContextType>({
-  currentTime: { current: 0 },
+  elapsedRef: { current: 0 },
+  playing: false,
+  setPlaying: () => {},
+  resetTime: () => {},
   mousePosition: { current: [0, 0] },
   shaders: [],
   patches: {},

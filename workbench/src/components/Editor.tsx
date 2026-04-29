@@ -43,6 +43,7 @@ import CustomEdge from "./CustomEdge";
 import ConnectionLine from "./ConnectionLine";
 import { ExportDialog } from "./ExportDialog";
 import { AddShaderDialog } from "./AddShaderDialog";
+import { GlobalTimeline } from "./GlobalTimeline";
 import { ContextMenu } from "@base-ui/react/context-menu";
 import { topologicalMap } from "./util";
 import { buildEditorState } from "../buildEditorState";
@@ -549,28 +550,79 @@ const EditorAux: FC<EditorProps> = ({
     [edges],
   );
 
-  const timeRef = useRef<number>(0);
+  const [playing, setPlaying] = useState(false);
+  const elapsedRef = useRef<number>(0);
+  const startRef = useRef<number | null>(null);
   const mousePosRef = useRef<[number, number]>([0, 0]);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      timeRef.current = Date.now();
-    }, 10);
+  const timeMouseFields = useMemo(() => {
+    const map: Record<string, { timeFields: string[]; mouseFields: string[] }> =
+      {};
+    for (const node of nodes) {
+      if (node.type !== "shader") continue;
+      const shaderNode = node as ShaderNode;
+      const fields = extractFields(shaderNode.data.shader);
+      map[node.id] = {
+        timeFields: fields
+          .filter((f) => f.type === "float" && f.special === "time")
+          .map((f) => f.name),
+        mouseFields: fields
+          .filter((f) => f.type === "vec2" && f.special === "mouse")
+          .map((f) => f.name),
+      };
+    }
+    return map;
+  }, [nodes]);
 
+  useEffect(() => {
     const onMouseMove = (e: MouseEvent) => {
       mousePosRef.current = [
         Math.min(1, e.clientX / window.innerWidth),
-        Math.min(e.clientY / innerHeight, 1),
+        Math.min(1, e.clientY / window.innerHeight),
       ];
     };
-
     window.addEventListener("mousemove", onMouseMove);
-
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener("mousemove", onMouseMove);
-    };
+    return () => window.removeEventListener("mousemove", onMouseMove);
   }, []);
+
+  const resetTime = useCallback(() => {
+    elapsedRef.current = 0;
+    setPlaying(false);
+    for (const [nodeId, { timeFields }] of Object.entries(timeMouseFields)) {
+      if (!uniformRef.current[nodeId]) continue;
+      for (const name of timeFields) {
+        uniformRef.current[nodeId][name] = 0;
+      }
+    }
+  }, [timeMouseFields]);
+
+  useEffect(() => {
+    if (playing) {
+      startRef.current = performance.now() - elapsedRef.current * 1000;
+    }
+    let rafId: number;
+    const tick = () => {
+      if (playing && startRef.current !== null) {
+        elapsedRef.current = (performance.now() - startRef.current) / 1000;
+      }
+      for (const [nodeId, { timeFields, mouseFields }] of Object.entries(
+        timeMouseFields,
+      )) {
+        if (!uniformRef.current[nodeId]) uniformRef.current[nodeId] = {};
+        for (const name of timeFields) {
+          uniformRef.current[nodeId][name] = elapsedRef.current;
+        }
+        for (const name of mouseFields) {
+          uniformRef.current[nodeId][name] = mousePosRef.current;
+        }
+      }
+      rafId = requestAnimationFrame(tick);
+    };
+    rafId = requestAnimationFrame(tick);
+    return () => {
+      cancelAnimationFrame(rafId);
+    };
+  }, [playing, timeMouseFields]);
 
   const handleAppendShader = useCallback(
     (shader: Shader, sourceId: string, position: XYPosition) => {
@@ -631,8 +683,11 @@ const EditorAux: FC<EditorProps> = ({
             })()
           : { x: 0, y: 0 };
 
-        const { nodes: rawNodes, edges: newEdges, uniforms: newUniforms } =
-          buildEditorState(data.shader, data.uniforms, center);
+        const {
+          nodes: rawNodes,
+          edges: newEdges,
+          uniforms: newUniforms,
+        } = buildEditorState(data.shader, data.uniforms, center);
 
         for (const [newId, value] of Object.entries(newUniforms)) {
           uniformRef.current[newId] = value;
@@ -697,7 +752,10 @@ const EditorAux: FC<EditorProps> = ({
             <div className={`w-full h-full ${className} relative`}>
               <EditorContext.Provider
                 value={{
-                  currentTime: timeRef,
+                  elapsedRef,
+                  playing,
+                  setPlaying,
+                  resetTime,
                   mousePosition: mousePosRef,
                   shaders,
                   patches,
@@ -732,6 +790,7 @@ const EditorAux: FC<EditorProps> = ({
                   }}
                   fitView
                 >
+                  {!locked && <GlobalTimeline />}
                   {!locked && (
                     <Controls
                       style={

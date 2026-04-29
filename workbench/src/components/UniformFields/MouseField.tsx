@@ -1,28 +1,22 @@
-import { useState, useEffect, useContext, type FC } from "react";
-import type { Field } from "@sequenza/lib";
+import { useContext, useEffect, useState, type FC } from "react";
 import { EditorContext } from "../EditorContext";
 
-export const MouseField: FC<{
-  field: Field & { type: "vec2"; special: "mouse" };
-  handleUpdateUniformField: (value: [number, number]) => void;
-}> = ({ handleUpdateUniformField }) => {
+export const MouseField: FC = () => {
   const { mousePosition } = useContext(EditorContext);
-  const [pos, setPos] = useState<[number, number]>([0, 0]);
+  const [pos, setPos] = useState<[number, number]>(mousePosition.current);
 
   useEffect(() => {
     let rafId: number;
     const tick = () => {
-      const p: [number, number] = [mousePosition.current[0], mousePosition.current[1]];
-      setPos(p);
-      handleUpdateUniformField(p);
+      setPos([mousePosition.current[0], mousePosition.current[1]]);
       rafId = requestAnimationFrame(tick);
     };
     rafId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafId);
-  }, [handleUpdateUniformField]);
+  }, []);
 
   return (
-    <div className="flex items-center ">
+    <div className="flex items-center">
       <div className="flex gap-2 flex-col">
         {(["x", "y"] as const).map((axis, i) => (
           <div key={axis} className="flex items-center w-20 relative">
