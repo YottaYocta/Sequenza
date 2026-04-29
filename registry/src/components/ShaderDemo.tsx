@@ -107,11 +107,19 @@ export function ShaderDemo({
     for (const shader of patch.shaders) {
       const fields = extractFields(shader);
       for (const field of fields) {
-        if (field.type === "float" && field.special === "time") {
+        if (field.type === "float" && field.defaultExpr === "time") {
           timeFields.push({ shaderId: shader.id, fieldName: field.name });
-        } else if (field.type === "vec2" && field.special === "mouse") {
+        } else if (
+          field.type === "vec2" &&
+          Array.isArray(field.defaultExpr) &&
+          field.defaultExpr[0] === "mouse.x"
+        ) {
           mouseFields.push({ shaderId: shader.id, fieldName: field.name });
-        } else if (field.type === "vec2" && field.special === "resolution") {
+        } else if (
+          field.type === "vec2" &&
+          Array.isArray(field.defaultExpr) &&
+          field.defaultExpr[0] === "resolution.x"
+        ) {
           uniformRef.current[shader.id] ??= {};
           uniformRef.current[shader.id][field.name] = [
             shader.resolution.width,
