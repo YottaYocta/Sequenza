@@ -1,12 +1,19 @@
 import { Position, type Node, type NodeProps } from "@xyflow/react";
 import CustomHandle from "./CustomHandle";
 import type { Shader, Uniforms } from "@sequenza/lib";
-import { useContext, useMemo, useRef, useState, type RefObject } from "react";
+import {
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type RefObject,
+} from "react";
 import { Scrubber } from "./Scrubber";
 import UniformForm from "./UniformForm";
 import { RendererComponent } from "@sequenza/lib";
 import { EditorContext } from "./EditorContext";
-import { extractFields } from "@sequenza/lib";
+import { extractFields, getFieldDefault } from "@sequenza/lib";
 import { PreviewDialog } from "./PreviewDialog";
 
 export type ShaderNodeData = {
@@ -28,11 +35,30 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
     setOpenPreviewNodeId,
   } = useContext(EditorContext);
 
-  const [uniformSource, setUniformSource] = useState<Uniforms>(
-    () => uniforms.current[data.shader.id] ?? {},
-  );
+  const [uniformState, setUniformState] = useState<Uniforms>(() => {
+    const saved = uniforms.current[data.shader.id] ?? {};
+    const fields = extractFields(data.shader);
+    const { width, height } = data.shader.resolution;
+    const merged: Uniforms = { ...saved };
+    for (const field of fields) {
+      if (!(field.name in merged)) {
+        if (field.type === "vec2" && field.special === "resolution") {
+          merged[field.name] = [width, height];
+        } else {
+          const def = getFieldDefault(field);
+          if (def !== undefined) merged[field.name] = def;
+        }
+      }
+    }
+    return merged;
+  });
+
+  useEffect(() => {
+    handleUpdateUniforms(data.shader.id, () => uniformState);
+  }, []);
 
   const handleFieldUpdate = (fieldName: string, value: any) => {
+    setUniformState((prev) => ({ ...prev, [fieldName]: value }));
     handleUpdateUniforms(data.shader.id, (current) => ({
       ...current,
       [fieldName]: value,
@@ -107,23 +133,17 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
         <div className="flex gap-2">
           <button
             className={`button-base group-hover:block hidden`}
-            onClick={() => {
-              setOpenPreviewNodeId(id);
-              setUniformSource(uniforms.current[data.shader.id] ?? {});
-            }}
+            onClick={() => setOpenPreviewNodeId(id)}
           >
             Expand
           </button>
           <PreviewDialog
             open={openPreviewNodeId === id}
-            onOpenChange={(open) => {
-              setUniformSource(uniforms.current[data.shader.id] ?? {});
-              setOpenPreviewNodeId(open ? id : null);
-            }}
+            onOpenChange={(open) => setOpenPreviewNodeId(open ? id : null)}
             shader={data.shader}
             patch={patches[data.shader.id]}
             uniforms={uniforms}
-            savedUniforms={uniformSource}
+            savedUniforms={uniformState}
             nodeId={id}
             handleFieldUpdate={handleFieldUpdate}
             handleUpdateNode={handleUpdateNode}
@@ -165,7 +185,7 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
       <div className="flex gap-8">
         <UniformForm
           shader={data.shader}
-          savedUniforms={uniformSource}
+          savedUniforms={uniformState}
           handleUpdateUniform={handleFieldUpdate}
         />
         <div className="flex flex-col justify-center items-start gap-4 ">

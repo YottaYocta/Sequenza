@@ -1,30 +1,17 @@
-import { useState, useEffect, type FC } from "react";
+import { type FC } from "react";
 import type { Field } from "@sequenza/lib";
 import { Scrubber } from "../Scrubber";
 import { ColorPickerButton, ResetButton, vec3ToHex, hexToVec3 } from "./shared";
 
 export const Vec4Field: FC<{
   field: Field & { type: "vec4" };
-  initialValue: [number, number, number, number];
-  handleUpdateUniformField: (value: [number, number, number, number]) => void;
-}> = ({ field, initialValue, handleUpdateUniformField }) => {
-  const [value, setValue] = useState(initialValue);
-
-  useEffect(() => {
-    setValue(initialValue);
-    handleUpdateUniformField(initialValue);
-  }, [initialValue]);
-
+  value: [number, number, number, number];
+  onChange: (value: [number, number, number, number]) => void;
+}> = ({ field, value, onChange }) => {
   const update = (i: number, v: number) => {
     const next = [...value] as [number, number, number, number];
     next[i] = v;
-    setValue(next);
-    handleUpdateUniformField(next);
-  };
-
-  const reset = (v: [number, number, number, number]) => {
-    setValue(v);
-    handleUpdateUniformField(v);
+    onChange(next);
   };
 
   return (
@@ -40,7 +27,7 @@ export const Vec4Field: FC<{
         ))}
       </div>
       {field.default !== undefined && (
-        <ResetButton onClick={() => reset(field.default!)} />
+        <ResetButton onClick={() => onChange(field.default!)} />
       )}
     </div>
   );
@@ -48,22 +35,10 @@ export const Vec4Field: FC<{
 
 export const Vec4ColorField: FC<{
   field: Field & { type: "vec4" };
-  initialValue: [number, number, number, number];
-  handleUpdateUniformField: (value: [number, number, number, number]) => void;
-}> = ({ field, initialValue, handleUpdateUniformField }) => {
-  const [value, setValue] = useState(initialValue);
-
-  useEffect(() => {
-    setValue(initialValue);
-    handleUpdateUniformField(initialValue);
-  }, [initialValue]);
-
+  value: [number, number, number, number];
+  onChange: (value: [number, number, number, number]) => void;
+}> = ({ field, value, onChange }) => {
   const [r, g, b, a] = value;
-
-  const update = (v: [number, number, number, number]) => {
-    setValue(v);
-    handleUpdateUniformField(v);
-  };
 
   return (
     <div className="flex items-center ">
@@ -71,7 +46,7 @@ export const Vec4ColorField: FC<{
         color={vec3ToHex([r, g, b])}
         onChange={(hex) => {
           const [nr, ng, nb] = hexToVec3(hex);
-          update([nr, ng, nb, a]);
+          onChange([nr, ng, nb, a]);
         }}
       />
       <Scrubber
@@ -80,10 +55,10 @@ export const Vec4ColorField: FC<{
         min={0}
         max={1}
         step={0.01}
-        onChange={(v) => update([r, g, b, v])}
+        onChange={(v) => onChange([r, g, b, v])}
       />
       {field.default !== undefined && (
-        <ResetButton onClick={() => update(field.default!)} />
+        <ResetButton onClick={() => onChange(field.default!)} />
       )}
     </div>
   );

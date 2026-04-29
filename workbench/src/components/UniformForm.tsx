@@ -81,8 +81,8 @@ const UniformForm: FC<UniformFormProps> = ({
               ) : (
                 <FloatField
                   field={field}
-                  initialValue={(saved as number) ?? (fallback as number)}
-                  handleUpdateUniformField={update}
+                  value={(saved as number) ?? (fallback as number)}
+                  onChange={update}
                 />
               );
             break;
@@ -102,11 +102,11 @@ const UniformForm: FC<UniformFormProps> = ({
               ) : (
                 <Vec2Field
                   field={field}
-                  initialValue={
+                  value={
                     (saved as [number, number]) ??
                     (fallback as [number, number])
                   }
-                  handleUpdateUniformField={update}
+                  onChange={update}
                 />
               );
             break;
@@ -114,20 +114,20 @@ const UniformForm: FC<UniformFormProps> = ({
             control = field.color ? (
               <Vec3ColorField
                 field={field}
-                initialValue={
+                value={
                   (saved as [number, number, number]) ??
                   (fallback as [number, number, number])
                 }
-                handleUpdateUniformField={update}
+                onChange={update}
               />
             ) : (
               <Vec3Field
                 field={field}
-                initialValue={
+                value={
                   (saved as [number, number, number]) ??
                   (fallback as [number, number, number])
                 }
-                handleUpdateUniformField={update}
+                onChange={update}
               />
             );
             break;
@@ -135,20 +135,20 @@ const UniformForm: FC<UniformFormProps> = ({
             control = field.color ? (
               <Vec4ColorField
                 field={field}
-                initialValue={
+                value={
                   (saved as [number, number, number, number]) ??
                   (fallback as [number, number, number, number])
                 }
-                handleUpdateUniformField={update}
+                onChange={update}
               />
             ) : (
               <Vec4Field
                 field={field}
-                initialValue={
+                value={
                   (saved as [number, number, number, number]) ??
                   (fallback as [number, number, number, number])
                 }
-                handleUpdateUniformField={update}
+                onChange={update}
               />
             );
             break;

@@ -1,30 +1,17 @@
-import { useState, useEffect, type FC } from "react";
+import { type FC } from "react";
 import type { Field } from "@sequenza/lib";
 import { Scrubber } from "../Scrubber";
 import { ColorPickerButton, ResetButton, vec3ToHex, hexToVec3 } from "./shared";
 
 export const Vec3Field: FC<{
   field: Field & { type: "vec3" };
-  initialValue: [number, number, number];
-  handleUpdateUniformField: (value: [number, number, number]) => void;
-}> = ({ field, initialValue, handleUpdateUniformField }) => {
-  const [value, setValue] = useState(initialValue);
-
-  useEffect(() => {
-    setValue(initialValue);
-    handleUpdateUniformField(initialValue);
-  }, [initialValue]);
-
+  value: [number, number, number];
+  onChange: (value: [number, number, number]) => void;
+}> = ({ field, value, onChange }) => {
   const update = (i: number, v: number) => {
     const next = [...value] as [number, number, number];
     next[i] = v;
-    setValue(next);
-    handleUpdateUniformField(next);
-  };
-
-  const reset = (v: [number, number, number]) => {
-    setValue(v);
-    handleUpdateUniformField(v);
+    onChange(next);
   };
 
   return (
@@ -40,7 +27,7 @@ export const Vec3Field: FC<{
         ))}
       </div>
       {field.default !== undefined && (
-        <ResetButton onClick={() => reset(field.default!)} />
+        <ResetButton onClick={() => onChange(field.default!)} />
       )}
     </div>
   );
@@ -48,28 +35,17 @@ export const Vec3Field: FC<{
 
 export const Vec3ColorField: FC<{
   field: Field & { type: "vec3" };
-  initialValue: [number, number, number];
-  handleUpdateUniformField: (value: [number, number, number]) => void;
-}> = ({ field, initialValue, handleUpdateUniformField }) => {
-  const [value, setValue] = useState(initialValue);
-
-  useEffect(() => {
-    setValue(initialValue);
-  }, [initialValue]);
-
-  const update = (v: [number, number, number]) => {
-    setValue(v);
-    handleUpdateUniformField(v);
-  };
-
+  value: [number, number, number];
+  onChange: (value: [number, number, number]) => void;
+}> = ({ field, value, onChange }) => {
   return (
     <div className="flex items-center ">
       <ColorPickerButton
         color={vec3ToHex(value)}
-        onChange={(hex) => update(hexToVec3(hex))}
+        onChange={(hex) => onChange(hexToVec3(hex))}
       />
       {field.default !== undefined && (
-        <ResetButton onClick={() => update(field.default!)} />
+        <ResetButton onClick={() => onChange(field.default!)} />
       )}
     </div>
   );
