@@ -43,6 +43,7 @@ import threshold from "../../shaders/threshold.frag?raw";
 import tile from "../../shaders/tile.frag?raw";
 import triangle from "../../shaders/triangle.frag?raw";
 import vignette from "../../shaders/vignette.frag?raw";
+import layer from "../../shaders/layer.frag?raw";
 
 export const staticShaders: Record<string, string> = {
   // sources
@@ -72,7 +73,7 @@ export const staticShaders: Record<string, string> = {
   // blur & sharpen
   "blur (radial)": radial_blur,
   "blur (linear)": directional_blur,
-  "bokeh": bokeh,
+  bokeh: bokeh,
   "bokeh (directional)": bokeh_directional,
   "bokeh (image map)": bokeh_image_map,
   sharpen: sharpen,
@@ -107,4 +108,7 @@ export const staticShaders: Record<string, string> = {
 
   // key
   key: chromakey,
+
+  // layer
+  layer: layer,
 };

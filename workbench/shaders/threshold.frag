@@ -16,5 +16,5 @@ void main() {
     float v = smoothstep(u_threshold - u_feather, u_threshold + u_feather, lum);
     v = mix(v, 1.0 - v, step(0.5, u_invert));
 
-    fragColor = vec4(vec3(v), c.a);
+    fragColor = vec4(c.rgb * v, c.a);
 }

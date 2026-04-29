@@ -82,4 +82,5 @@ void main() {
     } 
     
     fragColor = texture(input_tex, uv);
+    fragColor = fragColor * fragColor.a + background_color * (1.0 - fragColor.a) * background_color.a;
 }

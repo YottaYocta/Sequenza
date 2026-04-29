@@ -7,6 +7,7 @@ out vec4 fragColor;
 uniform sampler2D u_image_source; // texture
 uniform vec2 resolution; // resolution
 uniform float scale; // [0.1, 3, 1]
+uniform vec4 backgroundColor; // color [0, 0, 0, 0]
 
 void main() {
     ivec2 size = textureSize(u_image_source, 0);
@@ -29,7 +30,7 @@ void main() {
         any(lessThan(uv, vec2(0.0))) ||
         any(greaterThan(uv, vec2(1.0)))
     ) {
-        fragColor = vec4(vec3(0.0), 1.0);
+        fragColor = backgroundColor;
         return;
     }
 
@@ -37,4 +38,5 @@ void main() {
         u_image_source, 
         vec2(uv.x, uv.y)
     );
+    fragColor = fragColor * fragColor.a + (backgroundColor) * (1.0 - fragColor.a);
 }
