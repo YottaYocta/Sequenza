@@ -44,6 +44,7 @@ import tile from "../../shaders/tile.frag?raw";
 import triangle from "../../shaders/triangle.frag?raw";
 import vignette from "../../shaders/vignette.frag?raw";
 import layer from "../../shaders/layer.frag?raw";
+import stamp from "../../shaders/stamp.frag?raw";
 
 export const staticShaders: Record<string, string> = {
   // sources
@@ -111,4 +112,6 @@ export const staticShaders: Record<string, string> = {
 
   // layer
   layer: layer,
+
+  stamp: stamp,
 };
