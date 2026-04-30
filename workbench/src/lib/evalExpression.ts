@@ -21,11 +21,3 @@ export function evalExpression(expr: string, ctx: EvalContext): number | null {
   }
 }
 
-export function resolveSlot(
-  slot: number | string,
-  ctx: EvalContext,
-  fallback: number,
-): number {
-  if (typeof slot === "number") return slot;
-  return evalExpression(slot, ctx) ?? fallback;
-}

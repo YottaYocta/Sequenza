@@ -8,9 +8,7 @@ import type {
 import { extractFields, getFieldDefault, type Field } from "@sequenza/lib";
 import { FieldLabel } from "./UniformFields/shared";
 import { FloatField } from "./UniformFields/FloatField";
-import { Vec2Field } from "./UniformFields/Vec2Field";
-import { Vec3Field, Vec3ColorField } from "./UniformFields/Vec3Field";
-import { Vec4Field, Vec4ColorField } from "./UniformFields/Vec4Field";
+import { VecNField, Vec3ColorField, Vec4ColorField } from "./UniformFields/VecField";
 import { ImageUploadField } from "./UniformFields/ImageUploadField";
 import { GradientField } from "./UniformFields/GradientField";
 
@@ -108,7 +106,7 @@ const UniformForm: FC<UniformFormProps> = ({
           }
           case "vec2": {
             control = (
-              <Vec2Field
+              <VecNField
                 field={field}
                 value={
                   (saved as [number, number]) ?? (fallback as [number, number])
@@ -116,6 +114,7 @@ const UniformForm: FC<UniformFormProps> = ({
                 onChange={update}
                 def={toVecDef(rawDef)}
                 onSetDef={vecOnSetDef(2)}
+                axes={["x", "y"]}
               />
             );
             break;
@@ -133,7 +132,7 @@ const UniformForm: FC<UniformFormProps> = ({
                 onChange={update}
               />
             ) : (
-              <Vec3Field
+              <VecNField
                 field={field}
                 value={
                   (saved as [number, number, number]) ??
@@ -142,6 +141,7 @@ const UniformForm: FC<UniformFormProps> = ({
                 onChange={update}
                 def={def}
                 onSetDef={onSetDef}
+                axes={["x", "y", "z"]}
               />
             );
             break;
@@ -159,7 +159,7 @@ const UniformForm: FC<UniformFormProps> = ({
                 onChange={update}
               />
             ) : (
-              <Vec4Field
+              <VecNField
                 field={field}
                 value={
                   (saved as [number, number, number, number]) ??
@@ -168,6 +168,7 @@ const UniformForm: FC<UniformFormProps> = ({
                 onChange={update}
                 def={def}
                 onSetDef={onSetDef}
+                axes={["x", "y", "z", "w"]}
               />
             );
             break;

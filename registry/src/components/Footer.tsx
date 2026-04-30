@@ -20,9 +20,6 @@ export function Footer() {
         >
           Github
         </a>
-        <Link to="/friends" className="opacity-60 hover:opacity-80 transition">
-          Friends
-        </Link>
         <Link
           to="/shader-dev"
           className="opacity-60 hover:opacity-80 transition"

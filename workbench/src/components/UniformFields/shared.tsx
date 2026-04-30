@@ -2,11 +2,11 @@ import { useRef, useContext, useState, useEffect, type FC } from "react";
 import { RotateCcw, X } from "lucide-react";
 import { EditorContext } from "../EditorContext";
 
-export const toHex = (v: number) =>
+const toHex = (v: number) =>
   Math.round(Math.min(1, Math.max(0, v)) * 255)
     .toString(16)
     .padStart(2, "0");
-export const fromHex = (h: string) => parseInt(h, 16) / 255;
+const fromHex = (h: string) => parseInt(h, 16) / 255;
 export const vec3ToHex = ([r, g, b]: [number, number, number]) =>
   `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 export const hexToVec3 = (hex: string): [number, number, number] => [
