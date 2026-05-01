@@ -1,7 +1,13 @@
 import { Position, type Node, type NodeProps } from "@xyflow/react";
 import CustomHandle from "./CustomHandle";
 import type { Shader, Uniforms } from "@sequenza/lib";
-import { useContext, useMemo, useRef, useState, type RefObject } from "react";
+import {
+  useContext,
+  useMemo,
+  useRef,
+  useState,
+  type RefObject,
+} from "react";
 import { Scrubber } from "./Scrubber";
 import UniformForm from "./UniformForm";
 import { RendererComponent } from "@sequenza/lib";
@@ -20,7 +26,9 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
   const {
     patches,
     uniforms,
+    uniformExpressions,
     handleUpdateUniforms,
+    handleUpdateUniformExpression,
     handleUpdateNode,
     showStats,
     setOpenExportNodeId,
@@ -28,11 +36,14 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
     setOpenPreviewNodeId,
   } = useContext(EditorContext);
 
-  const [uniformSource, setUniformSource] = useState<Uniforms>(
+  const [uniformState, setUniformState] = useState<Uniforms>(
     () => uniforms.current[data.shader.id] ?? {},
   );
 
+  const nodeUniformExpressions = uniformExpressions[data.shader.id] ?? {};
+
   const handleFieldUpdate = (fieldName: string, value: any) => {
+    setUniformState((prev) => ({ ...prev, [fieldName]: value }));
     handleUpdateUniforms(data.shader.id, (current) => ({
       ...current,
       [fieldName]: value,
@@ -97,7 +108,7 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
       className={`
 				flex flex-col gap-8 bg-white rounded-lg p-6 relative  outline-neutral-200
 				${selected ? "outline-neutral-300 outline-4" : "outline-0"}
-        group min-w-96 items-center justify-center 
+        group min-w-96 items-center justify-center
 			`}
     >
       <div className="w-full flex justify-between">
@@ -107,26 +118,24 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
         <div className="flex gap-2">
           <button
             className={`button-base group-hover:block hidden`}
-            onClick={() => {
-              setOpenPreviewNodeId(id);
-              setUniformSource(uniforms.current[data.shader.id] ?? {});
-            }}
+            onClick={() => setOpenPreviewNodeId(id)}
           >
             Expand
           </button>
           <PreviewDialog
             open={openPreviewNodeId === id}
-            onOpenChange={(open) => {
-              setUniformSource(uniforms.current[data.shader.id] ?? {});
-              setOpenPreviewNodeId(open ? id : null);
-            }}
+            onOpenChange={(open) => setOpenPreviewNodeId(open ? id : null)}
             shader={data.shader}
             patch={patches[data.shader.id]}
             uniforms={uniforms}
-            savedUniforms={uniformSource}
+            savedUniforms={uniformState}
+            uniformExpressions={nodeUniformExpressions}
             nodeId={id}
             handleFieldUpdate={handleFieldUpdate}
             handleUpdateNode={handleUpdateNode}
+            handleUpdateUniformExpression={(fieldName, slotIndex, value, fieldLength) =>
+              handleUpdateUniformExpression(id, fieldName, slotIndex, value, fieldLength)
+            }
           />
           <button
             className={`button-base ${data.paused ? "" : "group-hover:block hidden"}`}
@@ -165,8 +174,12 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
       <div className="flex gap-8">
         <UniformForm
           shader={data.shader}
-          savedUniforms={uniformSource}
+          savedUniforms={uniformState}
+          uniformExpressions={nodeUniformExpressions}
           handleUpdateUniform={handleFieldUpdate}
+          handleUpdateUniformExpression={(fieldName, slotIndex, value, fieldLength) =>
+            handleUpdateUniformExpression(id, fieldName, slotIndex, value, fieldLength)
+          }
         />
         <div className="flex flex-col justify-center items-start gap-4 ">
           <div className="flex flex-col gap-2">

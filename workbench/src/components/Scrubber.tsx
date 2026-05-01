@@ -7,6 +7,7 @@ export interface ScrubberProps {
   step?: number;
   label?: string;
   onChange: (value: number) => void;
+  onExprInput?: (expr: string) => void;
 }
 
 export const Scrubber: FC<ScrubberProps> = ({
@@ -16,6 +17,7 @@ export const Scrubber: FC<ScrubberProps> = ({
   step = 0.01,
   label,
   onChange,
+  onExprInput,
 }) => {
   const isDragging = useRef(false);
   const startX = useRef(0);
@@ -63,7 +65,11 @@ export const Scrubber: FC<ScrubberProps> = ({
 
   const commitEdit = () => {
     const parsed = parseFloat(editText);
-    if (!isNaN(parsed)) onChange(clamp(parsed));
+    if (!isNaN(parsed)) {
+      onChange(clamp(parsed));
+    } else if (editText.trim() !== "" && onExprInput) {
+      onExprInput(editText.trim());
+    }
     setIsEditing(false);
   };
 

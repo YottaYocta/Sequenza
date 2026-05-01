@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FC, type RefObject } from "react";
 import { RendererComponent } from "@sequenza/lib";
 import type { Patch, Shader, Uniforms } from "@sequenza/lib";
+import type { NodeUniformExpressions } from "./EditorContext";
 import { Dialog } from "./Dialog";
 import { ExportDialog } from "./ExportDialog";
 import UniformForm from "./UniformForm";
@@ -14,11 +15,18 @@ interface PreviewDialogProps {
   patch: Patch;
   uniforms: RefObject<Record<string, Uniforms>>;
   savedUniforms: Uniforms;
+  uniformExpressions: NodeUniformExpressions;
   nodeId: string;
   handleFieldUpdate: (fieldName: string, value: any) => void;
   handleUpdateNode: (
     nodeId: string,
     fn: (s: ShaderNodeData) => ShaderNodeData,
+  ) => void;
+  handleUpdateUniformExpression: (
+    fieldName: string,
+    slotIndex: number | null,
+    value: string | null,
+    fieldLength?: number,
   ) => void;
 }
 
@@ -29,9 +37,11 @@ export const PreviewDialog: FC<PreviewDialogProps> = ({
   patch,
   uniforms,
   savedUniforms,
+  uniformExpressions,
   nodeId,
   handleFieldUpdate,
   handleUpdateNode,
+  handleUpdateUniformExpression,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -106,7 +116,9 @@ export const PreviewDialog: FC<PreviewDialogProps> = ({
             <UniformForm
               shader={shader}
               savedUniforms={savedUniforms}
+              uniformExpressions={uniformExpressions}
               handleUpdateUniform={handleFieldUpdate}
+              handleUpdateUniformExpression={handleUpdateUniformExpression}
             />
           </div>
         </div>
@@ -167,6 +179,7 @@ export const PreviewDialog: FC<PreviewDialogProps> = ({
               </button>
               <ExportDialog
                 uniforms={uniforms.current}
+                uniformExpressions={{ [shader.id]: uniformExpressions }}
                 patch={patch}
                 open={exportOpen}
                 onOpenChange={setExportOpen}

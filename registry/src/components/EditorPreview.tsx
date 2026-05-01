@@ -48,8 +48,8 @@ export function EditorPreview({ source }: EditorPreviewProps) {
     const nodes: Node[] = shaders.map((shader, idx) => ({
       id: shader.id,
       position: {
-        x: (shaders.length - idx) * -300,
-        y: (shaders.length - idx) * 500,
+        x: (shaders.length - idx) * 650,
+        y: (shaders.length - idx) * 200,
       },
       zIndex: shaders.length - idx,
       data: {

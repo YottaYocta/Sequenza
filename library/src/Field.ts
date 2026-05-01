@@ -7,24 +7,26 @@ export type Field =
       min?: number;
       max?: number;
       default?: number;
-      special?: "time";
+      defaultExpr?: string;
     }
   | {
       name: string;
       type: "vec2";
       default?: [number, number];
-      special?: "mouse" | "resolution";
+      defaultExpr?: [string, string];
     }
   | {
       name: string;
       type: "vec3";
       default?: [number, number, number];
+      defaultExpr?: [string, string, string];
       color?: true;
     }
   | {
       name: string;
       type: "vec4";
       default?: [number, number, number, number];
+      defaultExpr?: [string, string, string, string];
       color?: true;
     }
   | {
@@ -106,7 +108,7 @@ export const extractFields = (shader: Shader): Field[] => {
       /^uniform\s+float\s+(\w+)\s*;.*\/\/\s*time\b/,
     );
     if (floatTime?.[1]) {
-      fields.push({ name: floatTime[1], type: "float", special: "time" });
+      fields.push({ name: floatTime[1], type: "float", defaultExpr: "time" });
       continue;
     }
 
@@ -217,7 +219,7 @@ export const extractFields = (shader: Shader): Field[] => {
       /^uniform\s+vec2\s+(\w+)\s*;.*\/\/\s*mouse\b/,
     );
     if (vec2Mouse?.[1]) {
-      fields.push({ name: vec2Mouse[1], type: "vec2", special: "mouse" });
+      fields.push({ name: vec2Mouse[1], type: "vec2", defaultExpr: ["mouse.x", "mouse.y"] });
       continue;
     }
 
@@ -225,7 +227,7 @@ export const extractFields = (shader: Shader): Field[] => {
       /^uniform\s+vec2\s+(\w+)\s*;.*\/\/\s*resolution\b/,
     );
     if (vec2Resolution?.[1]) {
-      fields.push({ name: vec2Resolution[1], type: "vec2", special: "resolution" });
+      fields.push({ name: vec2Resolution[1], type: "vec2", defaultExpr: ["resolution.x", "resolution.y"] });
       continue;
     }
 

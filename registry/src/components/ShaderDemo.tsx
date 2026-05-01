@@ -4,9 +4,12 @@ import {
   type Uniforms,
   type Patch,
 } from "@sequenza/lib";
-import { buildEditorState, type EditorInitialState } from "@sequenza/workbench";
 import "@sequenza/lib/style.css";
+import { buildEditorState, type EditorInitialState } from "@sequenza/workbench";
+import { create, all } from "mathjs";
 import { useEffect, useRef, useState } from "react";
+
+const math = create(all);
 
 interface ShaderDemoProps {
   patch: Patch;
@@ -101,65 +104,91 @@ export function ShaderDemo({
   };
 
   useEffect(() => {
-    const timeFields: Array<{ shaderId: string; fieldName: string }> = [];
-    const mouseFields: Array<{ shaderId: string; fieldName: string }> = [];
+    const defs: Record<string, Record<string, unknown>> = {};
+    const resolutionMap: Record<string, [number, number]> = {};
 
     for (const shader of patch.shaders) {
+      resolutionMap[shader.id] = [
+        shader.resolution.width,
+        shader.resolution.height,
+      ];
       const fields = extractFields(shader);
       for (const field of fields) {
-        if (field.type === "float" && field.special === "time") {
-          timeFields.push({ shaderId: shader.id, fieldName: field.name });
-        } else if (field.type === "vec2" && field.special === "mouse") {
-          mouseFields.push({ shaderId: shader.id, fieldName: field.name });
-        } else if (field.type === "vec2" && field.special === "resolution") {
-          uniformRef.current[shader.id] ??= {};
-          uniformRef.current[shader.id][field.name] = [
-            shader.resolution.width,
-            shader.resolution.height,
-          ];
+        if ("defaultExpr" in field && field.defaultExpr != null) {
+          defs[shader.id] ??= {};
+          defs[shader.id][field.name] = field.defaultExpr;
         }
       }
     }
 
-    let onMouseMove: ((e: MouseEvent) => void) | undefined;
-    if (mouseFields.length > 0) {
-      onMouseMove = (e: MouseEvent) => {
-        const x = Math.min(1, e.clientX / window.innerWidth);
-        const y = Math.min(1, e.clientY / window.innerHeight);
-        for (const { shaderId, fieldName } of mouseFields) {
-          uniformRef.current[shaderId] ??= {};
-          uniformRef.current[shaderId][fieldName] = [x, y];
-        }
-      };
-      window.addEventListener("mousemove", onMouseMove);
-    }
+    const mouse: [number, number] = [0, 0];
+    const onMouseMove = (e: MouseEvent) => {
+      mouse[0] = Math.min(1, e.clientX / window.innerWidth);
+      mouse[1] = Math.min(1, e.clientY / window.innerHeight);
+    };
+    window.addEventListener("mousemove", onMouseMove);
 
-    let rafId: number | undefined;
-    if (timeFields.length > 0) {
-      let cumulativeTime = 0;
-      let lastFrameTime = performance.now();
-      const loop = () => {
-        const now = performance.now();
-        if (hoveringRef.current) {
-          cumulativeTime += (now - lastFrameTime) / 1000;
+    let cumulativeTime = 0;
+    let lastFrameTime = performance.now();
+
+    const loop = () => {
+      const now = performance.now();
+      if (hoveringRef.current) {
+        cumulativeTime += (now - lastFrameTime) / 1000;
+      }
+      lastFrameTime = now;
+
+      for (const [shaderId, fieldDefs] of Object.entries(defs)) {
+        const res = resolutionMap[shaderId] ?? [1, 1];
+        const scope = {
+          time: cumulativeTime,
+          mouse: { x: mouse[0], y: mouse[1] },
+          resolution: { x: res[0], y: res[1] },
+        };
+        uniformRef.current[shaderId] ??= {};
+        for (const [fieldName, def] of Object.entries(fieldDefs)) {
+          if (typeof def === "string") {
+            try {
+              const result = math.evaluate(def, scope);
+              if (typeof result === "number")
+                uniformRef.current[shaderId][fieldName] = result;
+            } catch {
+              /* invalid expression */
+            }
+          } else if (Array.isArray(def)) {
+            const current = uniformRef.current[shaderId][fieldName];
+            const arr: number[] = Array.isArray(current)
+              ? [...current]
+              : (def as unknown[]).map(() => 0);
+            for (let i = 0; i < def.length; i++) {
+              const slot = (def as unknown[])[i];
+              if (typeof slot === "string") {
+                try {
+                  const result = math.evaluate(slot, scope);
+                  if (typeof result === "number") arr[i] = result;
+                } catch {
+                  /* invalid expression */
+                }
+              } else if (typeof slot === "number") {
+                arr[i] = slot;
+              }
+            }
+            uniformRef.current[shaderId][fieldName] = arr;
+          }
         }
-        lastFrameTime = now;
-        for (const { shaderId, fieldName } of timeFields) {
-          uniformRef.current[shaderId] ??= {};
-          uniformRef.current[shaderId][fieldName] = cumulativeTime;
-        }
-        rafId = requestAnimationFrame(loop);
-      };
+      }
+
       rafId = requestAnimationFrame(loop);
-    }
+    };
+
+    let rafId = requestAnimationFrame(loop);
 
     return () => {
-      if (onMouseMove) window.removeEventListener("mousemove", onMouseMove);
-      if (rafId !== undefined) cancelAnimationFrame(rafId);
+      window.removeEventListener("mousemove", onMouseMove);
+      cancelAnimationFrame(rafId);
       clearTimeout(lerpStopTimeout.current);
       stopLerp();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -198,24 +227,17 @@ export function ShaderDemo({
         animate={animate !== undefined ? animate : hovering}
         width={width}
         height={height}
-        className="w-full h-full"
+        className="w-full h-full object-fill"
       />
       {handleEdit && (
-        <div
-          ref={labelRef}
-          className="absolute pointer-events-none -translate-x-1/2 -translate-y-1/2"
-        >
-          <div ref={tiltRef}>
-            <button
-              className="opacity-0 scale-75 group-hover:opacity-100 group-hover:scale-100 focus:opacity-100 focus:scale-100 pointer-events-none group-hover:pointer-events-auto focus:pointer-events-auto px-5 py-2 text-lg font-semibold  rounded-md bg-neutral-900 text-white transition-[transform, opacity] duration-200 ease-out hover:cursor-pointer border-neutral-100  border-2"
-              onClick={() =>
-                handleEdit(buildEditorState(patch, initialUniforms))
-              }
-            >
-              Edit
-            </button>
-          </div>
-        </div>
+        <>
+          <button
+            className="pointer-events-none group-hover:pointer-events-auto focus:pointer-events-auto focus:opacity-100 group-hover:opacity-100 opacity-0 px-5 py-1 rounded-sm bg-neutral-900 text-white group-hover:transition-opacity duration-200 ease-out hover:cursor-pointer absolute right-2 bottom-2 max-md:opacity-100"
+            onClick={() => handleEdit(buildEditorState(patch, initialUniforms))}
+          >
+            Edit
+          </button>
+        </>
       )}
     </div>
   );
