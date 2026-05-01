@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
 import type { EditorInitialState } from "@sequenza/workbench";
 
-export type InitialStateContextValue = {
+type InitialStateContextValue = {
   initialState: EditorInitialState | undefined;
   setInitialState: (state: EditorInitialState | undefined) => void;
 };

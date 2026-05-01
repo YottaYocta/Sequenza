@@ -5,6 +5,7 @@ import { topologicalSort } from "./utils/topologicalSort";
 export function exportSequenzaPatch(
   uniforms: Record<string, Uniforms>,
   patch: Patch,
+  uniformDefs: Record<string, Uniforms> = {},
 ): string {
   let content = templateContent;
 
@@ -17,9 +18,19 @@ export function exportSequenzaPatch(
     filteredUniforms[key] = uniforms[key];
   }
 
+  const filteredDefs: Record<string, Uniforms> = {};
+  for (const key of filteredUniformKeys) {
+    if (uniformDefs[key]) filteredDefs[key] = uniformDefs[key];
+  }
+
   content = content.replace(
     `throw new Error("placeholder for initial uniforms");`,
     `return ${JSON.stringify(filteredUniforms, null, 2)};`,
+  );
+
+  content = content.replace(
+    `throw new Error("placeholder for uniform defs");`,
+    `return ${JSON.stringify(filteredDefs, null, 2)};`,
   );
 
   content = content.replace(

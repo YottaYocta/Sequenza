@@ -21,10 +21,6 @@ export const GradientField: FC<{
   const rampRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setStops(initialValue?.stops ?? DEFAULT_GRADIENT_STOPS);
-  }, [initialValue]);
-
-  useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
@@ -104,30 +100,32 @@ export const GradientField: FC<{
         </button>
       </div>
       <div className="flex flex-col gap-1.5">
-        {[...stops.map((stop, idx) => ({ stop, idx }))].sort((a, b) => a.stop.position - b.stop.position).map(({ stop, idx }) => (
-          <div key={idx} className="flex items-center gap-2">
-            <Scrubber
-              value={stop.position}
-              min={0}
-              max={1}
-              step={0.01}
-              onChange={(v) => updateStopPosition(idx, v)}
-            />
-            <ColorPickerButton
-              color={stop.color}
-              onChange={(hex) => updateStopColor(idx, hex)}
-            />
-            {stops.length > 1 && (
-              <button
-                onClick={() => removeStop(idx)}
-                className="text-xs text-neutral-400 hover:text-neutral-700 leading-none px-1"
-                aria-label={`remove stop ${idx}`}
-              >
-                ×
-              </button>
-            )}
-          </div>
-        ))}
+        {[...stops.map((stop, idx) => ({ stop, idx }))]
+          .sort((a, b) => a.stop.position - b.stop.position)
+          .map(({ stop, idx }) => (
+            <div key={idx} className="flex items-center gap-2">
+              <Scrubber
+                value={stop.position}
+                min={0}
+                max={1}
+                step={0.01}
+                onChange={(v) => updateStopPosition(idx, v)}
+              />
+              <ColorPickerButton
+                color={stop.color}
+                onChange={(hex) => updateStopColor(idx, hex)}
+              />
+              {stops.length > 1 && (
+                <button
+                  onClick={() => removeStop(idx)}
+                  className="text-xs text-neutral-400 hover:text-neutral-700 leading-none px-1"
+                  aria-label={`remove stop ${idx}`}
+                >
+                  ×
+                </button>
+              )}
+            </div>
+          ))}
       </div>
     </div>
   );

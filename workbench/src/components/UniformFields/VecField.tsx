@@ -1,0 +1,98 @@
+import { type FC } from "react";
+import type { Field } from "@sequenza/lib";
+import { Scrubber } from "../Scrubber";
+import { ColorPickerButton, ExpressionChip, ResetButton, vec3ToHex, hexToVec3 } from "./shared";
+
+export const VecNField: FC<{
+  field: Field & { type: "vec2" | "vec3" | "vec4" };
+  value: number[];
+  onChange: (value: number[]) => void;
+  def?: (string | null)[];
+  onSetDef?: (index: number, expr: string | null) => void;
+  axes: readonly string[];
+}> = ({ field, value, onChange, def, onSetDef, axes }) => {
+  const update = (i: number, v: number) => {
+    const next = [...value];
+    next[i] = v;
+    onChange(next);
+  };
+
+  const allExpr = def?.every((d) => d !== null);
+
+  return (
+    <div className="flex items-center">
+      <div className="flex gap-2 flex-col">
+        {axes.map((axis, i) =>
+          def?.[i] != null ? (
+            <ExpressionChip
+              key={axis}
+              label={axis}
+              expr={def[i] as string}
+              onEdit={(e) => onSetDef?.(i, e)}
+            />
+          ) : (
+            <Scrubber
+              key={axis}
+              label={axis}
+              value={value[i]}
+              onChange={(v) => update(i, v)}
+              onExprInput={(e) => onSetDef?.(i, e)}
+            />
+          ),
+        )}
+      </div>
+      {!allExpr && field.default !== undefined && (
+        <ResetButton onClick={() => onChange(field.default!)} />
+      )}
+    </div>
+  );
+};
+
+export const Vec3ColorField: FC<{
+  field: Field & { type: "vec3" };
+  value: [number, number, number];
+  onChange: (value: [number, number, number]) => void;
+}> = ({ field, value, onChange }) => {
+  return (
+    <div className="flex items-center">
+      <ColorPickerButton
+        color={vec3ToHex(value)}
+        onChange={(hex) => onChange(hexToVec3(hex))}
+      />
+      {field.default !== undefined && (
+        <ResetButton onClick={() => onChange(field.default!)} />
+      )}
+    </div>
+  );
+};
+
+export const Vec4ColorField: FC<{
+  field: Field & { type: "vec4" };
+  value: [number, number, number, number];
+  onChange: (value: [number, number, number, number]) => void;
+}> = ({ field, value, onChange }) => {
+  const [r, g, b, a] = value;
+
+  return (
+    <div className="flex items-center">
+      <ColorPickerButton
+        color={vec3ToHex([r, g, b])}
+        onChange={(hex) => {
+          const [nr, ng, nb] = hexToVec3(hex);
+          onChange([nr, ng, nb, a]);
+        }}
+      />
+      <Scrubber
+        label="a"
+        value={a}
+        min={0}
+        max={1}
+        step={0.01}
+        onChange={(v) => onChange([r, g, b, v])}
+      />
+      {field.default !== undefined && (
+        <ResetButton onClick={() => onChange(field.default!)} />
+      )}
+    </div>
+  );
+};
