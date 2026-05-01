@@ -25,7 +25,6 @@
     "noUncheckedSideEffectImports": true,
 
     /* Workspace path aliases */
-    "baseUrl": ".",
     "paths": {
       "@sequenza/lib": ["../library/src/index.ts"]
     }
