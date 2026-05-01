@@ -121,11 +121,7 @@ export function useGraphState({
   setUniformExpressions: Dispatch<SetStateAction<UniformExpressions>>;
 }) {
   const [edges, setEdges] = useState<Edge[]>(initialState?.edges ?? []);
-  const [nodes, setNodes] = useState<Node[]>(() => {
-    const initialNodes = initialState?.nodes ?? [];
-    const initialEdges = initialState?.edges ?? [];
-    return propagateWidthHeightUpdates(initialNodes, initialEdges);
-  });
+  const [nodes, setNodes] = useState<Node[]>(initialState?.nodes ?? []);
 
   const onNodesChange: OnNodesChange = useCallback(
     (changes) =>
@@ -210,7 +206,10 @@ export function useGraphState({
                 ...shaderNode,
                 data: {
                   ...shaderNode.data,
-                  shader: { ...shaderNode.data.shader, source: newShader.source },
+                  shader: {
+                    ...shaderNode.data.shader,
+                    source: newShader.source,
+                  },
                 },
               };
             }
@@ -256,7 +255,9 @@ export function useGraphState({
         setNodes((snapshot) => [...snapshot, newNode]);
       } else if (addShaderLocation.sourceId) {
         // Append to existing node
-        const sourceNode = nodes.find((n) => n.id === addShaderLocation.sourceId);
+        const sourceNode = nodes.find(
+          (n) => n.id === addShaderLocation.sourceId,
+        );
         if (sourceNode) {
           newNode.position = addShaderLocation.position;
           const fields = extractFields(newNode.data.shader);
@@ -477,7 +478,9 @@ export function useGraphState({
         }
         if (data.uniformExpressions) {
           const remapped: UniformExpressions = {};
-          for (const [oldId, exprs] of Object.entries(data.uniformExpressions)) {
+          for (const [oldId, exprs] of Object.entries(
+            data.uniformExpressions,
+          )) {
             const newId = idMap.get(oldId);
             if (newId) remapped[newId] = exprs;
           }
@@ -532,9 +535,7 @@ export function useGraphState({
           queue.push(dependencyNodeId);
           const dependencyShader = shaderMap[dependencyNodeId];
           if (
-            !patches[nodeId].shaders.find(
-              (s) => s.id === dependencyShader.id,
-            )
+            !patches[nodeId].shaders.find((s) => s.id === dependencyShader.id)
           )
             patches[nodeId].shaders.push(dependencyShader);
           patches[nodeId].connections.push(incomingConnection);
