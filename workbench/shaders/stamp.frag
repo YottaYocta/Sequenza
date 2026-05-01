@@ -4,12 +4,15 @@ precision mediump float;
 in vec2 vUv;
 out vec4 fragColor;
 
-uniform sampler2D uStampTex;   
-uniform sampler2D uInputBase; 
+uniform sampler2D uInputBase;
+uniform sampler2D uStampTex;
 uniform vec4 uBaseColor;  // color
-uniform float uStampSize;  // [0.1, 5, 1] 
+uniform float uStampSize;  // [0.1, 50, 1]
 
-uniform float uGridScale; // [1, 100, 10]
+uniform float uGridScaleX; // [1, 100, 10]
+uniform float uGridScaleY; // [1, 100, 10]
+uniform float uScanRadius;   // [1, 3, 1]
+uniform float uRenderOrder;  // [0, 1, 0]
 
 uniform vec2 u_resolution; // resolution
 
@@ -20,10 +23,9 @@ vec4 over(vec4 dst, vec4 src) {
 }
 
 float sampleStamp(vec2 p, vec2 corner) {
-    float aspect = u_resolution.x / u_resolution.y;
+    float aspect = (u_resolution.x / uGridScaleX) / (u_resolution.y / uGridScaleY);
 
     vec2 uv = p - corner;
-
     uv.x *= aspect;
 
     vec2 local = uv / uStampSize + 0.5;
@@ -34,40 +36,33 @@ float sampleStamp(vec2 p, vec2 corner) {
 
     return texture(uStampTex, local).a;
 }
+
 void main() {
-    vec2 gridUv = vUv * uGridScale;
+    vec2 gridUv = vUv * vec2(uGridScaleX, uGridScaleY);
 
     vec2 cellId  = floor(gridUv);
-    vec2 localUv = fract(gridUv); 
+    vec2 localUv = fract(gridUv);
 
-    vec2 A = vec2(0.0, 0.0);
-    vec2 B = vec2(1.0, 0.0);
-    vec2 C = vec2(0.0, 1.0);
-    vec2 D = vec2(1.0, 1.0);
+    vec2 invGrid = vec2(1.0 / uGridScaleX, 1.0 / uGridScaleY);
 
-    vec2 invGrid = vec2(1.0 / uGridScale);
+    int r     = int(round(uScanRadius));
+    int start = 1 - r;
+    int end   = 1 + r;
 
-    vec2 globalA = (cellId + A) * invGrid;
-    vec2 globalB = (cellId + B) * invGrid;
-    vec2 globalC = (cellId + C) * invGrid;
-    vec2 globalD = (cellId + D) * invGrid;
-
-    vec3 colorA = texture(uInputBase, globalA).rgb;
-    vec3 colorB = texture(uInputBase, globalB).rgb;
-    vec3 colorC = texture(uInputBase, globalC).rgb;
-    vec3 colorD = texture(uInputBase, globalD).rgb;
-
-    float aA = sampleStamp(localUv, A);
-    float aB = sampleStamp(localUv, B);
-    float aC = sampleStamp(localUv, C);
-    float aD = sampleStamp(localUv, D);
-
+    bool backToFront = uRenderOrder > 0.5;
     vec4 col = uBaseColor;
 
-    col = over(col, vec4(colorA, aA));
-    col = over(col, vec4(colorB, aB));
-    col = over(col, vec4(colorC, aC));
-    col = over(col, vec4(colorD, aD));
+    for (int jj = start; jj < end; jj++) {
+        for (int ii = start; ii < end; ii++) {
+            int i = backToFront ? ii : (end - 1 + start - ii);
+            int j = backToFront ? (end - 1 + start - jj) : jj;
+            vec2 corner = vec2(float(i), float(j));
+            vec2 global = (cellId + corner) * invGrid;
+            vec3 color  = texture(uInputBase, global).rgb;
+            float alpha = sampleStamp(localUv, corner);
+            col = over(col, vec4(color, alpha));
+        }
+    }
 
     fragColor = col;
 }

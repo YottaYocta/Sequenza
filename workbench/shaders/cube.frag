@@ -3,7 +3,7 @@ precision highp float;
 
 uniform vec2 u_resolution;  // resolution
 uniform float u_time;       // time
-uniform float u_roundness;    // [0, 0.45, 0.05]
+uniform float u_roundness;    // [0, 0.5, 0.05]
 uniform vec3 u_light_dir; // [1,1,0]
 uniform vec3 u_rotation_rate; // [1,1,0]
 uniform float u_distance;     // [1, 10, 3]

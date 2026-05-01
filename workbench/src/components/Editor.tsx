@@ -136,11 +136,6 @@ const EditorAux: FC<EditorProps> = ({
   });
 
   useEffect(() => {
-    console.log(uniformExpressions);
-    console.log(uniformRef);
-  }, [uniformExpressions]);
-
-  useEffect(() => {
     setUniformExpressions((prev) => {
       const next = { ...prev };
       for (const [nodeId, shader] of Object.entries(shaderMap)) {
