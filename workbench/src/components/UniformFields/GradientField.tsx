@@ -30,7 +30,7 @@ export const GradientField: FC<{
       ctx.fillRect(i, 0, 1, canvas.height);
     }
     handleUpdateUniformField({ type: "gradient", stops });
-  }, [stops, handleUpdateUniformField]);
+  }, [stops]);
 
   const startDrag = (stopIndex: number) => (e: React.MouseEvent) => {
     e.preventDefault();

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FC, type RefObject } from "react";
 import { RendererComponent } from "@sequenza/lib";
 import type { Patch, Shader, Uniforms } from "@sequenza/lib";
+import type { NodeUniformExpressions } from "./EditorContext";
 import { Dialog } from "./Dialog";
 import { ExportDialog } from "./ExportDialog";
 import UniformForm from "./UniformForm";
@@ -14,14 +15,14 @@ interface PreviewDialogProps {
   patch: Patch;
   uniforms: RefObject<Record<string, Uniforms>>;
   savedUniforms: Uniforms;
-  uniformDefs: Uniforms;
+  uniformExpressions: NodeUniformExpressions;
   nodeId: string;
   handleFieldUpdate: (fieldName: string, value: any) => void;
   handleUpdateNode: (
     nodeId: string,
     fn: (s: ShaderNodeData) => ShaderNodeData,
   ) => void;
-  handleUpdateUniformDef: (
+  handleUpdateUniformExpression: (
     fieldName: string,
     slotIndex: number | null,
     value: string | null,
@@ -36,11 +37,11 @@ export const PreviewDialog: FC<PreviewDialogProps> = ({
   patch,
   uniforms,
   savedUniforms,
-  uniformDefs,
+  uniformExpressions,
   nodeId,
   handleFieldUpdate,
   handleUpdateNode,
-  handleUpdateUniformDef,
+  handleUpdateUniformExpression,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -115,9 +116,9 @@ export const PreviewDialog: FC<PreviewDialogProps> = ({
             <UniformForm
               shader={shader}
               savedUniforms={savedUniforms}
-              uniformDefs={uniformDefs}
+              uniformExpressions={uniformExpressions}
               handleUpdateUniform={handleFieldUpdate}
-              handleUpdateUniformDef={handleUpdateUniformDef}
+              handleUpdateUniformExpression={handleUpdateUniformExpression}
             />
           </div>
         </div>
@@ -178,7 +179,7 @@ export const PreviewDialog: FC<PreviewDialogProps> = ({
               </button>
               <ExportDialog
                 uniforms={uniforms.current}
-                uniformDefs={{ [shader.id]: uniformDefs }}
+                uniformExpressions={{ [shader.id]: uniformExpressions }}
                 patch={patch}
                 open={exportOpen}
                 onOpenChange={setExportOpen}

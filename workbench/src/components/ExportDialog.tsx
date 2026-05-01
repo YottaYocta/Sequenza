@@ -2,10 +2,11 @@ import { useState, type FC } from "react";
 import { exportSequenzaPatch } from "@sequenza/lib";
 import type { Patch, Uniforms } from "@sequenza/lib";
 import { Dialog } from "./Dialog";
+import type { UniformExpressions } from "./EditorContext";
 
 interface ExportDialogProps {
   uniforms: Record<string, Uniforms>;
-  uniformDefs?: Record<string, Uniforms>;
+  uniformExpressions?: UniformExpressions;
   patch: Patch;
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -17,13 +18,13 @@ type Tab = "react" | "json" | "prompt";
 
 export const ExportDialog: FC<ExportDialogProps> = ({
   uniforms,
-  uniformDefs,
+  uniformExpressions,
   patch,
   open,
   onOpenChange,
 }) => {
-  const generatedCode = exportSequenzaPatch(uniforms, patch, uniformDefs);
-  const jsonExport = JSON.stringify({ uniforms, uniformDefs, shader: patch }, null, 2);
+  const generatedCode = exportSequenzaPatch(uniforms, patch, uniformExpressions);
+  const jsonExport = JSON.stringify({ uniforms, uniformExpressions, shader: patch }, null, 2);
   const llmPrompt = `I have a Sequenza shader export — a self-contained React component that renders a GLSL shader composition using @sequenza/lib. Here it is:\n\n${generatedCode}\n\nPlease integrate this into my project. It accepts no props and renders the shader full-width inside whatever container it's placed in. The \`animate\` prop drives a requestAnimationFrame loop for shaders that use a time uniform. Let me know if you need anything else.`;
 
   const [tab, setTab] = useState<Tab>("react");

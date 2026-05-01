@@ -2,6 +2,10 @@ import { createContext, type RefObject } from "react";
 import type { Patch, Shader, Uniforms } from "@sequenza/lib";
 import type { ShaderNodeData } from "./ShaderNode";
 
+export type UniformExpression = string | (string | null)[] | null;
+export type NodeUniformExpressions = Record<string, UniformExpression>;
+export type UniformExpressions = Record<string, NodeUniformExpressions>;
+
 interface EditorContextType {
   elapsedRef: RefObject<number>;
   playing: boolean;
@@ -11,7 +15,7 @@ interface EditorContextType {
   shaders: Shader[];
   patches: Record<string, Patch>;
   uniforms: RefObject<Record<string, Uniforms>>;
-  uniformDefs: RefObject<Record<string, Uniforms>>;
+  uniformExpressions: UniformExpressions;
   showStats: boolean;
   openExportNodeId: string | null;
   setOpenExportNodeId: (id: string | null) => void;
@@ -20,6 +24,13 @@ interface EditorContextType {
   handleUpdateUniforms: (
     shaderId: string,
     uniformUpdateCallback: (current: Uniforms) => Uniforms,
+  ) => void;
+  handleUpdateUniformExpression: (
+    shaderId: string,
+    fieldName: string,
+    slotIndex: number | null,
+    value: string | null,
+    fieldLength?: number,
   ) => void;
   handleUpdateNode: (
     nodeId: string,
@@ -42,8 +53,9 @@ export const EditorContext = createContext<EditorContextType>({
   openPreviewNodeId: null,
   setOpenPreviewNodeId: () => {},
   uniforms: { current: {} },
-  uniformDefs: { current: {} },
+  uniformExpressions: {},
   handleUpdateUniforms: () => {},
-  handleUpdateNode: (snapshot) => snapshot,
+  handleUpdateUniformExpression: () => {},
+  handleUpdateNode: (_, snapshot) => snapshot,
   handleInsertShader: () => {},
 });

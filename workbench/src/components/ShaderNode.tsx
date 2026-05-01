@@ -3,7 +3,6 @@ import CustomHandle from "./CustomHandle";
 import type { Shader, Uniforms } from "@sequenza/lib";
 import {
   useContext,
-  useEffect,
   useMemo,
   useRef,
   useState,
@@ -13,7 +12,7 @@ import { Scrubber } from "./Scrubber";
 import UniformForm from "./UniformForm";
 import { RendererComponent } from "@sequenza/lib";
 import { EditorContext } from "./EditorContext";
-import { extractFields, getFieldDefault } from "@sequenza/lib";
+import { extractFields } from "@sequenza/lib";
 import { PreviewDialog } from "./PreviewDialog";
 
 export type ShaderNodeData = {
@@ -27,8 +26,9 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
   const {
     patches,
     uniforms,
-    uniformDefs,
+    uniformExpressions,
     handleUpdateUniforms,
+    handleUpdateUniformExpression,
     handleUpdateNode,
     showStats,
     setOpenExportNodeId,
@@ -36,62 +36,11 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
     setOpenPreviewNodeId,
   } = useContext(EditorContext);
 
-  const [uniformState, setUniformState] = useState<Uniforms>(() => {
-    const saved = uniforms.current[data.shader.id] ?? {};
-    const fields = extractFields(data.shader);
-    const merged: Uniforms = { ...saved };
-    for (const field of fields) {
-      if (!(field.name in merged)) {
-        const def = getFieldDefault(field);
-        if (def !== undefined) merged[field.name] = def;
-      }
-    }
-    return merged;
-  });
+  const [uniformState, setUniformState] = useState<Uniforms>(
+    () => uniforms.current[data.shader.id] ?? {},
+  );
 
-  const [uniformDefState, setUniformDefState] = useState<Uniforms>(() => {
-    const editorDefs = uniformDefs.current[data.shader.id] ?? {};
-    const merged: Uniforms = { ...editorDefs };
-    for (const field of extractFields(data.shader)) {
-      if (field.type === "sampler2D") continue;
-      if (field.defaultExpr !== undefined && !(field.name in merged)) {
-        merged[field.name] = field.defaultExpr as any;
-      }
-    }
-    return merged;
-  });
-
-  useEffect(() => {
-    handleUpdateUniforms(data.shader.id, () => uniformState);
-  }, []);
-
-  useEffect(() => {
-    uniformDefs.current[data.shader.id] = uniformDefState;
-  }, [uniformDefState]);
-
-  const handleUpdateUniformDef = (
-    fieldName: string,
-    slotIndex: number | null,
-    value: string | null,
-    fieldLength?: number,
-  ) => {
-    setUniformDefState((prev) => {
-      const next = { ...prev };
-      if (slotIndex === null) {
-        next[fieldName] = value as any;
-      } else {
-        const prevArr = Array.isArray(prev[fieldName])
-          ? [...(prev[fieldName] as (string | null)[])]
-          : null;
-        const len = prevArr?.length ?? fieldLength ?? slotIndex + 1;
-        const arr: (string | null)[] = prevArr ?? Array(len).fill(null);
-        while (arr.length <= slotIndex) arr.push(null);
-        arr[slotIndex] = value;
-        next[fieldName] = (arr.every((s) => s === null) ? null : arr) as any;
-      }
-      return next;
-    });
-  };
+  const nodeUniformExpressions = uniformExpressions[data.shader.id] ?? {};
 
   const handleFieldUpdate = (fieldName: string, value: any) => {
     setUniformState((prev) => ({ ...prev, [fieldName]: value }));
@@ -159,7 +108,7 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
       className={`
 				flex flex-col gap-8 bg-white rounded-lg p-6 relative  outline-neutral-200
 				${selected ? "outline-neutral-300 outline-4" : "outline-0"}
-        group min-w-96 items-center justify-center 
+        group min-w-96 items-center justify-center
 			`}
     >
       <div className="w-full flex justify-between">
@@ -180,11 +129,13 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
             patch={patches[data.shader.id]}
             uniforms={uniforms}
             savedUniforms={uniformState}
-            uniformDefs={uniformDefState}
+            uniformExpressions={nodeUniformExpressions}
             nodeId={id}
             handleFieldUpdate={handleFieldUpdate}
             handleUpdateNode={handleUpdateNode}
-            handleUpdateUniformDef={handleUpdateUniformDef}
+            handleUpdateUniformExpression={(fieldName, slotIndex, value, fieldLength) =>
+              handleUpdateUniformExpression(id, fieldName, slotIndex, value, fieldLength)
+            }
           />
           <button
             className={`button-base ${data.paused ? "" : "group-hover:block hidden"}`}
@@ -224,9 +175,11 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
         <UniformForm
           shader={data.shader}
           savedUniforms={uniformState}
-          uniformDefs={uniformDefState}
+          uniformExpressions={nodeUniformExpressions}
           handleUpdateUniform={handleFieldUpdate}
-          handleUpdateUniformDef={handleUpdateUniformDef}
+          handleUpdateUniformExpression={(fieldName, slotIndex, value, fieldLength) =>
+            handleUpdateUniformExpression(id, fieldName, slotIndex, value, fieldLength)
+          }
         />
         <div className="flex flex-col justify-center items-start gap-4 ">
           <div className="flex flex-col gap-2">

@@ -71,7 +71,7 @@ function App() {
       const uniforms: Record<string, Uniforms> = JSON.parse(
         localStorage.getItem("sequenza-uniforms") ?? "{}",
       );
-      const uniformDefs: Record<string, Uniforms> = JSON.parse(
+      const uniformExpressions: Record<string, Uniforms> = JSON.parse(
         localStorage.getItem("sequenza-uniform-defs") ?? "{}",
       );
 
@@ -141,13 +141,13 @@ function App() {
         else return true;
       });
 
-      // prune uniformDefs for deleted nodes
-      for (const key of Object.keys(uniformDefs)) {
-        if (!existingNodeIds.has(key)) delete uniformDefs[key];
+      // prune uniformExpressions for deleted nodes
+      for (const key of Object.keys(uniformExpressions)) {
+        if (!existingNodeIds.has(key)) delete uniformExpressions[key];
       }
 
       if (nodes !== null && edges !== null && uniforms !== null)
-        return { nodes, edges, uniforms, uniformDefs };
+        return { nodes, edges, uniforms, uniformExpressions };
     } catch (e) {
       console.error(e);
     }
@@ -181,7 +181,7 @@ function App() {
                 localStorage.removeItem("sequenza-open-preview-node");
               }
             }}
-            handleSave={({ nodes, edges, uniforms, uniformDefs }) => {
+            handleSave={({ nodes, edges, uniforms, uniformExpressions }) => {
               localStorage.setItem("sequenza-nodes", JSON.stringify(nodes));
               localStorage.setItem("sequenza-edges", JSON.stringify(edges));
               localStorage.setItem(
@@ -190,7 +190,7 @@ function App() {
               );
               localStorage.setItem(
                 "sequenza-uniform-defs",
-                JSON.stringify(uniformDefs),
+                JSON.stringify(uniformExpressions),
               );
             }}
           ></Editor>

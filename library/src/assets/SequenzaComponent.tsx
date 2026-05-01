@@ -1,8 +1,4 @@
-import {
-  RendererComponent,
-  type Uniforms,
-  type Patch,
-} from "@sequenza/lib";
+import { RendererComponent, type Uniforms, type Patch } from "@sequenza/lib";
 import "@sequenza/lib/style.css";
 // @ts-expect-error mathjs is a peer dependency of the exported component, not the library
 import { create, all } from "mathjs";
@@ -20,7 +16,10 @@ function SequenzaComponent() {
 
     const resolutionMap: Record<string, [number, number]> = {};
     for (const shader of patch.shaders) {
-      resolutionMap[shader.id] = [shader.resolution.width, shader.resolution.height];
+      resolutionMap[shader.id] = [
+        shader.resolution.width,
+        shader.resolution.height,
+      ];
     }
 
     const onMouseMove = (e: MouseEvent) => {
@@ -49,7 +48,9 @@ function SequenzaComponent() {
               const result = math.evaluate(def, scope);
               if (typeof result === "number")
                 uniformRef.current[shaderId][fieldName] = result;
-            } catch { /* invalid expression */ }
+            } catch {
+              /* invalid expression */
+            }
           } else if (Array.isArray(def)) {
             const current = uniformRef.current[shaderId][fieldName];
             const arr: number[] = Array.isArray(current)
@@ -61,7 +62,9 @@ function SequenzaComponent() {
                 try {
                   const result = math.evaluate(slot, scope);
                   if (typeof result === "number") arr[i] = result;
-                } catch { /* invalid expression */ }
+                } catch {
+                  /* invalid expression */
+                }
               } else if (typeof slot === "number") {
                 arr[i] = slot;
               }

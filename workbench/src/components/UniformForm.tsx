@@ -11,13 +11,14 @@ import { FloatField } from "./UniformFields/FloatField";
 import { VecNField, Vec3ColorField, Vec4ColorField } from "./UniformFields/VecField";
 import { ImageUploadField } from "./UniformFields/ImageUploadField";
 import { GradientField } from "./UniformFields/GradientField";
+import type { NodeUniformExpressions } from "./EditorContext";
 
 interface UniformFormProps {
   shader: Shader;
   savedUniforms: Uniforms;
-  uniformDefs: Uniforms;
+  uniformExpressions: NodeUniformExpressions;
   handleUpdateUniform: (fieldName: string, value: any) => void;
-  handleUpdateUniformDef?: (
+  handleUpdateUniformExpression?: (
     fieldName: string,
     slotIndex: number | null,
     value: string | null,
@@ -51,9 +52,9 @@ function fieldLabelType(field: Field): string {
 const UniformForm: FC<UniformFormProps> = ({
   shader,
   savedUniforms,
-  uniformDefs,
+  uniformExpressions,
   handleUpdateUniform,
-  handleUpdateUniformDef,
+  handleUpdateUniformExpression,
 }) => {
   const fields = useMemo(() => extractFields(shader), [shader.source]);
   if (
@@ -77,21 +78,21 @@ const UniformForm: FC<UniformFormProps> = ({
 
         const saved = savedUniforms[field.name];
         const fallback = getFieldDefault(field);
-        const rawDef = uniformDefs[field.name];
+        const rawDef = uniformExpressions[field.name];
 
         const vecOnSetDef = (len: number) =>
-          handleUpdateUniformDef
+          handleUpdateUniformExpression
             ? (index: number, expr: string | null) =>
-                handleUpdateUniformDef(field.name, index, expr, len)
+                handleUpdateUniformExpression(field.name, index, expr, len)
             : undefined;
 
         let control: ReactNode = null;
         switch (field.type) {
           case "float": {
             const def = typeof rawDef === "string" ? rawDef : undefined;
-            const onSetDef = handleUpdateUniformDef
+            const onSetDef = handleUpdateUniformExpression
               ? (expr: string | null) =>
-                  handleUpdateUniformDef(field.name, null, expr)
+                  handleUpdateUniformExpression(field.name, null, expr)
               : undefined;
             control = (
               <FloatField
