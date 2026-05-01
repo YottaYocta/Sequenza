@@ -8,7 +8,6 @@ export type EditorPreviewProps = {
 };
 
 export function EditorPreview({ source }: EditorPreviewProps) {
-  console.log(source);
   const uniformsRef = useRef<Record<string, Uniforms>>({
     "35514.33495797567": {
       resolution: [200, 200],
