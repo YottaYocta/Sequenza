@@ -1,216 +1,7 @@
 {
   "uniforms": {
-    "20176.185516375623": {},
-    "72381.83561908184": {
-      "u_gradientTexture": {
-        "type": "gradient",
-        "stops": [
-          {
-            "position": 0.4527775180204011,
-            "color": "#ffffff"
-          },
-          {
-            "position": 0.964880489545157,
-            "color": "#3b3b3b"
-          }
-        ]
-      }
-    },
-    "51046.34551443785": {
-      "u_gradientTexture": {
-        "type": "gradient",
-        "stops": [
-          {
-            "position": 0.303986472887467,
-            "color": "#ffffff"
-          },
-          {
-            "position": 0.4144405667033841,
-            "color": "#201413"
-          }
-        ]
-      }
-    },
-    "36384.95004410722": {
-      "u_resolution": [500, 200],
-      "u_mouse": [0.35208333333333336, 0.2520746887966805],
-      "u_size": 0.5,
-      "u_brightness": 1
-    },
-    "91816.63989702276": {
-      "resolution": [500, 200],
-      "scale": 1,
-      "backgroundColor": [0, 0, 0, 1],
-      "u_image_source": {
-        "type": "texture",
-        "src": "/figure.png"
-      }
-    },
-    "58440.8162915551": {
-      "u_resolution": [400, 400],
-      "u_radius": 0.01,
-      "u_threshold": 0.001,
-      "u_sample_count": 128
-    },
-    "69858.23952699927": {
-      "u_gradientTexture": {
-        "type": "gradient",
-        "stops": [
-          {
-            "position": 0.44186347950049226,
-            "color": "#2c2c2c"
-          },
-          {
-            "position": 0,
-            "color": "#ffffff"
-          }
-        ]
-      }
-    },
-    "37291.2509792828": {
-      "u_gradientTexture": {
-        "type": "gradient",
-        "stops": [
-          {
-            "position": 0,
-            "color": "#0e0e0e"
-          },
-          {
-            "position": 0.5524416463583487,
-            "color": "#dddddd"
-          }
-        ]
-      }
-    },
-    "63676.61850396173": {
-      "u_resolution": [1018, 750],
-      "u_radius": 0.01,
-      "u_threshold": 0.001,
-      "u_sample_count": 256
-    },
-    "9726.482819763816": {
-      "u_gradientTexture": {
-        "type": "gradient",
-        "stops": [
-          {
-            "position": 1,
-            "color": "#282828"
-          },
-          {
-            "position": 0.7532551288604736,
-            "color": "#ffffff"
-          }
-        ]
-      }
-    },
-    "26433.499375772928": {
-      "u_resolution": [1000, 490],
-      "u_radius": 0.02,
-      "u_threshold": 0.001,
-      "u_sample_count": 256
-    },
-    "39732.75522244839": {
-      "u_resolution": [571, 384],
-      "u_radius": 0.025,
-      "u_threshold": 0.001,
-      "u_sample_count": 17.29
-    },
-    "44859.21807704974": {
-      "u_resolution": [1000, 490],
-      "u_radius": 0.01,
-      "u_threshold": 0.001,
-      "u_sample_count": 64
-    },
-    "53307.14313465592": {
-      "u_resolution": [1000, 400],
-      "u_radius": 0.02,
-      "u_threshold": 0.001,
-      "u_sample_count": 10
-    },
-    "55475.09413158508": {
-      "u_resolution": [1000, 490],
-      "u_radius": 0.01,
-      "u_threshold": 0.001,
-      "u_sample_count": 16
-    },
-    "32877.98359625532": {
-      "u_gradientTexture": {
-        "type": "gradient",
-        "stops": [
-          {
-            "position": 0,
-            "color": "#000000"
-          },
-          {
-            "position": 1,
-            "color": "#ffffff"
-          }
-        ]
-      }
-    },
-    "81360.34393193426": {
-      "u_amount": 0.004,
-      "u_angle": 0
-    },
-    "18067.94534136118": {
-      "u_blur_dist": 0,
-      "u_resolution": [1000, 490],
-      "u_angle": 0,
-      "u_blur_sample_count": 5,
-      "u_start_offset": 0.5
-    },
-    "343.7714830118788": {
-      "u_resolution": [1000, 490],
-      "u_numColors": 4,
-      "u_dither_size": 5
-    },
-    "7589.7314370556805": {
-      "u_resolution": [1000, 490],
-      "u_doubling": 0.1,
-      "u_amplitude": -0.1,
-      "u_rotation": 0.78,
-      "u_density": 30,
-      "u_color_1": [
-        0.12941176470588237, 0.49411764705882355, 0.611764705882353, 1
-      ],
-      "u_color_2": [
-        0.9921568627450981, 0.9803921568627451, 0.9333333333333333, 1
-      ],
-      "u_invert": 1
-    },
-    "41745.182395382966": {
-      "u_resolution": [1000, 490],
-      "u_frequency": 29.41,
-      "u_radius": 0.68,
-      "u_rotation": 0,
-      "u_constantSize": 0,
-      "u_background": [
-        0.12941176470588237, 0.49411764705882355, 0.611764705882353, 1
-      ]
-    },
-    "52273.8763347885": {
-      "u_resolution": [500, 200],
-      "u_radius": 0.02,
-      "u_threshold": 0.001,
-      "u_sample_count": 8
-    },
-    "22492.026806781752": {
-      "resolution": [500, 200],
-      "scale": 1,
-      "backgroundColor": [0, 0, 0, 1],
-      "u_image_source": {
-        "type": "texture",
-        "src": "/nodes.png"
-      }
-    },
-    "55974.06596858229": {
-      "u_resolution": [500, 200],
-      "u_radius": 0.035,
-      "u_threshold": 0.001,
-      "u_sample_count": 16
-    },
-    "95476.2125344249": {},
-    "34037.746173011205": {
+    "88237.14900171717": {},
+    "36084.17511734567": {
       "u_gradientTexture": {
         "type": "gradient",
         "stops": [
@@ -225,51 +16,7 @@
         ]
       }
     },
-    "37258.22647419571": {
-      "u_resolution": [500, 200],
-      "u_radius": 0.07,
-      "u_threshold": 0.001,
-      "u_sample_count": 20
-    },
-    "95832.53504592062": {
-      "u_sourceColor": [1, 1, 1],
-      "u_targetColor": [0, 0, 0, 0],
-      "u_threshold": 0.68
-    },
-    "41894.60880106908": {},
-    "88067.19001863958": {
-      "u_gradientTexture": {
-        "type": "gradient",
-        "stops": [
-          {
-            "position": 0,
-            "color": "#221710"
-          },
-          {
-            "position": 1,
-            "color": "#ffffff"
-          }
-        ]
-      }
-    },
-    "9876.823552915137": {},
-    "43458.70694666466": {},
-    "30845.529755211253": {
-      "u_gradientTexture": {
-        "type": "gradient",
-        "stops": [
-          {
-            "position": 0.2887113491118695,
-            "color": "#e89458"
-          },
-          {
-            "position": 0.3112889609444453,
-            "color": "#fff5ee"
-          }
-        ]
-      }
-    },
-    "41109.01069042095": {
+    "89239.03247344862": {
       "u_gradientTexture": {
         "type": "gradient",
         "stops": [
@@ -284,9 +31,9 @@
         ]
       }
     },
-    "68421.64659146452": {},
-    "52475.75866781703": {},
-    "5515.02031883554": {
+    "53229.15011351672": {},
+    "9675.292609641772": {},
+    "80894.42448998788": {
       "u_gradientTexture": {
         "type": "gradient",
         "stops": [
@@ -301,31 +48,31 @@
         ]
       }
     },
-    "30227.637008575304": {
+    "83901.29015983365": {
       "u_resolution": [500, 200],
       "u_radius": 0.07,
       "u_threshold": 0.001,
       "u_sample_count": 20
     },
-    "69299.8847694876": {
-      "u_resolution": [1000, 400],
+    "18721.156913304083": {
+      "u_resolution": [500, 200],
       "u_radius": 0.02,
       "u_threshold": 0.001,
       "u_sample_count": 10
     },
-    "30578.74806942099": {
-      "u_resolution": [1000, 490],
-      "u_mouse": [0.620066889632107, 0.26556016597510373],
+    "64477.42811816179": {
+      "u_resolution": [500, 200],
+      "u_mouse": [0.32748538011695905, 0.2568250758341759],
       "u_size": 0.5,
       "u_brightness": 1
     },
-    "28995.474052326987": {
+    "73083.90961160071": {
       "u_gradientTexture": {
         "type": "gradient",
         "stops": [
           {
             "position": 0,
-            "color": "#221710"
+            "color": "#000000"
           },
           {
             "position": 1,
@@ -334,7 +81,7 @@
         ]
       }
     },
-    "32278.999319785828": {
+    "92275.76603190982": {
       "resolution": [500, 200],
       "scale": 1,
       "backgroundColor": [0, 0, 0, 1],
@@ -343,7 +90,7 @@
         "src": "/figure.png"
       }
     },
-    "62610.08554569563": {
+    "62795.1559535758": {
       "resolution": [500, 200],
       "scale": 1,
       "backgroundColor": [0, 0, 0, 1],
@@ -354,43 +101,43 @@
     }
   },
   "uniformExpressions": {
-    "20176.185516375623": {},
-    "72381.83561908184": {},
-    "51046.34551443785": {},
-    "36384.95004410722": {
+    "88237.14900171717": {},
+    "36084.17511734567": {},
+    "89239.03247344862": {},
+    "53229.15011351672": {},
+    "9675.292609641772": {},
+    "80894.42448998788": {},
+    "83901.29015983365": {
+      "u_resolution": ["resolution.x", "resolution.y"]
+    },
+    "18721.156913304083": {
+      "u_resolution": ["resolution.x", "resolution.y"]
+    },
+    "64477.42811816179": {
       "u_resolution": ["resolution.x", "resolution.y"],
       "u_mouse": ["mouse.x", "mouse.y"]
     },
-    "91816.63989702276": {
+    "73083.90961160071": {},
+    "92275.76603190982": {
       "resolution": ["resolution.x", "resolution.y"]
     },
-    "53307.14313465592": {
-      "u_resolution": ["resolution.x", "resolution.y"]
-    },
-    "22492.026806781752": {
+    "62795.1559535758": {
       "resolution": ["resolution.x", "resolution.y"]
-    },
-    "95476.2125344249": {},
-    "34037.746173011205": {},
-    "37258.22647419571": {
-      "u_resolution": ["resolution.x", "resolution.y"]
-    },
-    "88067.19001863958": {},
-    "9876.823552915137": {}
+    }
   },
   "patch": {
     "shaders": [
       {
-        "id": "9876.823552915137",
+        "id": "88237.14900171717",
         "source": "#version 300 es\nprecision mediump float;\n\nin vec2 vUv;\nout vec4 fragColor;\n\nuniform sampler2D u_texture_1;\nuniform sampler2D u_texture_2;\n\nvoid main() {\n    fragColor = clamp(\n        texture(u_texture_1, vUv) * texture(u_texture_2, vUv),\n        vec4(0.),\n        vec4(1.)\n    );\n\n}",
         "name": "mix (multiply)",
         "resolution": {
-          "width": 1000,
-          "height": 400
+          "width": 500,
+          "height": 200
         }
       },
       {
-        "id": "34037.746173011205",
+        "id": "36084.17511734567",
         "source": "#version 300 es\nprecision mediump float;\n\nuniform sampler2D u_texture; \nuniform sampler2D u_gradientTexture; // gradient\nin vec2 vUv;\nout vec4 fragColor;\n\nvoid main() {\n  vec4 color = texture(u_texture, vUv);\n\n  float brightness = dot(color.rgb, vec3(0.299, 0.587, 0.114));\n\n  vec4 gradientColor = texture(u_gradientTexture, vec2(brightness, 0.5));\n\n  fragColor = vec4(gradientColor.rgb, 1.0);\n}\n",
         "name": "gradient map",
         "resolution": {
@@ -399,16 +146,16 @@
         }
       },
       {
-        "id": "51046.34551443785",
+        "id": "89239.03247344862",
         "source": "#version 300 es\nprecision mediump float;\n\nuniform sampler2D u_texture; \nuniform sampler2D u_gradientTexture; // gradient\nin vec2 vUv;\nout vec4 fragColor;\n\nvoid main() {\n  vec4 color = texture(u_texture, vUv);\n\n  float brightness = dot(color.rgb, vec3(0.299, 0.587, 0.114));\n\n  vec4 gradientColor = texture(u_gradientTexture, vec2(brightness, 0.5));\n\n  fragColor = vec4(gradientColor.rgb, 1.0);\n}\n",
         "name": "gradient map",
         "resolution": {
-          "width": 1000,
-          "height": 400
+          "width": 500,
+          "height": 200
         }
       },
       {
-        "id": "95476.2125344249",
+        "id": "53229.15011351672",
         "source": "#version 300 es\nprecision mediump float;\n\nin vec2 vUv;\nout vec4 fragColor;\n\nuniform sampler2D u_texture_1;\nuniform sampler2D u_texture_2;\n\nvoid main() {\n    fragColor = clamp(\n        texture(u_texture_1, vUv) / (texture(u_texture_2, vUv) + 0.001),\n        vec4(0.),\n        vec4(1.)\n    );\n}",
         "name": "mix (divide)",
         "resolution": {
@@ -417,16 +164,16 @@
         }
       },
       {
-        "id": "20176.185516375623",
+        "id": "9675.292609641772",
         "source": "#version 300 es\nprecision mediump float;\n\nin vec2 vUv;\nout vec4 fragColor;\n\nuniform sampler2D u_texture_1;\nuniform sampler2D u_texture_2;\n\nvoid main() {\n    fragColor = clamp(\n        texture(u_texture_1, vUv) / (texture(u_texture_2, vUv) + 0.001),\n        vec4(0.),\n        vec4(1.)\n    );\n}",
         "name": "mix (divide)",
         "resolution": {
-          "width": 1000,
-          "height": 400
+          "width": 500,
+          "height": 200
         }
       },
       {
-        "id": "72381.83561908184",
+        "id": "80894.42448998788",
         "source": "#version 300 es\nprecision mediump float;\n\nuniform sampler2D u_texture; \nuniform sampler2D u_gradientTexture; // gradient\nin vec2 vUv;\nout vec4 fragColor;\n\nvoid main() {\n  vec4 color = texture(u_texture, vUv);\n\n  float brightness = dot(color.rgb, vec3(0.299, 0.587, 0.114));\n\n  vec4 gradientColor = texture(u_gradientTexture, vec2(brightness, 0.5));\n\n  fragColor = vec4(gradientColor.rgb, 1.0);\n}\n",
         "name": "gradient map",
         "resolution": {
@@ -435,7 +182,7 @@
         }
       },
       {
-        "id": "37258.22647419571",
+        "id": "83901.29015983365",
         "source": "#version 300 es\nprecision mediump float;\n\nuniform vec2 u_resolution; // resolution\n\nuniform sampler2D u_channel0;\n\nuniform float u_radius;    // [0.0, 1, 0.01]\nuniform float u_threshold; // [0.001, 2, 0.5]\nuniform float u_sample_count; // [1, 256, 64]\n\nin vec2 vUv;\nout vec4 fragColor;\n\nvoid main() {\n\n    float computed_threshold_value = u_threshold * 100.0;\n    float aspect = u_resolution.x / u_resolution.y;\n\n    mat2 rot = mat2(-0.737, -0.676, 0.676, -0.737);\n    vec2 p_iso = vec2(u_radius / (sqrt(u_sample_count)), 0.0);\n\n    float N = 0.0;\n\n    vec4 O = vec4(0.0);\n    for (float i = 1.0; i < u_sample_count; i += 1.0) {\n        p_iso = rot * p_iso;\n\n        vec2 p_uv = vec2(p_iso.x / aspect, p_iso.y);\n        O += exp(texture(u_channel0, vUv + p_uv * sqrt(i)) * computed_threshold_value);\n        N += 1.0;\n    }\n\n    O = (log(O) - log(N));\n    O /= computed_threshold_value;\n    fragColor = O;\n}\n",
         "name": "shaders/bokeh.frag",
         "resolution": {
@@ -444,16 +191,16 @@
         }
       },
       {
-        "id": "53307.14313465592",
+        "id": "18721.156913304083",
         "source": "#version 300 es\nprecision mediump float;\n\nuniform vec2 u_resolution; // resolution\n\nuniform sampler2D u_channel0;\n\nuniform float u_radius;    // [0.0, 1, 0.01]\nuniform float u_threshold; // [0.001, 2, 0.5]\nuniform float u_sample_count; // [1, 256, 64]\n\nin vec2 vUv;\nout vec4 fragColor;\n\nvoid main() {\n\n    float computed_threshold_value = u_threshold * 100.0;\n    float aspect = u_resolution.x / u_resolution.y;\n\n    mat2 rot = mat2(-0.737, -0.676, 0.676, -0.737);\n    vec2 p_iso = vec2(u_radius / (sqrt(u_sample_count)), 0.0);\n\n    float N = 0.0;\n\n    vec4 O = vec4(0.0);\n    for (float i = 1.0; i < u_sample_count; i += 1.0) {\n        p_iso = rot * p_iso;\n\n        vec2 p_uv = vec2(p_iso.x / aspect, p_iso.y);\n        O += exp(texture(u_channel0, vUv + p_uv * sqrt(i)) * computed_threshold_value);\n        N += 1.0;\n    }\n\n    O = (log(O) - log(N));\n    O /= computed_threshold_value;\n    fragColor = O;\n}\n",
         "name": "bokeh",
         "resolution": {
-          "width": 1000,
-          "height": 400
+          "width": 500,
+          "height": 200
         }
       },
       {
-        "id": "36384.95004410722",
+        "id": "64477.42811816179",
         "source": "#version 300 es\nprecision mediump float;\n\nuniform vec2 u_resolution;  // resolution\nuniform vec2 u_mouse;       // mouse\nuniform float u_size;       // [0, 0.5, 3]\nuniform float u_brightness; // [0, 1, 1]\n\nin vec2 vUv;\nout vec4 fragColor;\n\nvoid main() {\n    float aspect = u_resolution.x / u_resolution.y;\n    vec2 uv    = vec2(vUv.x * aspect, 1.0-vUv.y);\n    vec2 mouse = vec2(u_mouse.x * aspect, u_mouse.y);\n\n    float dist = length(uv - mouse);\n    float orb  = clamp(1.0 - dist / u_size, 0.0, 1.0);\n\n    fragColor = vec4(vec3(orb * u_brightness), 1.0);\n}\n",
         "name": "mouse orb",
         "resolution": {
@@ -462,7 +209,7 @@
         }
       },
       {
-        "id": "88067.19001863958",
+        "id": "73083.90961160071",
         "source": "#version 300 es\nprecision mediump float;\n\nuniform sampler2D u_texture; \nuniform sampler2D u_gradientTexture; // gradient\nin vec2 vUv;\nout vec4 fragColor;\n\nvoid main() {\n  vec4 color = texture(u_texture, vUv);\n\n  float brightness = dot(color.rgb, vec3(0.299, 0.587, 0.114));\n\n  vec4 gradientColor = texture(u_gradientTexture, vec2(brightness, 0.5));\n\n  fragColor = vec4(gradientColor.rgb, 1.0);\n}\n",
         "name": "gradient map",
         "resolution": {
@@ -471,7 +218,7 @@
         }
       },
       {
-        "id": "91816.63989702276",
+        "id": "92275.76603190982",
         "source": "#version 300 es\nprecision highp float;\n\nin vec2 vUv;\nout vec4 fragColor;\n\nuniform sampler2D u_image_source; // texture\nuniform vec2 resolution; // resolution\nuniform float scale; // [0.1, 3, 1]\nuniform vec4 backgroundColor; // color [0, 0, 0, 0]\n\nvoid main() {\n    ivec2 size = textureSize(u_image_source, 0);\n    vec2 aspect = vec2(\n        float(size.x) / float(size.y),\n        1.0\n    );\n\n    vec2 uv = vUv - 0.5;\n    uv /= aspect;\n    uv *= vec2(\n        resolution.x / resolution.y, 1.0\n    );\n    uv *= scale;\n    uv += 0.5; \n\n    uv.y = 1.0 - uv.y;\n\n    if (\n        any(lessThan(uv, vec2(0.0))) ||\n        any(greaterThan(uv, vec2(1.0)))\n    ) {\n        fragColor = backgroundColor;\n        return;\n    }\n\n    fragColor = texture(\n        u_image_source, \n        vec2(uv.x, uv.y)\n    );\n    fragColor = fragColor * fragColor.a + (backgroundColor) * (1.0 - fragColor.a);\n}",
         "name": "image viewer",
         "resolution": {
@@ -480,7 +227,7 @@
         }
       },
       {
-        "id": "22492.026806781752",
+        "id": "62795.1559535758",
         "source": "#version 300 es\nprecision highp float;\n\nin vec2 vUv;\nout vec4 fragColor;\n\nuniform sampler2D u_image_source; // texture\nuniform vec2 resolution; // resolution\nuniform float scale; // [0.1, 3, 1]\nuniform vec4 backgroundColor; // color [0, 0, 0, 0]\n\nvoid main() {\n    ivec2 size = textureSize(u_image_source, 0);\n    vec2 aspect = vec2(\n        float(size.x) / float(size.y),\n        1.0\n    );\n\n    vec2 uv = vUv - 0.5;\n    uv /= aspect;\n    uv *= vec2(\n        resolution.x / resolution.y, 1.0\n    );\n    uv *= scale;\n    uv += 0.5; \n\n    uv.y = 1.0 - uv.y;\n\n    if (\n        any(lessThan(uv, vec2(0.0))) ||\n        any(greaterThan(uv, vec2(1.0)))\n    ) {\n        fragColor = backgroundColor;\n        return;\n    }\n\n    fragColor = texture(\n        u_image_source, \n        vec2(uv.x, uv.y)\n    );\n    fragColor = fragColor * fragColor.a + (backgroundColor) * (1.0 - fragColor.a);\n}",
         "name": "image viewer",
         "resolution": {
@@ -491,68 +238,78 @@
     ],
     "connections": [
       {
-        "from": "34037.746173011205",
-        "to": "9876.823552915137",
+        "from": "36084.17511734567",
+        "to": "88237.14900171717",
         "input": "u_texture_1"
       },
       {
-        "from": "51046.34551443785",
-        "to": "9876.823552915137",
+        "from": "89239.03247344862",
+        "to": "88237.14900171717",
         "input": "u_texture_2"
       },
       {
-        "from": "95476.2125344249",
-        "to": "34037.746173011205",
+        "from": "53229.15011351672",
+        "to": "36084.17511734567",
         "input": "u_texture"
       },
       {
-        "from": "20176.185516375623",
-        "to": "51046.34551443785",
+        "from": "9675.292609641772",
+        "to": "89239.03247344862",
         "input": "u_texture"
       },
       {
-        "from": "72381.83561908184",
-        "to": "95476.2125344249",
+        "from": "80894.42448998788",
+        "to": "53229.15011351672",
         "input": "u_texture_2"
       },
       {
-        "from": "37258.22647419571",
-        "to": "95476.2125344249",
+        "from": "83901.29015983365",
+        "to": "53229.15011351672",
         "input": "u_texture_1"
       },
       {
-        "from": "72381.83561908184",
-        "to": "20176.185516375623",
+        "from": "80894.42448998788",
+        "to": "9675.292609641772",
         "input": "u_texture_2"
       },
       {
-        "from": "53307.14313465592",
-        "to": "20176.185516375623",
+        "from": "18721.156913304083",
+        "to": "9675.292609641772",
         "input": "u_texture_1"
       },
       {
-        "from": "36384.95004410722",
-        "to": "72381.83561908184",
+        "from": "64477.42811816179",
+        "to": "80894.42448998788",
         "input": "u_texture"
       },
       {
-        "from": "88067.19001863958",
-        "to": "37258.22647419571",
+        "from": "64477.42811816179",
+        "to": "80894.42448998788",
+        "input": "u_texture"
+      },
+      {
+        "from": "73083.90961160071",
+        "to": "83901.29015983365",
         "input": "u_channel0"
       },
       {
-        "from": "36384.95004410722",
-        "to": "72381.83561908184",
+        "from": "64477.42811816179",
+        "to": "80894.42448998788",
         "input": "u_texture"
       },
       {
-        "from": "91816.63989702276",
-        "to": "53307.14313465592",
+        "from": "64477.42811816179",
+        "to": "80894.42448998788",
+        "input": "u_texture"
+      },
+      {
+        "from": "92275.76603190982",
+        "to": "18721.156913304083",
         "input": "u_channel0"
       },
       {
-        "from": "22492.026806781752",
-        "to": "88067.19001863958",
+        "from": "62795.1559535758",
+        "to": "73083.90961160071",
         "input": "u_texture"
       }
     ]

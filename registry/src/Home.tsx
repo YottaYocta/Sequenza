@@ -57,12 +57,12 @@ export default function Home() {
               Open Editor
             </Link>
             <a
-              href="#showcase"
+              href="#starter-examples"
               className="text-black font-medium max-sm:w-full text-center"
               onClick={(e) => {
                 e.preventDefault();
                 document
-                  .getElementById("showcase")
+                  .getElementById("starter-examples")
                   ?.scrollIntoView({ behavior: "smooth" });
               }}
             >
@@ -73,18 +73,31 @@ export default function Home() {
       </div>
       <div
         className="flex flex-col w-full max-w-3xl gap-8 items-start pt-8"
-        id="showcase"
+        id="starter-examples"
       >
+        <div className="flex flex-col items-start gap-6">
+          <h2 className=" capitalize text-black font-medium text-3xl max-w-md flex flex-col leading-10 max-sm:text-2xl">
+            Starter Examples
+          </h2>
+
+          <p className="w-full opacity-70 text-black leading-7 max-w-xl max-sm:text-sm max-sm:leading-6 mb-8">
+            Hover over the following examples to interact with them. Click{" "}
+            <span className="px-2 py-1 bg-neutral-200 text-black rounded-sm">
+              Edit
+            </span>{" "}
+            to open each example in the editor.
+          </p>
+        </div>
         <div className="h-full max-h-64 aspect-2/1">
           <ShaderDemo
             patch={anthropicData.patch as unknown as Patch}
             initialUniforms={
               anthropicData.uniforms as unknown as Record<string, Uniforms>
             }
-            animate={true}
             width={1000}
             height={500}
             handleEdit={handleEdit}
+            animate={true}
           />
         </div>
 
@@ -94,7 +107,6 @@ export default function Home() {
             initialUniforms={
               planetStampData.uniforms as unknown as Record<string, Uniforms>
             }
-            animate={true}
             width={1000}
             height={500}
             handleEdit={handleEdit}
@@ -126,7 +138,6 @@ export default function Home() {
         </div>
         <div className="h-full max-h-64 aspect-5/4">
           <ShaderDemo
-            animate={true}
             patch={responsiveLinesData.patch as unknown as Patch}
             initialUniforms={
               responsiveLinesData.uniforms as unknown as Record<
@@ -137,6 +148,7 @@ export default function Home() {
             width={500}
             height={400}
             handleEdit={handleEdit}
+            animate={true}
           />
         </div>
       </div>

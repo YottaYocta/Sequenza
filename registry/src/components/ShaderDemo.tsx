@@ -54,6 +54,7 @@ export function ShaderDemo({
   );
   const [hovering, setHovering] = useState<boolean>(false);
   const hoveringRef = useRef(false);
+  const mouseRef = useRef<[number, number]>([0, 0]);
 
   const startLerp = () => {
     stopLerp();
@@ -121,12 +122,6 @@ export function ShaderDemo({
       }
     }
 
-    const mouse: [number, number] = [0, 0];
-    const onMouseMove = (e: MouseEvent) => {
-      mouse[0] = Math.min(1, e.clientX / window.innerWidth);
-      mouse[1] = Math.min(1, e.clientY / window.innerHeight);
-    };
-    window.addEventListener("mousemove", onMouseMove);
 
     let cumulativeTime = 0;
     let lastFrameTime = performance.now();
@@ -142,7 +137,7 @@ export function ShaderDemo({
         const res = resolutionMap[shaderId] ?? [1, 1];
         const scope = {
           time: cumulativeTime,
-          mouse: { x: mouse[0], y: mouse[1] },
+          mouse: { x: mouseRef.current[0], y: mouseRef.current[1] },
           resolution: { x: res[0], y: res[1] },
         };
         uniformRef.current[shaderId] ??= {};
@@ -184,7 +179,6 @@ export function ShaderDemo({
     let rafId = requestAnimationFrame(loop);
 
     return () => {
-      window.removeEventListener("mousemove", onMouseMove);
       cancelAnimationFrame(rafId);
       clearTimeout(lerpStopTimeout.current);
       stopLerp();
@@ -211,6 +205,8 @@ export function ShaderDemo({
           x: e.clientX - rect.left,
           y: e.clientY - rect.top,
         };
+        mouseRef.current[0] = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+        mouseRef.current[1] = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
       }}
       onMouseLeave={() => {
         lerpStopTimeout.current = setTimeout(
