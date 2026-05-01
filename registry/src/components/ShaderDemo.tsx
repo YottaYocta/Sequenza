@@ -232,7 +232,7 @@ export function ShaderDemo({
       {handleEdit && (
         <>
           <button
-            className="pointer-events-none group-hover:pointer-events-auto focus:pointer-events-auto focus:opacity-100 group-hover:opacity-100 opacity-0 px-5 py-1 rounded-sm bg-neutral-900 text-white group-hover:transition-opacity duration-200 ease-out hover:cursor-pointer absolute right-2 bottom-2 max-md:opacity-100"
+            className="focus:opacity-100 group-hover:opacity-100 opacity-0 px-5 py-1 rounded-sm bg-neutral-900 text-white group-hover:transition-opacity duration-200 ease-out hover:cursor-pointer absolute right-2 bottom-2 max-md:opacity-100"
             onClick={() => handleEdit(buildEditorState(patch, initialUniforms))}
           >
             Edit

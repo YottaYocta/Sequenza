@@ -14,6 +14,7 @@ import fireDitherData from "./shaders/fire-dither.json";
 import fbmBlueData from "./shaders/fbm-blue.json";
 import responsiveLinesData from "./shaders/responsive-lines.json";
 import anthropicData from "./shaders/anthropic.json";
+import planetStampData from "./shaders/planet-stamp.json";
 
 export default function Home() {
   const { setInitialState } = useInitialState();
@@ -79,6 +80,19 @@ export default function Home() {
             patch={anthropicData.patch as unknown as Patch}
             initialUniforms={
               anthropicData.uniforms as unknown as Record<string, Uniforms>
+            }
+            animate={true}
+            width={1000}
+            height={500}
+            handleEdit={handleEdit}
+          />
+        </div>
+
+        <div className="h-full max-h-64 aspect-5/2">
+          <ShaderDemo
+            patch={planetStampData.patch as unknown as Patch}
+            initialUniforms={
+              planetStampData.uniforms as unknown as Record<string, Uniforms>
             }
             animate={true}
             width={1000}
