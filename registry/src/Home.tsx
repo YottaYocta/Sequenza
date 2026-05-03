@@ -15,6 +15,7 @@ import fbmBlueData from "./shaders/fbm-blue.json";
 import responsiveLinesData from "./shaders/responsive-lines.json";
 import anthropicData from "./shaders/anthropic.json";
 import planetStampData from "./shaders/planet-stamp.json";
+import crystalcube from "./shaders/crystalcube.json";
 
 export default function Home() {
   const { setInitialState } = useInitialState();
@@ -95,6 +96,18 @@ export default function Home() {
               anthropicData.uniforms as unknown as Record<string, Uniforms>
             }
             width={1000}
+            height={500}
+            handleEdit={handleEdit}
+            animate={true}
+          />
+        </div>
+        <div className="h-full max-h-96 aspect-square">
+          <ShaderDemo
+            patch={crystalcube.patch as unknown as Patch}
+            initialUniforms={
+              crystalcube.uniforms as unknown as Record<string, Uniforms>
+            }
+            width={500}
             height={500}
             handleEdit={handleEdit}
             animate={true}

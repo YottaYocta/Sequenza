@@ -1,0 +1,207 @@
+{
+  "uniforms": {
+    "88864.9606980781": {
+      "u_resolution": [500, 200],
+      "u_time": 0,
+      "u_scale": 3,
+      "u_octaves": 6,
+      "u_speed": 0.1
+    },
+    "8293.8879035774": {
+      "u_resolution": [200, 200],
+      "u_center": [0.5, 0.5],
+      "u_rx": 0.46,
+      "u_ry": 0.46,
+      "u_feather": 0.01,
+      "u_invert": 0
+    },
+    "4890.902112764661": {
+      "u_sourceColor": [0, 0, 0],
+      "u_targetColor": [0, 0, 0, 0],
+      "u_threshold": 0.09
+    },
+    "72416.67907423721": {
+      "u_base_color": [1, 1, 1, 1],
+      "u_stamp_size": 1,
+      "u_grid_scale_x": 10,
+      "u_grid_scale_y": 10,
+      "u_scan_radius": 1,
+      "u_render_order": 0,
+      "u_resolution": [100, 100]
+    },
+    "61194.67781681045": {},
+    "14442.885712327836": {
+      "u_gradientTexture": {
+        "type": "gradient",
+        "stops": [
+          {
+            "position": 0.17152489033034138,
+            "color": "#2c5dff"
+          },
+          {
+            "position": 0.7579793461910507,
+            "color": "#ffffff"
+          },
+          {
+            "position": 0,
+            "color": "#0f26e9"
+          },
+          {
+            "position": 0.10957026481628418,
+            "color": "#0050ff"
+          },
+          {
+            "position": 0.40506870018637603,
+            "color": "#7a9fff"
+          },
+          {
+            "position": 0.0001952648162841797,
+            "color": "#001cff"
+          },
+          {
+            "position": 0.47772677436380906,
+            "color": "#83b0ff"
+          }
+        ]
+      }
+    },
+    "40258.28225133403": {
+      "u_tile": [3, 1],
+      "u_resolution": [500, 200],
+      "u_tile_scale": 2.04
+    },
+    "51328.5240449212": {
+      "u_resolution": [500, 200],
+      "u_time": 18.817,
+      "u_roundness": 0.5,
+      "u_light_dir": [-1.1, 1, 1.06],
+      "u_rotation_rate": [1, 1, 0],
+      "u_distance": 2.27
+    },
+    "43659.16242773291": {
+      "u_gradientTexture": {
+        "type": "gradient",
+        "stops": [
+          {
+            "position": 0.05859375,
+            "color": "#000000"
+          },
+          {
+            "position": 0.6245596299924343,
+            "color": "#ffffff"
+          },
+          {
+            "position": 0.01953125,
+            "color": "#202020"
+          },
+          {
+            "position": 0,
+            "color": "#000000"
+          }
+        ]
+      }
+    },
+    "42655.74482288037": {
+      "iResolution": [100, 100],
+      "uSunAngle": 1.69,
+      "uSunHeight": 1,
+      "uIOR": 1.5,
+      "uIORVariation": 0.05,
+      "uDepth": 0.5,
+      "uBumpScale": 2,
+      "uSunSize": 128,
+      "uAmbient": 1
+    },
+    "43806.509676423964": {
+      "u_resolution": [100, 100],
+      "u_time": 0,
+      "u_roundness": 0.05,
+      "u_light_dir": [1, 1, 0],
+      "u_rotation_rate": [1, 1, 0],
+      "u_distance": 3
+    },
+    "78990.2114374815": {
+      "uSunAngle": 69.37,
+      "uSunHeight": 0.55,
+      "uSunSize": 2.33,
+      "uAmbient": 0,
+      "uIOR": 3,
+      "uIORVariation": 0.13,
+      "uBumpScale": 0.43,
+      "uRotation": [35.54251012145749, 29.89473684210526, 0],
+      "uBounces": 3,
+      "uKeyBackground": 1
+    },
+    "23163.752649021786": {
+      "iResolution": [500, 500],
+      "uScale": 5,
+      "uSeed": 477.558
+    },
+    "20247.379506984555": {
+      "u_resolution": [500, 500],
+      "u_radius": 0.02,
+      "u_threshold": 0.001,
+      "u_sample_count": 64
+    },
+    "88797.14164510799": {
+      "u_tile": [2, 2],
+      "u_resolution": [500, 500],
+      "u_tile_scale": 2.05
+    }
+  },
+  "uniformExpressions": {
+    "78990.2114374815": {
+      "uRotation": ["mouse.y * -180 + 90", "mouse.x * -180 + 90", "0"]
+    },
+    "23163.752649021786": {
+      "iResolution": ["resolution.x", "resolution.y"],
+      "uSeed": null
+    },
+    "20247.379506984555": {
+      "u_resolution": ["resolution.x", "resolution.y"]
+    }
+  },
+  "patch": {
+    "shaders": [
+      {
+        "id": "78990.2114374815",
+        "source": "#version 300 es\nprecision highp float;\nprecision highp int;\n\nin  vec2 vUv;\nout vec4 fragColor;\n\nuniform sampler2D uTexture;\nuniform float uSunAngle;     // [0, 360, 0]\nuniform float uSunHeight;    // [0.0, 1.0, 0.3]\nuniform float uSunSize;      // [1.0, 512.0, 64.0]\nuniform float uAmbient;      // [0.0, 1.0, 0.1]\nuniform float uIOR;          // [1.0, 3.0, 1.5]\nuniform float uIORVariation; // [0.0, 0.3, 0.05]\nuniform float uBumpScale;    // [0.0, 5.0, 1.0]\nuniform vec3  uRotation;     // [-360, 360, 0]\nuniform float uBounces;      // [1, 8, 4]\nuniform float uKeyBackground; // [0.0, 1.0, 0.0]\nuniform vec3  uKeyColor;      // color [0, 0, 0]\n\nmat3 rotX(float a) { vec2 sc = vec2(sin(a), cos(a)); return mat3(1,0,0, 0,sc.y,-sc.x, 0,sc.x,sc.y); }\nmat3 rotY(float a) { vec2 sc = vec2(sin(a), cos(a)); return mat3(sc.y,0,sc.x, 0,1,0, -sc.x,0,sc.y); }\nmat3 rotZ(float a) { vec2 sc = vec2(sin(a), cos(a)); return mat3(sc.y,-sc.x,0, sc.x,sc.y,0, 0,0,1); }\n\nvec3 gSunDir;\n\nvec3 envSample(vec3 d, vec3 sunDir) {\n    return vec3(pow(max(dot(d, sunDir), 0.0), uSunSize) * 20.0 + uAmbient);\n}\n\n// Full slab test — used for entry hit in main()\nvec2 boxIsect(vec3 ro, vec3 rd) {\n    vec3 t1 = min((vec3(-0.5) - ro) / rd, (vec3(0.5) - ro) / rd);\n    vec3 t2 = max((vec3(-0.5) - ro) / rd, (vec3(0.5) - ro) / rd);\n    return vec2(max(max(t1.x, t1.y), t1.z), min(min(t2.x, t2.y), t2.z));\n}\n\n// Interior-only exit distance — p is guaranteed inside the box\nfloat boxExitDist(vec3 p, vec3 rd) {\n    vec3 t2 = max((vec3(-0.5) - p) / rd, (vec3(0.5) - p) / rd);\n    return min(min(t2.x, t2.y), t2.z);\n}\n\nvec3 boxNorm(vec3 p) {\n    vec3 a = abs(p);\n    float m = max(a.x, max(a.y, a.z));\n    return sign(p) * step(m - 0.001, a);\n}\n\nvec2 faceUV(vec3 p, vec3 n) {\n    if (abs(n.x) > 0.5) return p.zy + 0.5;\n    if (abs(n.y) > 0.5) return p.xz + 0.5;\n    return p.xy + 0.5;\n}\n\n// Bump only applies to the z+ object-space face\nvec3 perturbNorm(vec3 n_geo, vec2 uv) {\n    if (n_geo.z < 0.99) return n_geo;\n    float angle = texture(uTexture, uv).r * 6.28318530718;\n    return normalize(uBumpScale * vec3(cos(angle), sin(angle), 0.0) + n_geo);\n}\n\n// Traces R, G, B channels simultaneously through the box (chromatic dispersion)\nvec3 traceDispersion(vec3 rd, vec3 n_entry, vec3 p_entry, vec3 iors, int nBounces) {\n    vec3 rdR = refract(rd, n_entry, 1.0 / iors.r);\n    vec3 rdG = refract(rd, n_entry, 1.0 / iors.g);\n    vec3 rdB = refract(rd, n_entry, 1.0 / iors.b);\n\n    // TIR at entry — fall back to reflection\n    vec3 refl = envSample(reflect(rd, n_entry), gSunDir);\n    vec3 color = vec3(\n        dot(rdR, rdR) < 0.5 ? refl.r : 0.0,\n        dot(rdG, rdG) < 0.5 ? refl.g : 0.0,\n        dot(rdB, rdB) < 0.5 ? refl.b : 0.0\n    );\n    bvec3 done = bvec3(dot(rdR,rdR) < 0.5, dot(rdG,rdG) < 0.5, dot(rdB,rdB) < 0.5);\n\n    vec3 pR = p_entry + rdR * 0.001;\n    vec3 pG = p_entry + rdG * 0.001;\n    vec3 pB = p_entry + rdB * 0.001;\n\n    for (int b = 0; b < 8; b++) {\n        if (b >= nBounces) break;\n\n        if (!done.r) {\n            vec3  pE = pR + rdR * boxExitDist(pR, rdR);\n            vec3  nE = perturbNorm(boxNorm(pE), faceUV(pE, boxNorm(pE)));\n            vec3  ro = refract(rdR, -nE, iors.r);\n            if (dot(ro, ro) > 0.5) { color.r = envSample(ro, gSunDir).r; done.r = true; }\n            else { rdR = reflect(rdR, nE); pR = pE + rdR * 0.001; }\n        }\n        if (!done.g) {\n            vec3  pE = pG + rdG * boxExitDist(pG, rdG);\n            vec3  nE = perturbNorm(boxNorm(pE), faceUV(pE, boxNorm(pE)));\n            vec3  ro = refract(rdG, -nE, iors.g);\n            if (dot(ro, ro) > 0.5) { color.g = envSample(ro, gSunDir).g; done.g = true; }\n            else { rdG = reflect(rdG, nE); pG = pE + rdG * 0.001; }\n        }\n        if (!done.b) {\n            vec3  pE = pB + rdB * boxExitDist(pB, rdB);\n            vec3  nE = perturbNorm(boxNorm(pE), faceUV(pE, boxNorm(pE)));\n            vec3  ro = refract(rdB, -nE, iors.b);\n            if (dot(ro, ro) > 0.5) { color.b = envSample(ro, gSunDir).b; done.b = true; }\n            else { rdB = reflect(rdB, nE); pB = pE + rdB * 0.001; }\n        }\n        if (all(done)) break;\n    }\n\n    if (!done.r) color.r = envSample(rdR, gSunDir).r;\n    if (!done.g) color.g = envSample(rdG, gSunDir).g;\n    if (!done.b) color.b = envSample(rdB, gSunDir).b;\n    return color;\n}\n\nvoid main() {\n    vec2 uv   = 2.0 * vUv - 1.0;\n    float sa  = uSunAngle * (3.14159265 / 180.0);\n    float sinE = clamp(uSunHeight, 0.0, 1.0);\n    float cosE = sqrt(max(1.0 - sinE * sinE, 0.0));\n    vec3 sunWorld = normalize(vec3(sin(sa) * cosE, sinE, -cos(sa) * cosE));\n\n    vec3 r  = uRotation * (3.14159265 / 180.0);\n    mat3 RT = transpose(rotX(r.x) * rotY(r.y) * rotZ(r.z));\n    vec3 ro = RT * vec3(0.0, 0.0, 3.0);\n    vec3 rd = RT * normalize(vec3(uv, -2.0));\n    gSunDir = RT * sunWorld;\n\n    vec2 t = boxIsect(ro, rd);\n    if (t.x > t.y || t.y < 0.0) {\n        fragColor = vec4(uKeyBackground > 0.5 ? uKeyColor : envSample(rd, gSunDir), 1.0);\n        return;\n    }\n\n    vec3 nGeo    = boxNorm(ro + rd * t.x);\n    vec3 n_entry = perturbNorm(nGeo, faceUV(ro + rd * t.x, nGeo));\n    vec3 iors    = vec3(uIOR - uIORVariation, uIOR, uIOR + uIORVariation);\n\n    vec3 color = traceDispersion(rd, n_entry, ro + rd * t.x, iors, int(uBounces));\n    color = pow(max(color / (1.0 + color), 0.0), vec3(1.0 / 2.2));\n    fragColor = vec4(color, 1.0);\n}\n",
+        "name": "shaders/glass-cube.frag",
+        "resolution": {
+          "width": 500,
+          "height": 500
+        }
+      },
+      {
+        "id": "20247.379506984555",
+        "source": "#version 300 es\nprecision mediump float;\n\nuniform vec2 u_resolution; // resolution\n\nuniform sampler2D u_channel0;\n\nuniform float u_radius;    // [0.0, 1, 0.01]\nuniform float u_threshold; // [0.001, 2, 0.5]\nuniform float u_sample_count; // [1, 256, 64]\n\nin vec2 vUv;\nout vec4 fragColor;\n\nvoid main() {\n\n    float computed_threshold_value = u_threshold * 100.0;\n    float aspect = u_resolution.x / u_resolution.y;\n\n    mat2 rot = mat2(-0.737, -0.676, 0.676, -0.737);\n    vec2 p_iso = vec2(u_radius / (sqrt(u_sample_count)), 0.0);\n\n    float N = 0.0;\n\n    vec4 O = vec4(0.0);\n    for (float i = 1.0; i < u_sample_count; i += 1.0) {\n        p_iso = rot * p_iso;\n\n        vec2 p_uv = vec2(p_iso.x / aspect, p_iso.y);\n        O += exp(texture(u_channel0, vUv + p_uv * sqrt(i)) * computed_threshold_value);\n        N += 1.0;\n    }\n\n    O = (log(O) - log(N));\n    O /= computed_threshold_value;\n    fragColor = O;\n}\n",
+        "name": "bokeh",
+        "resolution": {
+          "width": 500,
+          "height": 500
+        }
+      },
+      {
+        "id": "23163.752649021786",
+        "source": "#version 300 es\nprecision highp float;\n\nin  vec2 vUv;\nout vec4 fragColor;\n\nuniform vec2  iResolution; // resolution\nuniform float uScale;      // [0.5, 20.0, 5.0]  cell frequency\nuniform float uSeed;       // time  — driven by elapsed time for animation\n\nvec2 hash2(vec2 p) {\n    p = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)));\n    return fract(sin(p) * 43758.5453);\n}\n\nvec3 hash3(vec2 p) {\n    vec3 q = vec3(dot(p, vec2(127.1, 311.7)),\n                  dot(p, vec2(269.5, 183.3)),\n                  dot(p, vec2(419.2, 371.9)));\n    return fract(sin(q) * 43758.5453);\n}\n\nvec2 nearestCell(vec2 p) {\n    vec2 cell = floor(p);\n    vec2 best = cell;\n    float bestDist = 1e9;\n    for (int x = -1; x <= 1; x++) {\n        for (int y = -1; y <= 1; y++) {\n            vec2 n  = cell + vec2(float(x), float(y));\n            vec2 pt = n + hash2(n);\n            float d = length(p - pt);\n            if (d < bestDist) { bestDist = d; best = n; }\n        }\n    }\n    return best;\n}\n\nvec3 cellColor(vec2 cell) {\n    float s0 = floor(uSeed);\n    float s1 = s0 + 1.0;\n    float t  = smoothstep(0.0, 1.0, fract(uSeed));\n\n    vec3 c0 = hash3(cell + vec2(s0 * 17.3, s0 * 31.7));\n    vec3 c1 = hash3(cell + vec2(s1 * 17.3, s1 * 31.7));\n    return mix(c0, c1, t);\n}\n\nvoid main() {\n    vec2 uv   = vUv * vec2(iResolution.x / iResolution.y, 1.0);\n    vec2 cell = nearestCell(uv * uScale);\n    fragColor = vec4(cellColor(cell), 1.0);\n}\n",
+        "name": "shaders/voronoi.frag",
+        "resolution": {
+          "width": 500,
+          "height": 500
+        }
+      }
+    ],
+    "connections": [
+      {
+        "from": "20247.379506984555",
+        "to": "78990.2114374815",
+        "input": "uTexture"
+      },
+      {
+        "from": "23163.752649021786",
+        "to": "20247.379506984555",
+        "input": "u_channel0"
+      }
+    ]
+  }
+}
