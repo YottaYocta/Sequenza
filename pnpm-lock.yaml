@@ -141,6 +141,9 @@ importers:
       tailwindcss:
         specifier: ^4.2.1
         version: 4.2.1
+      twgl.js:
+        specifier: ^7.0.0
+        version: 7.0.0
     devDependencies:
       '@eslint/js':
         specifier: ^9.39.1
