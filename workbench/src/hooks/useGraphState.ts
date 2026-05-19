@@ -233,7 +233,7 @@ export function useGraphState({
     return {
       id: newId,
       position: { x: 0, y: 0 },
-      data: { shader: newShader, uniforms: uniformRef, paused: false },
+      data: { shader: newShader, uniforms: uniformRef, previewHidden: false },
       type: "shader",
     };
   };

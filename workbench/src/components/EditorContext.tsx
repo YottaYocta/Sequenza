@@ -19,8 +19,6 @@ interface EditorContextType {
   showStats: boolean;
   openExportNodeId: string | null;
   setOpenExportNodeId: (id: string | null) => void;
-  openPreviewNodeId: string | null;
-  setOpenPreviewNodeId: (id: string | null) => void;
   handleUpdateUniforms: (
     shaderId: string,
     uniformUpdateCallback: (current: Uniforms) => Uniforms,
@@ -50,8 +48,6 @@ export const EditorContext = createContext<EditorContextType>({
   showStats: false,
   openExportNodeId: null,
   setOpenExportNodeId: () => {},
-  openPreviewNodeId: null,
-  setOpenPreviewNodeId: () => {},
   uniforms: { current: {} },
   uniformExpressions: {},
   handleUpdateUniforms: () => {},

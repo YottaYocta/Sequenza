@@ -77,8 +77,8 @@ export function useUniformAnimation({
               if (typeof slot === "string") {
                 const resolved = evalExpression(slot, ctx);
                 if (resolved !== null) arr[i] = resolved;
-              } else {
-                arr[i] = slot as number;
+              } else if (typeof slot === "number") {
+                arr[i] = slot;
               }
             }
             uniformRef.current[nodeId][fieldName] = arr;

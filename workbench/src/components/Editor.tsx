@@ -40,12 +40,10 @@ interface EditorProps {
   }) => void;
   className?: string;
   initialShowStats?: boolean;
-  initialOpenPreviewNodeId?: string | null;
   onEditorStateChange?: (state: {
     showStats: boolean;
     addShaderPanelOpen: boolean;
   }) => void;
-  onOpenPreviewNodeIdChange?: (nodeId: string | null) => void;
 }
 
 const EditorAux: FC<EditorProps> = ({
@@ -54,8 +52,6 @@ const EditorAux: FC<EditorProps> = ({
   handleSave,
   className,
   initialShowStats,
-  initialOpenPreviewNodeId,
-  onOpenPreviewNodeIdChange,
   locked,
 }) => {
   const uniformRef = useRef<Record<string, Uniforms>>(
@@ -166,13 +162,6 @@ const EditorAux: FC<EditorProps> = ({
   const [savedAt, setSavedAt] = useState<Date | null>(null);
   const [showStats, setShowStats] = useState(initialShowStats ?? false);
   const [openExportNodeId, setOpenExportNodeId] = useState<string | null>(null);
-  const [openPreviewNodeId, setOpenPreviewNodeIdState] = useState<
-    string | null
-  >(initialOpenPreviewNodeId ?? null);
-  const setOpenPreviewNodeId = (id: string | null) => {
-    setOpenPreviewNodeIdState(id);
-    onOpenPreviewNodeIdChange?.(id);
-  };
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -243,8 +232,6 @@ const EditorAux: FC<EditorProps> = ({
                 showStats,
                 openExportNodeId,
                 setOpenExportNodeId,
-                openPreviewNodeId,
-                setOpenPreviewNodeId,
                 uniforms: uniformRef,
                 uniformExpressions,
                 handleUpdateUniforms,
@@ -376,6 +363,7 @@ const EditorAux: FC<EditorProps> = ({
             {openExportNodeId !== null && patches[openExportNodeId] && (
               <ExportDialog
                 uniforms={uniformRef.current}
+                uniformsRef={uniformRef}
                 uniformExpressions={uniformExpressions}
                 patch={patches[openExportNodeId]}
                 open={true}
