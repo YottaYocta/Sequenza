@@ -8,7 +8,11 @@ import type {
 import { extractFields, getFieldDefault, type Field } from "@sequenza/lib";
 import { FieldLabel } from "./UniformFields/shared";
 import { FloatField } from "./UniformFields/FloatField";
-import { VecNField, Vec3ColorField, Vec4ColorField } from "./UniformFields/VecField";
+import {
+  VecNField,
+  Vec3ColorField,
+  Vec4ColorField,
+} from "./UniformFields/VecField";
 import { ImageUploadField } from "./UniformFields/ImageUploadField";
 import { GradientField } from "./UniformFields/GradientField";
 import type { NodeUniformExpressions } from "./EditorContext";
@@ -28,7 +32,9 @@ interface UniformFormProps {
 
 function toVecDef(raw: any): (string | null)[] | undefined {
   return Array.isArray(raw)
-    ? (raw as (string | number)[]).map((s) => (typeof s === "string" ? s : null))
+    ? (raw as (string | number)[]).map((s) =>
+        typeof s === "string" ? s : null,
+      )
     : undefined;
 }
 
