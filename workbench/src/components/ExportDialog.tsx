@@ -4,7 +4,6 @@ import type { Patch, Uniforms } from "@sequenza/lib";
 import { Dialog } from "./Dialog";
 import { Scrubber } from "./Scrubber";
 import type { UniformExpressions } from "./EditorContext";
-import { FieldLabel } from "./UniformFields/shared";
 
 interface ExportDialogProps {
   uniforms: Record<string, Uniforms>;
