@@ -1,0 +1,157 @@
+{
+  "uniforms": {
+    "59924.54650872816": {
+      "u_resolution": [400, 400],
+      "u_time": 283.808,
+      "u_scale": 3.81,
+      "u_octaves": 2,
+      "u_speed": 0.1
+    },
+    "40546.2209602295": {
+      "u_gradientTexture": {
+        "type": "gradient",
+        "stops": [
+          {
+            "position": 0.1553390013825429,
+            "color": "#454545"
+          },
+          {
+            "position": 0.60606337492752,
+            "color": "#ffffff"
+          }
+        ]
+      }
+    },
+    "81308.86912418704": {
+      "resolution": [400, 400],
+      "scale": 1,
+      "backgroundColor": [0, 0, 0, 0],
+      "u_image_source": {
+        "type": "texture",
+        "src": "/group_walking.png"
+      }
+    },
+    "35850.83897164505": {
+      "u_resolution": [400, 400],
+      "u_radius": 0.03,
+      "u_threshold": 0.001,
+      "u_sample_count": 144
+    },
+    "23102.799230898476": {},
+    "45356.23954084039": {
+      "u_gradientTexture": {
+        "type": "gradient",
+        "stops": [
+          {
+            "position": 0.7795460622775177,
+            "color": "#000000"
+          },
+          {
+            "position": 0.8053552883984898,
+            "color": "#ffffff"
+          }
+        ]
+      }
+    }
+  },
+  "uniformExpressions": {
+    "59924.54650872816": {
+      "u_resolution": ["resolution.x", "resolution.y"],
+      "u_time": "time * 2"
+    },
+    "40546.2209602295": {},
+    "81308.86912418704": {
+      "resolution": ["resolution.x", "resolution.y"]
+    },
+    "35850.83897164505": {
+      "u_resolution": ["resolution.x", "resolution.y"]
+    },
+    "23102.799230898476": {},
+    "45356.23954084039": {}
+  },
+  "patch": {
+    "shaders": [
+      {
+        "id": "45356.23954084039",
+        "name": "gradient map",
+        "source": "#version 300 es\nprecision mediump float;\n\nuniform sampler2D u_texture; \nuniform sampler2D u_gradientTexture; // gradient\nin vec2 vUv;\nout vec4 fragColor;\n\nvoid main() {\n  vec4 color = texture(u_texture, vUv);\n\n  float brightness = dot(color.rgb, vec3(0.299, 0.587, 0.114));\n\n  vec4 gradientColor = texture(u_gradientTexture, vec2(brightness, 0.5));\n\n  fragColor = vec4(gradientColor.rgb, 1.0);\n}\n",
+        "resolution": {
+          "width": 400,
+          "height": 400
+        }
+      },
+      {
+        "id": "23102.799230898476",
+        "name": "mix (divide)",
+        "source": "#version 300 es\nprecision mediump float;\n\nin vec2 vUv;\nout vec4 fragColor;\n\nuniform sampler2D u_texture_1;\nuniform sampler2D u_texture_2;\n\nvoid main() {\n    fragColor = clamp(\n        texture(u_texture_1, vUv) / (texture(u_texture_2, vUv) + 0.001),\n        vec4(0.),\n        vec4(1.)\n    );\n}",
+        "resolution": {
+          "width": 400,
+          "height": 400
+        }
+      },
+      {
+        "id": "35850.83897164505",
+        "name": "bokeh",
+        "source": "#version 300 es\nprecision mediump float;\n\nuniform vec2 u_resolution; // resolution\n\nuniform sampler2D u_channel0;\n\nuniform float u_radius;    // [0.0, 1, 0.01]\nuniform float u_threshold; // [0.001, 2, 0.5]\nuniform float u_sample_count; // [1, 256, 64]\n\nin vec2 vUv;\nout vec4 fragColor;\n\nvoid main() {\n\n    float computed_threshold_value = u_threshold * 100.0;\n    float aspect = u_resolution.x / u_resolution.y;\n\n    mat2 rot = mat2(-0.737, -0.676, 0.676, -0.737);\n    vec2 p_iso = vec2(u_radius / (sqrt(u_sample_count)), 0.0);\n\n    float N = 0.0;\n\n    vec4 O = vec4(0.0);\n    for (float i = 1.0; i < u_sample_count; i += 1.0) {\n        p_iso = rot * p_iso;\n\n        vec2 p_uv = vec2(p_iso.x / aspect, p_iso.y);\n        O += exp(texture(u_channel0, vUv + p_uv * sqrt(i)) * computed_threshold_value);\n        N += 1.0;\n    }\n\n    O = (log(O) - log(N));\n    O /= computed_threshold_value;\n    fragColor = O;\n}\n",
+        "resolution": {
+          "width": 400,
+          "height": 400
+        }
+      },
+      {
+        "id": "40546.2209602295",
+        "name": "gradient map",
+        "source": "#version 300 es\nprecision mediump float;\n\nuniform sampler2D u_texture; \nuniform sampler2D u_gradientTexture; // gradient\nin vec2 vUv;\nout vec4 fragColor;\n\nvoid main() {\n  vec4 color = texture(u_texture, vUv);\n\n  float brightness = dot(color.rgb, vec3(0.299, 0.587, 0.114));\n\n  vec4 gradientColor = texture(u_gradientTexture, vec2(brightness, 0.5));\n\n  fragColor = vec4(gradientColor.rgb, 1.0);\n}\n",
+        "resolution": {
+          "width": 400,
+          "height": 400
+        }
+      },
+      {
+        "id": "81308.86912418704",
+        "name": "image viewer",
+        "source": "#version 300 es\nprecision highp float;\n\nin vec2 vUv;\nout vec4 fragColor;\n\nuniform sampler2D u_image_source; // texture\nuniform vec2 resolution; // resolution\nuniform float scale; // [0.1, 3, 1]\nuniform vec4 backgroundColor; // color [0, 0, 0, 0]\n\nvoid main() {\n    ivec2 size = textureSize(u_image_source, 0);\n    vec2 aspect = vec2(\n        float(size.x) / float(size.y),\n        1.0\n    );\n\n    vec2 uv = vUv - 0.5;\n    uv /= aspect;\n    uv *= vec2(\n        resolution.x / resolution.y, 1.0\n    );\n    uv *= scale;\n    uv += 0.5; \n\n    uv.y = 1.0 - uv.y;\n\n    if (\n        any(lessThan(uv, vec2(0.0))) ||\n        any(greaterThan(uv, vec2(1.0)))\n    ) {\n        fragColor = backgroundColor;\n        return;\n    }\n\n    fragColor = texture(\n        u_image_source, \n        vec2(uv.x, uv.y)\n    );\n    fragColor = fragColor * fragColor.a + (backgroundColor) * (1.0 - fragColor.a);\n}",
+        "resolution": {
+          "width": 400,
+          "height": 400
+        }
+      },
+      {
+        "id": "59924.54650872816",
+        "name": "fbm",
+        "source": "#version 300 es\nprecision mediump float;\n\n// Author @patriciogv - 2015\n// http://patriciogonzalezvivo.com\n\nuniform vec2 u_resolution; // resolution\nuniform float u_time;      // time\nuniform float u_scale;     // [1, 20, 3]\nuniform float u_octaves;   // [1, 12, 6]\nuniform float u_speed;     // [0, 2, 0.1]\n\nin vec2 vUv;\nout vec4 fragColor;\n\nfloat random(vec2 st) {\n    return fract(sin(dot(st, vec2(12.9898, 78.233))) * 43758.5453123);\n}\n\n// Based on Morgan McGuire @morgan3d\n// https://www.shadertoy.com/view/4dS3Wd\nfloat noise(vec2 st) {\n    vec2 i = floor(st);\n    vec2 f = fract(st);\n\n    float a = random(i);\n    float b = random(i + vec2(1.0, 0.0));\n    float c = random(i + vec2(0.0, 1.0));\n    float d = random(i + vec2(1.0, 1.0));\n\n    vec2 u = f * f * (3.0 - 2.0 * f);\n\n    return mix(a, b, u.x) +\n           (c - a) * u.y * (1.0 - u.x) +\n           (d - b) * u.x * u.y;\n}\n\nfloat fbm(vec2 st) {\n    float value = 0.0;\n    float amplitude = 0.5;\n    int octaves = int(u_octaves);\n    for (int i = 0; i < 12; i++) {\n        if (i >= octaves) break;\n        value += amplitude * noise(st);\n        st *= 2.0;\n        amplitude *= 0.5;\n    }\n    return value;\n}\n\nvoid main() {\n    vec2 st = vUv * u_scale;\n    st.x *= u_resolution.x / u_resolution.y;\n\n    // animate by scrolling noise space over time\n    st += u_time * u_speed;\n\n    fragColor = vec4(vec3(fbm(st)), 1.0);\n}\n",
+        "resolution": {
+          "width": 400,
+          "height": 400
+        }
+      }
+    ],
+    "connections": [
+      {
+        "from": "23102.799230898476",
+        "to": "45356.23954084039",
+        "input": "u_texture"
+      },
+      {
+        "from": "35850.83897164505",
+        "to": "23102.799230898476",
+        "input": "u_texture_1"
+      },
+      {
+        "from": "40546.2209602295",
+        "to": "23102.799230898476",
+        "input": "u_texture_2"
+      },
+      {
+        "from": "81308.86912418704",
+        "to": "35850.83897164505",
+        "input": "u_channel0"
+      },
+      {
+        "from": "59924.54650872816",
+        "to": "40546.2209602295",
+        "input": "u_texture"
+      }
+    ]
+  }
+}

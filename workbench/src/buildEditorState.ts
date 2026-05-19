@@ -1,6 +1,7 @@
 import type { Edge, Node } from "@xyflow/react";
 import type { Patch, Uniforms } from "@sequenza/lib";
 import type { ShaderNode } from "./components/ShaderNode";
+import type { UniformExpressions } from "./components/EditorContext";
 
 const COL_GAP = 1000;
 const ROW_GAP = 500;
@@ -9,6 +10,7 @@ export type EditorInitialState = {
   nodes: Node[];
   edges: Edge[];
   uniforms: Record<string, Uniforms>;
+  uniformExpressions?: UniformExpressions;
   idMap: Map<string, string>;
 };
 
@@ -29,6 +31,7 @@ export function buildEditorState(
   patch: Patch,
   uniforms?: Record<string, Uniforms>,
   center: { x: number; y: number } = { x: 0, y: 0 },
+  uniformExpressions?: UniformExpressions,
 ): EditorInitialState {
   const { shaders, connections } = patch;
 
@@ -158,5 +161,14 @@ export function buildEditorState(
     type: "insert" as const,
   }));
 
-  return { nodes, edges, uniforms: newUniforms, idMap };
+  let remappedExpressions: UniformExpressions | undefined;
+  if (uniformExpressions) {
+    remappedExpressions = {};
+    for (const [oldId, exprs] of Object.entries(uniformExpressions)) {
+      const newId = idMap.get(oldId);
+      if (newId) remappedExpressions[newId] = exprs;
+    }
+  }
+
+  return { nodes, edges, uniforms: newUniforms, uniformExpressions: remappedExpressions, idMap };
 }

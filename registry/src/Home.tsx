@@ -20,6 +20,7 @@ import responsiveLinesData from "./shaders/responsive-lines.json";
 import anthropicData from "./shaders/anthropic.json";
 import planetStampData from "./shaders/planet-stamp.json";
 import crystalcube from "./shaders/crystalcube.json";
+import ferro from "./shaders/ferro.json";
 
 export default function Home() {
   const { setInitialState } = useInitialState();
@@ -117,6 +118,19 @@ export default function Home() {
             animate={true}
           />
         </div>
+        <div className="h-full max-h-64 aspect-square">
+          <ShaderDemo
+            patch={ferro.patch as unknown as Patch}
+            initialUniforms={
+              ferro.uniforms as unknown as Record<string, Uniforms>
+            }
+            initialUniformExpressions={ferro.uniformExpressions}
+            width={500}
+            height={500}
+            handleEdit={handleEdit}
+            animate={true}
+          />
+        </div>
 
         <div className="h-full max-h-64 aspect-5/2">
           <ShaderDemo
@@ -206,16 +220,16 @@ export default function Home() {
 
             <p>
               You can chain effects by connecting one node&rsquo;s output to
-              another&rsquo;s input. Think of this as a factory, where each
-              node takes its input, reads its settings, and produces a modified
+              another&rsquo;s input. Think of this as a factory, where each node
+              takes its input, reads its settings, and produces a modified
               version of that input.
             </p>
 
             <p>
-              To create a new connection, drag from the bottom handle of a
-              node; this will open the menu again and prompt you to attach a
-              node. Let&rsquo;s add a dither to the cube to create a
-              retro-looking effect.
+              To create a new connection, drag from the bottom handle of a node;
+              this will open the menu again and prompt you to attach a node.
+              Let&rsquo;s add a dither to the cube to create a retro-looking
+              effect.
             </p>
 
             <img src={usageGif3} className="w-full rounded-md" />
@@ -240,8 +254,8 @@ export default function Home() {
             <p>
               This is only a partial guide; there are many more powerful
               effects, and you can see them in action by tinkering with the
-              examples above. Note that this library is still in early stages
-              of development, and might have breaking changes.
+              examples above. Note that this library is still in early stages of
+              development, and might have breaking changes.
             </p>
           </div>
         </div>

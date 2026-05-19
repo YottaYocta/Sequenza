@@ -11,9 +11,12 @@ import { useEffect, useRef, useState } from "react";
 
 const math = create(all);
 
+type UniformExpressions = Record<string, Record<string, string | (string | null)[] | null>>;
+
 interface ShaderDemoProps {
   patch: Patch;
   initialUniforms: Record<string, Uniforms>;
+  initialUniformExpressions?: UniformExpressions;
   width: number;
   height: number;
   className?: string;
@@ -24,6 +27,7 @@ interface ShaderDemoProps {
 export function ShaderDemo({
   patch,
   initialUniforms,
+  initialUniformExpressions,
   width,
   height,
   className,
@@ -120,8 +124,13 @@ export function ShaderDemo({
           defs[shader.id][field.name] = field.defaultExpr;
         }
       }
+      if (initialUniformExpressions?.[shader.id]) {
+        defs[shader.id] ??= {};
+        for (const [name, expr] of Object.entries(initialUniformExpressions[shader.id])) {
+          if (expr != null) defs[shader.id][name] = expr;
+        }
+      }
     }
-
 
     let cumulativeTime = 0;
     let lastFrameTime = performance.now();
@@ -205,8 +214,14 @@ export function ShaderDemo({
           x: e.clientX - rect.left,
           y: e.clientY - rect.top,
         };
-        mouseRef.current[0] = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-        mouseRef.current[1] = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
+        mouseRef.current[0] = Math.max(
+          0,
+          Math.min(1, (e.clientX - rect.left) / rect.width),
+        );
+        mouseRef.current[1] = Math.max(
+          0,
+          Math.min(1, (e.clientY - rect.top) / rect.height),
+        );
       }}
       onMouseLeave={() => {
         lerpStopTimeout.current = setTimeout(
@@ -229,7 +244,7 @@ export function ShaderDemo({
         <>
           <button
             className="focus:opacity-100 group-hover:opacity-100 opacity-0 px-5 py-1 rounded-sm bg-neutral-900 text-white group-hover:transition-opacity duration-200 ease-out hover:cursor-pointer absolute right-2 bottom-2 max-md:opacity-100"
-            onClick={() => handleEdit(buildEditorState(patch, initialUniforms))}
+            onClick={() => handleEdit(buildEditorState(patch, initialUniforms, { x: 0, y: 0 }, initialUniformExpressions))}
           >
             Edit
           </button>
