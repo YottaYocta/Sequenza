@@ -1,19 +1,12 @@
 import { Position, type Node, type NodeProps } from "@xyflow/react";
 import CustomHandle from "./CustomHandle";
 import type { Shader, Uniforms } from "@sequenza/lib";
-import {
-  useContext,
-  useMemo,
-  useRef,
-  useState,
-  type RefObject,
-} from "react";
+import { useContext, useMemo, useRef, useState, type RefObject } from "react";
 import { Scrubber } from "./Scrubber";
 import UniformForm from "./UniformForm";
 import { RendererComponent } from "@sequenza/lib";
 import { EditorContext } from "./EditorContext";
 import { extractFields } from "@sequenza/lib";
-import { PreviewDialog } from "./PreviewDialog";
 
 export type ShaderNodeData = {
   shader: Shader;
@@ -39,6 +32,8 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
   const [uniformState, setUniformState] = useState<Uniforms>(
     () => uniforms.current[data.shader.id] ?? {},
   );
+
+  console.log(`changed ${id}`);
 
   const nodeUniformExpressions = uniformExpressions[data.shader.id] ?? {};
 
@@ -117,27 +112,6 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
         </p>
         <div className="flex gap-2">
           <button
-            className={`button-base group-hover:block hidden`}
-            onClick={() => setOpenPreviewNodeId(id)}
-          >
-            Expand
-          </button>
-          <PreviewDialog
-            open={openPreviewNodeId === id}
-            onOpenChange={(open) => setOpenPreviewNodeId(open ? id : null)}
-            shader={data.shader}
-            patch={patches[data.shader.id]}
-            uniforms={uniforms}
-            savedUniforms={uniformState}
-            uniformExpressions={nodeUniformExpressions}
-            nodeId={id}
-            handleFieldUpdate={handleFieldUpdate}
-            handleUpdateNode={handleUpdateNode}
-            handleUpdateUniformExpression={(fieldName, slotIndex, value, fieldLength) =>
-              handleUpdateUniformExpression(id, fieldName, slotIndex, value, fieldLength)
-            }
-          />
-          <button
             className={`button-base ${data.paused ? "" : "group-hover:block hidden"}`}
             onClick={() => {
               handleUpdateNode(id, (snapshot) => {
@@ -177,8 +151,19 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
           savedUniforms={uniformState}
           uniformExpressions={nodeUniformExpressions}
           handleUpdateUniform={handleFieldUpdate}
-          handleUpdateUniformExpression={(fieldName, slotIndex, value, fieldLength) =>
-            handleUpdateUniformExpression(id, fieldName, slotIndex, value, fieldLength)
+          handleUpdateUniformExpression={(
+            fieldName,
+            slotIndex,
+            value,
+            fieldLength,
+          ) =>
+            handleUpdateUniformExpression(
+              id,
+              fieldName,
+              slotIndex,
+              value,
+              fieldLength,
+            )
           }
         />
         <div className="flex flex-col justify-center items-start gap-4 ">
