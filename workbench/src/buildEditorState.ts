@@ -145,7 +145,7 @@ export function buildEditorState(
       data: {
         shader: { ...s, id: newId },
         uniforms: uniformRef,
-        paused: false,
+        previewHidden: false,
       },
     };
   });
