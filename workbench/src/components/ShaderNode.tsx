@@ -7,10 +7,11 @@ import UniformForm from "./UniformForm";
 import { RendererComponent } from "@sequenza/lib";
 import { EditorContext } from "./EditorContext";
 import { extractFields } from "@sequenza/lib";
+import { FieldLabel } from "./UniformFields/shared";
 
 export type ShaderNodeData = {
   shader: Shader;
-  paused: boolean;
+  previewHidden: boolean;
   uniforms: RefObject<Record<string, Uniforms>>;
 };
 
@@ -48,9 +49,9 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
     shaderName: string;
   } | null>(null);
 
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [imageCopied, setImageCopied] = useState<"idle" | "done">("idle");
   const [errorCopied, setErrorCopied] = useState<"idle" | "done">("idle");
+  const [imageCopied, setImageCopied] = useState<"idle" | "done">("idle");
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const copyImage = () => {
     canvasRef.current?.toBlob((blob) => {
@@ -59,15 +60,6 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
     });
     setImageCopied("done");
     setTimeout(() => setImageCopied("idle"), 1800);
-  };
-
-  const saveImage = () => {
-    const url = canvasRef.current?.toDataURL("image/png");
-    if (!url) return;
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${data.shader.name}.png`;
-    a.click();
   };
 
   const textureInputs = useMemo<string[]>(() => {
@@ -108,14 +100,21 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
         </p>
         <div className="flex gap-2">
           <button
-            className={`button-base ${data.paused ? "" : "group-hover:block hidden"}`}
-            onClick={() => {
-              handleUpdateNode(id, (snapshot) => {
-                return { ...snapshot, paused: !snapshot.paused };
-              });
-            }}
+            className="button-base"
+            onClick={() => setOpenExportNodeId(id)}
           >
-            {data.paused ? "Resume" : "Pause"}
+            Export
+          </button>
+          <button
+            className="button-base"
+            onClick={() =>
+              handleUpdateNode(id, (s) => ({
+                ...s,
+                previewHidden: !s.previewHidden,
+              }))
+            }
+          >
+            {data.previewHidden ? "Show Preview" : "Hide Preview"}
           </button>
         </div>
       </div>
@@ -142,58 +141,12 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
         />
       ))}
       <div className="flex gap-8">
-        <UniformForm
-          shader={data.shader}
-          savedUniforms={uniformState}
-          uniformExpressions={nodeUniformExpressions}
-          handleUpdateUniform={handleFieldUpdate}
-          handleUpdateUniformExpression={(
-            fieldName,
-            slotIndex,
-            value,
-            fieldLength,
-          ) =>
-            handleUpdateUniformExpression(
-              id,
-              fieldName,
-              slotIndex,
-              value,
-              fieldLength,
-            )
-          }
-        />
-        <div className="flex flex-col justify-center items-start gap-4 ">
-          <div className="flex flex-col gap-2">
-            <div className="flex gap-1">
-              <button
-                className="button-base"
-                onClick={() => setOpenExportNodeId(id)}
-              >
-                Export
-              </button>
-              <button className="button-base" onClick={copyImage}>
-                {imageCopied === "done" ? "Copied!" : "Copy"}
-              </button>
-              <button className="button-base" onClick={saveImage}>
-                Save
-              </button>
-            </div>
-            <div className="relative max-w-144">
-              <RendererComponent
-                ref={canvasRef}
-                animate={!data.paused}
-                width={width}
-                height={height}
-                patch={patches[data.shader.id]}
-                uniforms={uniforms}
-                className="w-full h-auto"
-                style={{ maxWidth: `${(width / height) * 36}rem` }}
-                onError={(msg) => {
-                  setShaderError(msg);
-                }}
-              ></RendererComponent>
-            </div>
-            <div className="flex gap-1 bg-neutral-100 rounded-md p-1 w-min">
+        <div className="flex flex-col gap-2">
+          <div className="w-full flex gap-4">
+            <span className="w-40 flex items-center">
+              <FieldLabel name="Resolution" type="vec2"></FieldLabel>
+            </span>
+            <div className="flex flex-col gap-1 bg-neutral-100 rounded-md p-1 w-min">
               <Scrubber
                 label="w"
                 value={width}
@@ -220,7 +173,52 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
               />
             </div>
           </div>
+
+          <UniformForm
+            shader={data.shader}
+            savedUniforms={uniformState}
+            uniformExpressions={nodeUniformExpressions}
+            handleUpdateUniform={handleFieldUpdate}
+            handleUpdateUniformExpression={(
+              fieldName,
+              slotIndex,
+              value,
+              fieldLength,
+            ) =>
+              handleUpdateUniformExpression(
+                id,
+                fieldName,
+                slotIndex,
+                value,
+                fieldLength,
+              )
+            }
+          />
         </div>
+        {!data.previewHidden && (
+          <div className="flex flex-col justify-center items-start gap-4">
+            <div className="flex flex-col gap-2">
+              <button className="button-base self-start" onClick={copyImage}>
+                {imageCopied === "done" ? "Copied!" : "Copy Image"}
+              </button>
+              <div className="relative max-w-144">
+                <RendererComponent
+                  ref={canvasRef}
+                  animate={true}
+                  width={width}
+                  height={height}
+                  patch={patches[data.shader.id]}
+                  uniforms={uniforms}
+                  className="w-full h-auto"
+                  style={{ maxWidth: `${(width / height) * 36}rem` }}
+                  onError={(msg) => {
+                    setShaderError(msg);
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
       {shaderError && (
         <div className="flex flex-col gap-2 p-2 bg-white border-2 border-red-100 rounded-md relative">

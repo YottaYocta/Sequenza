@@ -1,7 +1,13 @@
 import { type FC } from "react";
 import type { Field } from "@sequenza/lib";
 import { Scrubber } from "../Scrubber";
-import { ColorPickerButton, ExpressionChip, ResetButton, vec3ToHex, hexToVec3 } from "./shared";
+import {
+  ColorPickerButton,
+  ExpressionChip,
+  ResetButton,
+  vec3ToHex,
+  hexToVec3,
+} from "./shared";
 
 export const VecNField: FC<{
   field: Field & { type: "vec2" | "vec3" | "vec4" };

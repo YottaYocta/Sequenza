@@ -363,6 +363,7 @@ const EditorAux: FC<EditorProps> = ({
             {openExportNodeId !== null && patches[openExportNodeId] && (
               <ExportDialog
                 uniforms={uniformRef.current}
+                uniformsRef={uniformRef}
                 uniformExpressions={uniformExpressions}
                 patch={patches[openExportNodeId]}
                 open={true}
