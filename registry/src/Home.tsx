@@ -1,6 +1,10 @@
 import { EditorPreview } from "./components/EditorPreview";
 import { ShaderDemo } from "./components/ShaderDemo";
 import rubiks from "./assets/rubiks.png";
+import usageGif1 from "./assets/usage_guide/1.gif";
+import usageGif2 from "./assets/usage_guide/2.gif";
+import usageGif3 from "./assets/usage_guide/3.gif";
+import usageImg4 from "./assets/usage_guide/4.png";
 import type { EditorInitialState } from "@sequenza/workbench";
 import "@xyflow/react/dist/style.css";
 import "@sequenza/workbench/style.css";
@@ -163,6 +167,83 @@ export default function Home() {
             handleEdit={handleEdit}
             animate={true}
           />
+        </div>
+      </div>
+      <div
+        className="flex flex-col w-full max-w-3xl gap-8 items-start pt-8"
+        id="usage-guide"
+      >
+        <div className="flex flex-col items-start gap-6">
+          <h2 className="capitalize text-black font-medium text-3xl max-w-md flex flex-col leading-10 max-sm:text-2xl">
+            Usage Guide
+          </h2>
+
+          <div className="flex flex-col gap-6 w-full opacity-70 text-black leading-7 max-sm:text-sm max-sm:leading-6">
+            <p>
+              Each node can take inputs in the form of settings and images and
+              create some image with an effect applied to it. All editing is
+              done in the Sequenza editor, which can be accessed above.
+            </p>
+
+            <p>
+              To create a node, click on the &lsquo;new node&rsquo; button, or
+              right click on the canvas. This opens a large menu of nodes, each
+              with a unique behavior. Let&rsquo;s add a{" "}
+              <code className="px-2 py-0.5 bg-neutral-200 text-black rounded-sm opacity-100">
+                cube
+              </code>{" "}
+              node as an example:
+            </p>
+
+            <img src={usageGif1} className="w-full rounded-md" />
+
+            <p>
+              The time and animation can be controlled with the panel at the
+              bottom-center of the screen.
+            </p>
+
+            <img src={usageGif2} className="w-full rounded-md" />
+
+            <p>
+              You can chain effects by connecting one node&rsquo;s output to
+              another&rsquo;s input. Think of this as a factory, where each
+              node takes its input, reads its settings, and produces a modified
+              version of that input.
+            </p>
+
+            <p>
+              To create a new connection, drag from the bottom handle of a
+              node; this will open the menu again and prompt you to attach a
+              node. Let&rsquo;s add a dither to the cube to create a
+              retro-looking effect.
+            </p>
+
+            <img src={usageGif3} className="w-full rounded-md" />
+
+            <p>
+              Note that this only works for nodes that accept an input, such as
+              color adjustments, dither, etc. You can&rsquo;t feed a cube image
+              into another cube node, for instance, since it doesn&rsquo;t
+              accept any input.
+            </p>
+
+            <p>
+              Nodes can be exported to various format via the export menu. If
+              you want to save your work, you can download the JSON of your
+              node, or export it to a react snippet, where it can be embedded
+              into any project. If you use AI coding tools, you can also copy
+              the export prompt directly for the agent to implement.
+            </p>
+
+            <img src={usageImg4} className="w-full rounded-md" />
+
+            <p>
+              This is only a partial guide; there are many more powerful
+              effects, and you can see them in action by tinkering with the
+              examples above. Note that this library is still in early stages
+              of development, and might have breaking changes.
+            </p>
+          </div>
         </div>
       </div>
       <Footer />
