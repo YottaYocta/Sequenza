@@ -164,22 +164,12 @@ function App() {
             initialShowStats={
               localStorage.getItem("sequenza-show-stats") === "true"
             }
-            initialOpenPreviewNodeId={
-              localStorage.getItem("sequenza-open-preview-node") || null
-            }
             onEditorStateChange={({ showStats, addShaderPanelOpen }) => {
               localStorage.setItem("sequenza-show-stats", String(showStats));
               localStorage.setItem(
                 "sequenza-shader-panel-open",
                 String(addShaderPanelOpen),
               );
-            }}
-            onOpenPreviewNodeIdChange={(nodeId) => {
-              if (nodeId) {
-                localStorage.setItem("sequenza-open-preview-node", nodeId);
-              } else {
-                localStorage.removeItem("sequenza-open-preview-node");
-              }
             }}
             handleSave={({ nodes, edges, uniforms, uniformExpressions }) => {
               localStorage.setItem("sequenza-nodes", JSON.stringify(nodes));

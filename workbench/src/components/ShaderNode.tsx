@@ -25,15 +25,11 @@ export const ShaderNode = ({ data, selected, id }: NodeProps<ShaderNode>) => {
     handleUpdateNode,
     showStats,
     setOpenExportNodeId,
-    openPreviewNodeId,
-    setOpenPreviewNodeId,
   } = useContext(EditorContext);
 
   const [uniformState, setUniformState] = useState<Uniforms>(
     () => uniforms.current[data.shader.id] ?? {},
   );
-
-  console.log(`changed ${id}`);
 
   const nodeUniformExpressions = uniformExpressions[data.shader.id] ?? {};
 
