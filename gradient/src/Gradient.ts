@@ -59,8 +59,6 @@ const isSerializedGradient = (v: unknown): v is SerializedGradient =>
   (v as SerializedGradient).type === "gradient" &&
   Array.isArray((v as SerializedGradient).stops);
 
-// The `canvas` reference is stable across `setStops`; the renderer relies on
-// this to pick up new pixels via in-place repaint without re-binding a texture.
 export class Gradient {
   readonly type = "texture" as const;
   readonly canvas: HTMLCanvasElement;
@@ -136,8 +134,6 @@ export class Gradient {
   }
 }
 
-// Idempotent: callers (workbench init, RendererComponent effect) may invoke
-// this on already-hydrated uniforms without producing new Gradient instances.
 export const hydrateGradientUniforms = <T extends Record<string, any>>(
   uniforms: T,
 ): T => {
