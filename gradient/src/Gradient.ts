@@ -53,17 +53,25 @@ export const evalGradientAt = (stops: GradientStop[], t: number): string => {
   return interpolateHex(lower.color, upper.color, localT);
 };
 
+const isSerializedGradient = (v: unknown): v is SerializedGradient =>
+  typeof v === "object" &&
+  v !== null &&
+  (v as SerializedGradient).type === "gradient" &&
+  Array.isArray((v as SerializedGradient).stops);
+
 // The `canvas` reference is stable across `setStops`; the renderer relies on
 // this to pick up new pixels via in-place repaint without re-binding a texture.
 export class Gradient {
   readonly type = "texture" as const;
   readonly canvas: HTMLCanvasElement;
+  private _ctx: CanvasRenderingContext2D;
   private _stops: GradientStop[];
 
   constructor(stops: GradientStop[] = DEFAULT_STOPS) {
     this.canvas = document.createElement("canvas");
     this.canvas.width = 256;
     this.canvas.height = 1;
+    this._ctx = this.canvas.getContext("2d")!;
     this._stops = stops;
     this._paint();
   }
@@ -87,32 +95,45 @@ export class Gradient {
 
   static fromJSON(value: unknown): Gradient {
     if (value instanceof Gradient) return value;
-    if (Array.isArray(value)) return new Gradient(value as GradientStop[]);
-    if (
-      typeof value === "object" &&
-      value !== null &&
-      (value as SerializedGradient).type === "gradient" &&
-      Array.isArray((value as SerializedGradient).stops)
-    ) {
-      return new Gradient((value as SerializedGradient).stops);
-    }
+    if (isSerializedGradient(value)) return new Gradient(value.stops);
     return new Gradient();
   }
 
   private _paint(): void {
-    const ctx = this.canvas.getContext("2d")!;
+    const sorted = [...this._stops]
+      .sort((a, b) => a.position - b.position)
+      .map((s) => ({ position: s.position, rgb: hexToRgb(s.color) }));
+    const image = this._ctx.createImageData(256, 1);
+    const data = image.data;
+    let lo = 0;
     for (let i = 0; i < 256; i++) {
-      ctx.fillStyle = evalGradientAt(this._stops, i / 255);
-      ctx.fillRect(i, 0, 1, 1);
+      const t = i / 255;
+      let r: number, g: number, b: number;
+      if (sorted.length === 0) {
+        r = g = b = 0;
+      } else if (sorted.length === 1 || t <= sorted[0].position) {
+        [r, g, b] = sorted[0].rgb;
+      } else if (t >= sorted[sorted.length - 1].position) {
+        [r, g, b] = sorted[sorted.length - 1].rgb;
+      } else {
+        while (lo < sorted.length - 2 && t > sorted[lo + 1].position) lo++;
+        const a = sorted[lo],
+          c = sorted[lo + 1];
+        const range = c.position - a.position;
+        const localT = range === 0 ? 0 : (t - a.position) / range;
+        r = Math.round(a.rgb[0] + (c.rgb[0] - a.rgb[0]) * localT);
+        g = Math.round(a.rgb[1] + (c.rgb[1] - a.rgb[1]) * localT);
+        b = Math.round(a.rgb[2] + (c.rgb[2] - a.rgb[2]) * localT);
+      }
+      const o = i * 4;
+      data[o] = r;
+      data[o + 1] = g;
+      data[o + 2] = b;
+      data[o + 3] = 255;
     }
+    this._ctx.putImageData(image, 0, 0);
   }
 }
-
-const isSerializedGradient = (v: unknown): v is SerializedGradient =>
-  typeof v === "object" &&
-  v !== null &&
-  (v as SerializedGradient).type === "gradient" &&
-  Array.isArray((v as SerializedGradient).stops);
 
 // Idempotent: callers (workbench init, RendererComponent effect) may invoke
 // this on already-hydrated uniforms without producing new Gradient instances.

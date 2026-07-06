@@ -1,3 +1,4 @@
+import { Gradient } from "@sequenza/gradient";
 import type { Shader } from "./renderer";
 
 export type Field =
@@ -274,13 +275,8 @@ export function typeMatchesField(value: unknown, field: Field): boolean {
     case "vec4":
       return Array.isArray(value) && value.length === 4;
     case "sampler2D":
-      if (field.source === "gradient") {
-        const v = value as any;
-        return (
-          v?.type === "gradient" ||
-          (v?.type === "texture" && v?.canvas instanceof HTMLCanvasElement)
-        );
-      }
+      if (field.source === "gradient")
+        return value instanceof Gradient || (value as any)?.type === "gradient";
       if (field.source === "texture")
         return (value as any)?.type === "texture";
       return false;

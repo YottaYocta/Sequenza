@@ -8,11 +8,6 @@ import {
 import { Scrubber } from "../Scrubber";
 import { ColorPickerButton } from "./shared";
 
-const DEFAULT_GRADIENT_STOPS: GradientStop[] = [
-  { position: 0, color: "#000000" },
-  { position: 1, color: "#ffffff" },
-];
-
 export const GradientField: FC<{
   field: Field & { type: "sampler2D"; source: "gradient" };
   value?: Gradient;
@@ -20,10 +15,7 @@ export const GradientField: FC<{
 }> = ({ value: initialValue, handleUpdateUniformField }) => {
   const gradientRef = useRef<Gradient | null>(null);
   if (gradientRef.current === null) {
-    gradientRef.current =
-      initialValue instanceof Gradient
-        ? initialValue
-        : Gradient.fromJSON(initialValue ?? DEFAULT_GRADIENT_STOPS);
+    gradientRef.current = Gradient.fromJSON(initialValue);
   }
 
   const [stops, setStops] = useState<GradientStop[]>(gradientRef.current.stops);
