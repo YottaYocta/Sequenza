@@ -100,6 +100,7 @@ export class Gradient {
   }
 
   private _paint(): void {
+    console.log("[Gradient] _paint");
     const sorted = [...this._stops]
       .sort((a, b) => a.position - b.position)
       .map((s) => ({ position: s.position, rgb: hexToRgb(s.color) }));
