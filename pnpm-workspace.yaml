@@ -2,3 +2,4 @@ packages:
   - "workbench"
   - "library"
   - "registry"
+  - "gradient"

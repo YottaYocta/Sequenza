@@ -19,7 +19,7 @@
   },
   "scripts": {
     "prepublishOnly": "pnpm run build",
-    "build": "vite build",
+    "build": "pnpm --filter @sequenza/gradient build && vite build",
     "lint": "eslint ."
   },
   "peerDependencies": {
@@ -27,6 +27,7 @@
     "react-dom": "^19.0.0"
   },
   "dependencies": {
+    "@sequenza/gradient": "workspace:*",
     "twgl.js": "^7.0.0"
   },
   "devDependencies": {
