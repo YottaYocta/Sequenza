@@ -12,6 +12,7 @@ import {
   typeMatchesField,
   getFieldDefault,
 } from "@sequenza/lib";
+import { hydrateGradientUniforms } from "@sequenza/gradient";
 
 /**
  * a single node type; shaders
@@ -68,8 +69,8 @@ function App() {
       let edges: Edge[] = JSON.parse(
         localStorage.getItem("sequenza-edges") ?? "[]",
       );
-      const uniforms: Record<string, Uniforms> = JSON.parse(
-        localStorage.getItem("sequenza-uniforms") ?? "{}",
+      const uniforms: Record<string, Uniforms> = hydrateGradientUniforms(
+        JSON.parse(localStorage.getItem("sequenza-uniforms") ?? "{}"),
       );
       const uniformExpressions: Record<string, Uniforms> = JSON.parse(
         localStorage.getItem("sequenza-uniform-defs") ?? "{}",

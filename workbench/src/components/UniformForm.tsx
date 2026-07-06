@@ -1,10 +1,6 @@
 import { useMemo, type FC, type ReactNode } from "react";
-import type {
-  Shader,
-  TextureUniform,
-  GradientUniform,
-  Uniforms,
-} from "@sequenza/lib";
+import type { Shader, TextureUniform, Uniforms } from "@sequenza/lib";
+import type { Gradient } from "@sequenza/gradient";
 import { extractFields, getFieldDefault, type Field } from "@sequenza/lib";
 import { FieldLabel } from "./UniformFields/shared";
 import { FloatField } from "./UniformFields/FloatField";
@@ -198,7 +194,7 @@ const UniformForm: FC<UniformFormProps> = ({
                     field={
                       field as Field & { type: "sampler2D"; source: "gradient" }
                     }
-                    value={saved as GradientUniform | undefined}
+                    value={saved as Gradient | undefined}
                     handleUpdateUniformField={update}
                   />
                 );

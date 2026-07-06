@@ -10,6 +10,7 @@ export default defineConfig({
 			tsconfigPath: './tsconfig.json',
 			include: ['src'],
 			rollupTypes: true,
+			bundledPackages: ['@sequenza/gradient'],
 			compilerOptions: { allowImportingTsExtensions: false, noEmit: false }
 		})
 	],

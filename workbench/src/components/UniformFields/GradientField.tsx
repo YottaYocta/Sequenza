@@ -1,22 +1,24 @@
 import { useState, useRef, useEffect, type FC } from "react";
-import type { Field, GradientUniform, GradientStop } from "@sequenza/lib";
-import { evalGradientAt } from "@sequenza/lib";
+import type { Field } from "@sequenza/lib";
+import {
+  Gradient,
+  evalGradientAt,
+  type GradientStop,
+} from "@sequenza/gradient";
 import { Scrubber } from "../Scrubber";
 import { ColorPickerButton } from "./shared";
 
-const DEFAULT_GRADIENT_STOPS: GradientStop[] = [
-  { position: 0, color: "#000000" },
-  { position: 1, color: "#ffffff" },
-];
-
 export const GradientField: FC<{
   field: Field & { type: "sampler2D"; source: "gradient" };
-  value?: GradientUniform;
-  handleUpdateUniformField: (value: GradientUniform) => void;
+  value?: Gradient;
+  handleUpdateUniformField: (value: Gradient) => void;
 }> = ({ value: initialValue, handleUpdateUniformField }) => {
-  const [stops, setStops] = useState<GradientStop[]>(
-    initialValue?.stops ?? DEFAULT_GRADIENT_STOPS,
-  );
+  const gradientRef = useRef<Gradient | null>(null);
+  if (gradientRef.current === null) {
+    gradientRef.current = Gradient.fromJSON(initialValue);
+  }
+
+  const [stops, setStops] = useState<GradientStop[]>(gradientRef.current.stops);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rampRef = useRef<HTMLDivElement>(null);
 
@@ -29,7 +31,8 @@ export const GradientField: FC<{
       ctx.fillStyle = evalGradientAt(stops, i / (canvas.width - 1));
       ctx.fillRect(i, 0, 1, canvas.height);
     }
-    handleUpdateUniformField({ type: "gradient", stops });
+    gradientRef.current!.setStops(stops);
+    handleUpdateUniformField(gradientRef.current!);
   }, [stops]);
 
   const startDrag = (stopIndex: number) => (e: React.MouseEvent) => {

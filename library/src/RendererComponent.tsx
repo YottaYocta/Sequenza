@@ -7,6 +7,7 @@ import {
   useRef,
 } from "react";
 import { type Patch, Renderer, type Uniforms } from "./renderer";
+import { hydrateGradientUniforms } from "@sequenza/gradient";
 import "./index.css";
 
 interface RendererComponentProps {
@@ -35,6 +36,7 @@ export const RendererComponent = forwardRef<
         const context = canvasRef.current.getContext("webgl2", {
           preserveDrawingBuffer: true,
         })!;
+        if (uniforms.current) hydrateGradientUniforms(uniforms.current);
         const renderer = new Renderer(context, patch);
         onError?.(renderer.error);
 
