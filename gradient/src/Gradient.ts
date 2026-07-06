@@ -53,12 +53,8 @@ export const evalGradientAt = (stops: GradientStop[], t: number): string => {
   return interpolateHex(lower.color, upper.color, localT);
 };
 
-/**
- * Owns a 256×1 canvas that rasterizes a gradient stop list. The renderer
- * slots this in as a texture uniform via its stable `canvas` reference:
- * mutating stops repaints in place, so any texture upload picks up the
- * new pixels without needing to re-bind.
- */
+// The `canvas` reference is stable across `setStops`; the renderer relies on
+// this to pick up new pixels via in-place repaint without re-binding a texture.
 export class Gradient {
   readonly type = "texture" as const;
   readonly canvas: HTMLCanvasElement;
@@ -118,11 +114,8 @@ const isSerializedGradient = (v: unknown): v is SerializedGradient =>
   (v as SerializedGradient).type === "gradient" &&
   Array.isArray((v as SerializedGradient).stops);
 
-/**
- * Walks a nested uniforms record and replaces serialized gradient shapes
- * (`{ type: "gradient", stops }`) with `Gradient` instances in place.
- * Idempotent — existing `Gradient` values are left untouched.
- */
+// Idempotent: callers (workbench init, RendererComponent effect) may invoke
+// this on already-hydrated uniforms without producing new Gradient instances.
 export const hydrateGradientUniforms = <T extends Record<string, any>>(
   uniforms: T,
 ): T => {
