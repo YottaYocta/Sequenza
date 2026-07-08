@@ -10,6 +10,17 @@ export default defineConfig({
     alias: {
       "@sequenza/lib/style.css": resolve(__dirname, "../library/src/index.css"),
       "@sequenza/lib": resolve(__dirname, "../library/src/index.ts"),
+      "@sequenza/workbench/style.css": resolve(
+        __dirname,
+        "../workbench/src/index.css",
+      ),
+      "@sequenza/workbench": resolve(__dirname, "../workbench/src/index.ts"),
+      "@sequenza/gradient": resolve(__dirname, "../gradient/src/index.ts"),
+    },
+  },
+  server: {
+    fs: {
+      allow: [resolve(__dirname, "..")],
     },
   },
 });
