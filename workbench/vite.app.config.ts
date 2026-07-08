@@ -7,6 +7,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@sequenza/lib": resolve(__dirname, "../library/src/index.ts"),
+      "@sequenza/gradient": resolve(__dirname, "../gradient/src/index.ts"),
     },
   },
   plugins: [react(), tailwindcss()],
